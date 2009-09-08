@@ -1,0 +1,7 @@
+#summary One-sentence summary of this page.
+
+= About OpenGeoDa =
+
+Legacy [http://geodacenter.asu.edu/ GeoDa] is a free software program that serves as an introduction to spatial data analysis and is used by over 45,000 people across the world (as of Sep. 2009). We are currently developing a cross-platform, open source version of the program OpenGeoDa that will runs on Windows (XP and Vista), Mac OS, and Linux. It is written in C++, using [http://www.wxwidgets.org/ wxWidgets] for cross-platform GUI support.
+
+See the [http://geodacenter.asu.edu/software GeoDa Center software page] for more details and alpha release software downloads at this time.
