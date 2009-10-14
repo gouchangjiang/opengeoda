@@ -17,7 +17,7 @@ of setting up a project to build under it.
     Leave the settings in the popup dialog box unchanged and select "Add."
  1. Select the application under "Targets" and click on the Info icon.  Select the Build tab.
  1. Under Compiler Version, select GCC 4.2 (but use whatever is the most stable GCC compiler version).
- 1. Open terminal and type "wx-config --libs."  Cut'n'paste the result into Build > Linking > Other Linker Flags[[BR]]
+ 1. Open terminal and type "wx-config --libs."  Cut'n'paste the result into Build > Linking > Other Linker Flags. 
     For basic wxWidgets project, you might be able to link to something more minimal such as {{{-framework Carbon -framework QuickTime -framework IOKit -framework Cocoa -framework System -lwx_macud-2.8}}}, where wx_macud-2.8 would depend on the installed version of wxWidgets.
  1. For Build > GCC 4.2 - Language > Other C++ Flags, append in the value (after $(OTHER_CFLAGS)) returned from Terminal for the command {{{wx-config --cxxflags}}}.
 
@@ -27,7 +27,7 @@ We need to build two versions of wxWidgets for use with OpenGeoDa: one with debu
 
  1. Download wxMac from {{{www.wxwidgets.org}}}.  As of this writing, current version is 2.8.10.
  1. Edit setup0.h, setup.h.in, files to change {{{#define wxUSE_GLCANVAS 0}}} to {{{1}}}.  The command {{{find . -name "setup*" | xargs grep 0 | grep wxUSE_GLCANVAS}}} is useful here.
- 1. Create the Makefile for the debug version with[[BR]] {{{./configure --enable-ascii --disable-shared --disable-monolithic --with-opengl --enable-postscript --without-libtiff --enable-debug}}}.
+ 1. Create the Makefile for the debug version with {{{./configure --enable-ascii --disable-shared --disable-monolithic --with-opengl --enable-postscript --without-libtiff --enable-debug}}}.
  1. Build everything with {{{make}}}
  1. If successfull, install with {{{sudo make install}}}
  1. Now build the non-debug version.  First clean up the previous build with {{{make clean}}}
