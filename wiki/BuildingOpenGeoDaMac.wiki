@@ -7,25 +7,19 @@ Xcode 3.1 is a great IDE for C++ dev on the OSX and it is well worth the effort
 of setting up a project to build under it.
 
  1. Open Xcode 3.1 and select File > New Project > Other (under User Templates) > Empty Project
- 1. When asked for poject location, navigate to the folder containing the existing src files,
-    and type in the name of the folder with the source files (!OpenGeoDa for example).  You will
-    be asked if you want to replace existing contents.  You can say 'yes' since this will just
-    be putting project files into the directory.
- 1. Under Targets, select "New Target."  Choose Carbon, Application and press "Next."  Set the
-    Target Name as desired (this is the application name) and select "Finish."
- 1. Select Project > "Add to Project" and select the various source files to add to the project.
-    Leave the settings in the popup dialog box unchanged and select "Add."
+ 1. When asked for poject location, navigate to the folder containing the existing src files, and type in the name of the folder with the source files (!OpenGeoDa for example).  You will be asked if you want to replace existing contents.  You can say 'yes' since this will just be putting project files into the directory.
+ 1. Under Targets, select "New Target."  Choose Carbon, Application and press "Next."  Set the Target Name as desired (this is the application name) and select "Finish."
+ 1. Select Project > "Add to Project" and select the various source files to add to the project. Leave the settings in the popup dialog box unchanged and select "Add."
  1. Select the application under "Targets" and click on the Info icon.  Select the Build tab.
  1. Under Compiler Version, select GCC 4.2 (but use whatever is the most stable GCC compiler version).
- 1. Open terminal and type "wx-config --libs."  Cut'n'paste the result into Build > Linking > Other Linker Flags. 
-    For basic wxWidgets project, you might be able to link to something more minimal such as {{{-framework Carbon -framework QuickTime -framework IOKit -framework Cocoa -framework System -lwx_macud-2.8}}}, where wx_macud-2.8 would depend on the installed version of wxWidgets.
+ 1. Open terminal and type "wx-config --libs."  Cut'n'paste the result into Build > Linking > Other Linker Flags. For basic wxWidgets project, you might be able to link to something more minimal such as {{{-framework Carbon -framework QuickTime -framework IOKit -framework Cocoa -framework System -lwx_macud-2.8}}}, where wx_macud-2.8 would depend on the installed version of wxWidgets.
  1. For Build > GCC 4.2 - Language > Other C++ Flags, append in the value (after $(OTHER_CFLAGS)) returned from Terminal for the command {{{wx-config --cxxflags}}}.
 
 = Notes for building wxWidgets for Mac =
 
 We need to build two versions of wxWidgets for use with OpenGeoDa: one with debug info on, and one with no debug info.
 
- 1. Download wxMac from {{{www.wxwidgets.org}}}.  As of this writing, current version is 2.8.10.
+ 1. Download wxMac from [http://www.wxwidgets.org www.wxwidgets.org].  As of this writing, current version is 2.8.10.
  1. Edit setup0.h, setup.h.in, files to change {{{#define wxUSE_GLCANVAS 0}}} to {{{1}}}.  The command {{{find . -name "setup*" | xargs grep 0 | grep wxUSE_GLCANVAS}}} is useful here.
  1. Create the Makefile for the debug version with {{{./configure --enable-ascii --disable-shared --disable-monolithic --with-opengl --enable-postscript --without-libtiff --enable-debug}}}.
  1. Build everything with {{{make}}}
