@@ -2,6 +2,6 @@
 
 = About !OpenGeoDa =
 
-Legacy [http://geodacenter.asu.edu/ GeoDa (TM)] is a free software program that serves as an introduction to spatial data analysis and is used by over 62,000 people across the world (as of Sep. 2011). We are currently developing a cross-platform, open source version of the program !OpenGeoDa (TM) that runs on Windows (XP and Vista), Mac OS, and Linux. It is written in C++, using [http://www.wxwidgets.org/ wxWidgets] for cross-platform GUI support.
+[http://geodacenter.asu.edu/ OpenGeoDa (TM)] is a free, open source software program that serves as an introduction to spatial data analysis and is used by over 62,000 people across the world (as of Sep. 2011).  It is the successor to Legacy [http://geodacenter.asu.edu/ GeoDa (TM)] and runs on Windows (XP ,Vista and 7), Mac OS, and Linux. It is written in C++, using [http://www.wxwidgets.org/ wxWidgets] for cross-platform GUI support.
 
 See the [http://geodacenter.asu.edu/software GeoDa Center software page] for more details and software downloads at this time.
