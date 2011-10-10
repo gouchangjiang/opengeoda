@@ -1,0 +1,829 @@
+Summary of code and libaries used by OpenGeoDa
+
+ANN Library: Approximate Nearest Neighbor Library
+  Release 0.1, 1998, By: Sunil Arya and David Mount
+  of University of Maryland
+License: can be copied and distributed free of chare as long as:
+  (1) not part of a commercial product
+  (2) this notice appears in all copies of the software and related
+    documentation
+
+Thiessen polygon code: no attribution infor included anywhere
+  in the code, but I suspect this was borrowed from somewhere
+
+Randik: Knuth Random Number Generator
+  This isn't very well written, so I suspect that this code was
+  written based on the high-level code given in Donald Knuth's
+  book : The Art of Computer Programming, vol 2, 3.2-3.3. as
+  is mentioned in the file Randik.h
+
+GenGeomAlgs: findArea, ComputeArea2D and ComputePerimeter2D come
+from FastArea.c++ in Journal of Graphics Tools, 7(2):9-13, 2002
+
+wxWidgets: Wx Widgets library
+License: wxWindows Libary License
+  - http://www.opensource.org/licenses/wxwindows.php
+  - essentially an L-GPL variant
+
+Boost:  BOOST libraries
+License: Boost Software License, 1.0
+  - http://www.boost.org/LICENSE_1_0.txt
+  - a very permissive license
+
+LAPACK, CLAPACK:
+  - BSD-new license
+  - http://www.netlib.org/lapack/lapack-3.2/LICENSE
+  - a very permissive license
+
+logger.h: Seweryn Habdank-Wojewodzki
+License: Distributed under the Boost Software License 
+  - modified for OpenGeoDa to use wxString and wxDateTime
+
+nullstream.h:
+License: Copyright Maciej Sobczak, 2002
+  Permission to copy, use, modify, sell and distribute this software
+  is granted provided this copyright notice appears in all copies.
+
+
+To Remove: RecordKey.h, cpp
+
+UserConfigDlg ???  what does this do?
+
+New Table: Add Show Table info menu option.
+
+Field Calculations:
+- Add warning dialog box when undefined items produced (allow "don't
+show again" checkbox).
+
+Other to-do:
+- make pseudo-p-vals compare to median, not mean
+
+Should we consider having NewTable be a closable item rather than
+just hidable?
+
+Things to fix prior to full Table integration:
+
+New Table todo:
+
+- Automatically open New Table if not currently open.
+- Somehow detect when existing raw_data numbers will get truncated.
+  This should not happen: automatically decrease number of decimals
+  to accomodate largest magnitude number.   Will probably make this
+  adjustment when reading in a column of data for the first time.
+
+- Make ID_SAVE_SELECTED_TO_COLUMN safer by doing proper checks
+
+1. Regression needs to stop reading from DBF directly!
+Also, regression should always be able to write results out to
+table?  Should we figure out how to have multiple Tables open?
+Does DBF viewer handle multiple Tables currently?
+
+Perhaps can modify Project so that it works with just Tables optionally?
+
+Get rid of:
+ GetDBFFieldNamesChar
+ ReadDBF_dataset
+
+
+New Table functions to add:
+
+There is no case were a view needs to remember
+the column from which it originally came.
+
+Merge Table features:
+- We will not allow the #rows in Table to change.
+
+- select dbf to merge
+- check that dbf file has same #rows as existing table
+- if dbf is valid, then show list of all fields to import and show key
+  choice list
+- will have a radio button for using either record order or keys
+- we could have a default key: this could be whatever the default
+  weight file says it is.  Otherwise, we could choose the first
+  integer field with unique values as the default
+- user can choose list of fields to import.  How can we allow the
+user to easily rename conflicting fields?
+
+
+These require selection mechanism
+2. Range Select
+3. Save Selected to Column
+
+This requires weights
+4. Field Calculation
+
+New Table items to fix:
+1. Disable "select all" by click to cell (-1,-1)
+2. Display non-editable field properties in grey font.
+
+This is from toolbar.xrc.  Restore after 0.9.9.11 delivered
+
+<object class="tool" name="IDM_NEW_TABLE">
+      <bitmap>ToolBarBitmaps_18.png</bitmap>
+      <bitmap2>ToolBarBitmaps_18_disabled.png</bitmap2>
+      <tooltip>Open New Table</tooltip>
+    </object>
+
+
+This is the menus.xrc entry for New Table Menu.  Restore this after a
+new relase has been delivered.
+
+<object class="wxMenu" name="ID_MENU">
+      <object class="wxMenuItem" name="ID_NEW_TABLE_MOVE_SELECTED_TO_TOP">
+        <label>Move Selected to Top</label>
+      </object>
+      <object class="wxMenuItem" name="ID_NEW_TABLE_CLEAR_SELECTION">
+        <label>Clear Selection</label>
+      </object>
+      <object class="wxMenuItem" name="ID_NEW_TABLE_RANGE_SELECTION">
+        <label>Range Selection</label>
+      </object>
+      <object class="wxMenuItem" name="ID_ADD_NEIGHBORS_TO_SELECTION">
+        <label>Add Neighbors To Selection</label>
+      </object>
+      <object class="wxMenuItem" name="ID_SAVE_SELECTED_TO_COLUMN">
+        <label>Save Selected To Field</label>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_NEW_TABLE_FIELD_CALCULATION">
+        <label>Field Calculation</label>
+      </object>
+      <object class="wxMenuItem" name="ID_NEW_TABLE_ADD_COLUMN">
+        <label>Add Field</label>
+      </object>
+      <object class="wxMenuItem" name="ID_NEW_TABLE_DELETE_COLUMN">
+        <label>Delete Field</label>
+      </object>
+      <object class="wxMenuItem" name="ID_NEW_TABLE_EDIT_FIELD_PROP">
+        <label>Edit Field Properties</label>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_NEW_TABLE_RELOAD_DATA">
+        <label>Reload Table Data</label>
+      </object>
+      <object class="wxMenuItem" name="ID_NEW_TABLE_MERGE_TABLE_DATA">
+        <label>Merge Table Data</label>
+      </object>
+      <object class="wxMenuItem" name="ID_NEW_TABLE_SAVE_AS_NEW_SHP_FILE">
+        <label>Save as New Shape File...</label>
+      </object>
+      <label>New Table</label>
+    </object>
+
+
+Table design:
+
+To-do list:
+- When saving, we should warn about values that will be
+  truncated.  Check that we are already limiting
+  strings to specified length.
+- Display column info in window
+- Write out table with new column ordering
+- Add a fast auto-column-width adjustment
+
+Edit Field Properties To Do:
+- Check that all cell-edit values are valid before making change
+- Add in a warning when making an edit to cell length or
+  decimals that will result in a possible truncation and give the
+  option to not display further warnings. 
+- Add a progress dialog for Apply button for use with larger
+  files and large numbers of changes.
+
+
+We can't afford checking the raw_data when opening a huge data-file.
+So, initially, we will have to check on each value read from
+raw_data.  Initially, undef_init=false, undef=? (doesn't matter) and
+raw_data is defined.
+
+When we sort or read in an entire data column, this is a
+user-initiated action and a short delay is acceptable.  We will take
+this oportunity to set the defined/undefined state for the entire
+column as well as converting the data into vector form.
+
+If vector_init=true, then it should be assumed that undef_init
+is also true since when we create a new vector, either by a new
+column creation operation or by a sorting/reading operation, we
+also initialized the undef vector at the same time.  So, if
+vector_init=true, then look directly at the value in undef.
+
+If undef_init is set, then we strictly follow the advice in undef
+for each cell.
+
+Whenever we copy from raw to vector, we will assume that we
+have to determine undefined values again from scratch.
+
+1. Update raw_to_vector
+2. 
+
+Seperate the Table display from the backend.  Should be able to
+develop a display that takes data from either DBF, or CSV files,
+or some other database.  There will be seperate classes for
+figuring out how to load data into the Table.  None of the views
+will directly talk to the Table.  Rather, there will be some sort
+of generic DataManager class that will allow retrieval of data
+and modification.
+
+
+So, our Project should manage the following:
+1) All top-level frames so at least the Update function will know what
+to update.  Need to think on this some more
+2) Table
+3) Selection
+4) SHP file, DBF names
+5) Weights
+6) Default Variables
+7) Lisa related variables
+8) Other compatible SHP files and DBF files.
+
+MyFrame will be a singleton with multiple projects.
+
+I'm concerned about the potential for TemplateFrames being
+closed after the project has been deleted.  Perhaps it would be
+better for there to be a project manager that assigns project_ids
+serially.  It would be OK if we were to never even delete old projects
+from the project list, or it would be OK if the project was deleted,
+but then some of it's frames go deleted afterwards.
+
+So, we could have a global variable in MyFrame called next_project_id.
+We could then have each TempleteFrame remember its project_id so that
+it could request the TemplateFrame manager to delete its reference
+from the project.
+
+How about a ProjectManager class that generates new projects and
+assigns them unique ids.  These unique ids would then be used by the
+TemplateFrameManager to manage TemplateFrames.
+
+A Project instance contains all of the non-wx resources while
+the TemplateFrameManager would be useful for broadcasting updates to
+all other TemplateFrames (eventually this will be handled by
+HighlightState instances).
+
+OnOpenTable passes in project_p, but project_p has not yet been
+initialized.  Hopefully the TableViewFrame does not actually
+dereference project_p.  Must check this out!
+
+TemplateFrameManager::Add(TemplateFrame* tf, int project_id pid)
+TemplateFrameManager::Delete(TemplateFrame* tf, int project_id pid)
+
+UpdateAll(project_id pid)
+DeleteAll(project_id pid)
+
+A dictonary of wxLists?
+<boost/unordered_map.hpp> 
+typedef boost::unordered_map<int, wxList*> list_map;
+list_map x; 
+x[1] = new wxList;
+x[2] = new wxList;
+x[3] = new wxList;
+
+x[1]->Add(tf1);
+x[1]->Delete(tf2);
+
+BOOST_FOREACH(map::value_type i, x) {
+    std::cout<<i.first<<","<<i.second<<"\n";
+}
+
+// Inventory of Global Variables
+
+// wxFileName::GetFullPath() returns everything
+gCompleteFileName = ifn.GetFullPath();  // in MyFrame::OnProjectOpen
+
+extern bool isTableOpen;
+extern GridCtrlStatusType g_pGridCtrl_status;
+
+extern MyFrame *frame;
+
+extern Selection gSelection;
+extern GeoDaEventType gEvent;
+extern int gObservation;
+
+wxString gWeightTitle = wxEmptyString;
+
+extern bool m_VarDefault;
+extern wxString m_gVar1;
+extern wxString m_gVar2;
+extern wxString m_gVar3;
+
+extern double *m_gX;
+extern double *m_gY;
+
+int g_LisaCounterRegister = 0; // serial number counter for LISA maps
+int gLisaID;  // global variable for synchronising LISA maps
+int gPermutation = 499; // default LISA permutation
+int gSignificanceFilter = 1;  // default 0.05 significance
+int* gSignificancy = NULL;
+double*	gDSignificancy = NULL;
+/** gCluster: classification for each observation into LISA significance
+ clusters: not-significant=0 (>0.05) HH=1, LL=2, HL=3, LH=4 */
+int* gCluster = NULL;
+
+Sort of global:
+bool MyFrame::projectOpen = false;  // MyFrame::IsProjectOpen()
+bool MyFrame::AnyTemplateFramesOpen();
+
+
+
+LISA maps state variables:
+
+In the LisaMapView.h file:
+	bool	ClusterMap, SignificantMap;  // obvious meaning
+	int	LisaID;
+	int 	TemplateCanvas::LisaMapFrameSignificanceFilter;
+	int	SignificanceFilter;
+	int 	m_permutation;  // corresponds to gPermutation
+	int*	Significancy;
+	double*	DSignificancy;
+	int*	Cluster;
+	
+	std::vector<double> m_dLM;  // localMoran vector
+
+	double*	m_data1;
+	double*	m_data2;
+
+	bool    isMoranEBRate; // true if EB Rate
+	bool	isMultivariateLISA; // true if Bivariate LISA
+	wxString lisaFieldTitle;  // AREA w/ CRIME  for example
+	static int my_CurrentLisaCounter;  // for synchronizing LISA maps
+
+	bool bUpdateTitle;
+		
+	GalWeight*	gal_weights;  // pointer to gal weights
+	wxString	weightTitle;
+
+Global variables:
+
+extern int		g_LisaCounterRegister;  // counter serial number
+extern int		gLisaID;
+extern bool		gSignificanceFilter;  
+extern int		gPermutation; 
+extern int*		gSignificancy;  // needed for data sync?
+extern double*		gDSignificancy;  // needed for data sync?
+extern int*		gCluster;  // needed for data sync?
+
+extern Selection	gSelection;
+extern wxString		m_gVar1; 
+extern wxString		m_gVar2;
+extern double*		m_gY;
+extern double*		m_gX;
+extern int		gObservation;
+
+
+
+Large Shapefile for testing large weights files:
+geodude: /Volumes/GeoDa/Workspace/Julia/Seattle
+
+Dragging crud:
+
+Map out drawing calls for mapview with rectangle and compare to circle.
+
+mapview.h
+While rectangle dragging, calling TemplateCanvas::ClearFrame constantly.
+
+While circle dragging, calling MapCanvas::MapClearFrame constantly.
+
+gRegime is specific to each TemplateCanvas instance.  We also have
+btnDown, gSelect1, gSelect2 and ClickClock.
+
+enum SelectType { // (in TemplateCanvas.h)
+  NO_SELECT=0, RECT_SELECT=1, BRUSH_SELECT=2, LINE_SELECT=3
+}
+
+What does each SelectType mean?
+ NO_SELECT means nothing was selected?
+ RECT_SELECT means normal operation, no brushing
+ BRUSH_SELECT means in brushing mode
+
+
+
+Does gRegime control 
+
+In mapview.cpp, have sel_mode (member of MapCanvas)
+sel_mode is an int with possible values:
+SELECTION_RECT=0, SELECTION_LINE=1, SELECTION_CIRCLE=2
+work_mode is an int with possible values:
+MODE_SELECT=0, MODE_ZOOMIN=1, MODE_ZOOMOUT=2, MODE_PANNING=3
+
+
+
+GeoDaEventType gEvent
+enum GeoDaEventType {
+  NO_EVENTS, NEW_SELECTION, ADD_SELECTION, DEL_SELECTION }
+
+void MapCanvas::MapClearFrame() {
+    LOG_MSG("Entering MapCanvas::MapClearFrame");
+    wxClientDC dc(this);
+    PrepareDC(dc);
+    // OVERLAY CODE
+#if defined(__WXMAC__) // || defined(__WXGTK__)
+    wxDCOverlay overlaydc(canvas_overlay, &dc);
+    overlaydc.Clear();
+#else
+    dc.SetLogicalFunction(wxINVERT);
+#endif
+    dc.SetPen(*wxBLACK_PEN);
+
+    wxCoord radi;
+    LOG(sel_mode);
+    switch (sel_mode) {
+        case SELECTION_LINE:
+            dc.DrawLine(gSelect1, gSelect2);
+            break;
+        case SELECTION_CIRCLE:
+            dc.SetBrush(*wxTRANSPARENT_BRUSH);
+            radi = (int) GenUtils::distance(gSelect1, gSelect2);
+            dc.DrawCircle(gSelect1, radi);
+            break;
+    }
+    LOG_MSG("Exiting MapCanvas::MapClearFrame");
+}
+
+
+New Plan:
+
+Rewrite / modify ConditionalView.{h,cpp} so that it uses
+it's own home-brew wxGridSizer rather than wxGeneralSplitter.
+We should be able to figure out which functions from wxGeneralSplitter
+are being used in ConditionalView, and replace those functions by
+something that works eqivalently.  Conditionable is so embedded
+into each of MapMovieCanvas, ScatterPlot, Histogram, and BoxPlot that
+it will be better to just leave these as is.
+
+00, 01
+10, 11
+20, 21
+
+grid3x2 (formerly m_splitter):
+  00 = header0 = win_00_null
+  01 = header = win_01_hdr_or_null
+  10 = header1 = win_10_y_axis
+  11 = m_splitterMain = grid3x3
+  20 = header11 = win_20_null
+  21 = header3 = win_21_x_axis
+
+Use of wxGeneralSplitter by ConditionalView:
+
+CConditionalVariableXView  -> no references
+CConditionalVariableYView  -> no references
+CConditionalVariableNULLView  -> no references
+CConditionalVariableHeaderView  -> no references
+
+ConditionalViewFrame
+grid3x2 and grid3x3
+
+Document and relable:
+
+// either CConditionalVariableHeaderView or CConditionalVariableNULLView
+wxWindow* win_01_hdr_or_null; 
+CConditionalVariableNULLView* win_00_null;
+CConditionalVariableYView* win_10_y_axis;
+CConditionalVariableNULLView* win_20_null;
+CConditionalVariableXView* win_21_x_axis;
+
+grid3x3 gets the 9x9 breakup.
+10 is the Y axis control
+21 is the X axis control
+00 and 20 are probably "NULLView"
+01 will be the "HeaderView"
+
+grid3x2:  (all in ConditionalViewFrame constructor)
+   grid3x2 = new CondFrameWinMan(this,3,2);
+   grid3x3 = new CondFrameWinMan(grid3x2,3,3);
+
+   if(mViewType == 1) {
+      win_01_hdr_or_null = new CConditionalVariableHeaderView(grid3x2);
+   } else {
+      win_01_hdr_or_null = new CConditionalVariableNULLView(grid3x2);
+   }
+   win_00_null = new CConditionalVariableNULLView(grid3x2);
+   win_10_y_axis = new CConditionalVariableYView(grid3x2);
+   win_20_null = new CConditionalVariableNULLView(grid3x2);
+   win_21_x_axis = new CConditionalVariableXView(grid3x2);
+   grid3x2->SetWindow(win_00_null,        0, 0);
+   grid3x2->SetWindow(win_01_hdr_or_null, 0, 1);
+   grid3x2->SetWindow(win_10_y_axis,      1, 0);
+   grid3x2->SetWindow(grid3x3,            1, 1);
+   grid3x2->SetWindow(win_20_null,        2, 0);
+   grid3x2->SetWindow(win_21_x_axis,      2, 1);
+
+
+grid3x3:
+(in ConditionalViewFrame constructor)
+	new wxGeneralSplitterWindow(grid3x2,3,3);
+	wxWindow* win_tmp;
+	grid3x3->SetWindow(win_tmp, i/3, i%3);
+
+
+(in ConditionalViewFrame::UpdateViews())
+    switch(mViewType) {
+    case 1:
+    	 for(i=0; i<9; i++) {
+	 	  view1 = (MapMovieCanvas*) grid3x3->GetWindow(i/3, i%3);
+		  view1->UpdateCondition(flags);
+	}
+	break;
+	.... similar for all four cases
+(in ConditionalViewFrame::Update())
+    switch(mViewType) {
+    case 1:
+    	 for(i=0; i<9; i++) {
+    	     view1 = (MapMovieCanvas*) grid3x3->GetWindow(i/3, i%3);
+	     wxClientDC dc(view1);
+	     PrepareDC(dc);
+	     view1->Selection(&dc);
+    	 }
+    	 break;
+	.... similar for all four cases
+
+In summary:
+constructors (parent, rows, cols)
+SetWindow, GetWindow
+SetSashPartition
+AllowSashChangeX(false),
+AllowSashChangeY(false)
+
+That's it.
+Note: wxGeneralSplitter is a wxWindow.
+
+
+
+
+For the 2.9.1 realease of wxWidgets, on the Mac platform
+the functionality for
+wxRegion::wxRegion(size_t n, const wxPoint *points, wxPolygonFillMode
+WXUNUSED(fillStyle))
+has been commented out with an #ifdef macro so that
+an assert is thrown.  For now, we must manually comment
+the body of the function back in by changing the
+#ifdef 0 to #ifdef 1 on line 106 of src/osx/carbon/region.cpp
+For our purposes, things seem to work fine.
+
+Big Issues:
+* Windows: Try to use wxAutoBufferedPaintDC
+* Linux: Table totally unresponsive.  No updates.
+
+Note: wxDC <- wxMemoryDC <- wxBufferedDC <- wxBufferedPaintDC <-
+wxAutoBufferedPaintDC
+
+wxBufferedDC is typically associated with wxClientDC, if you want
+to use it in your EVT_PAINT handler, you should use wxBufferedPaintDC
+instead.
+
+Overview documentation for wxBufferedPaintDC:
+
+  This is a subclass of wxBufferedDC which can be used inside of
+  an EVT_PAINT() event handler to achieve double-buffered drawing.
+
+  Just use this class instead of wxPaintDC and make sure
+  wxWindow::SetBackgroundStyle() is called with wxBG_STYLE_CUSTOM
+  somewhere in the class initialization code, and that's all you
+  have to do to (mostly) avoid flicker. The only thing to watch
+  out for is that if you are using this class together with
+  wxScrolled, you probably do not want to call
+  wxScrolled::PrepareDC() on it as it already does this
+  internally for the real underlying wxPaintDC.
+
+
+The following classes are handling EVT_PAINT on their own:
+TestScrollWinCanvas -> calls TemplateCanvas::OnPaint
+TestMapCanvas -> calls TemplateCanvas::OnPaint
+CRandomizationDlg -> calls CRandomizationDlg::OnPaint
+C3DPlotCanvas -> calls C3DPlotCanvas::OnPaint
+ScatterNewPlotCanvas -> calls TemplateCanvas::OnPaint
+wxGridWindowEx (Table) -> calls wxGridWindowEx::OnPaint
+TemplateCanvas -> calls TemplateCanvas::OnPaint
+wxGeneralSplitter -> calls wxGeneralSplitter::OnPaint
+
+
+
+Classes that handle EVT_PAINT should call
+SetBackgroundStyle(wxBG_STYLE_CUSTOM) in their constructor.
+
+Convert all wxComboBox with wxCB_READONLY attribute set to wxChoice
+
+Convert wxComboBox::GetValue to 
+m_field->GetString(m_field->GetSelection())
+GetSelection() != wxNOT_FOUND
+Clear() -> OK, so long as not a wxComboBox with wxCB_READONLY set.
+
+Here's the list:
+
+20 instances:
+
+IDC_CURRENTUSED_W  pCB CSelectWeightDlg  OK
+IDC_KEYVAR m_X CAddCentroidsDlg  IDD_ADD_CENTROIDS OK
+IDC_KEYVAR CAddCentroidsDlg  IDD_ADD_MEANCENTERS OK
+IDC_FIELD CRangeSettingDlg m_field OK
+IDC_COMBO1 CDeleteColumnDlg m_field OK
+IDC_COMBO1 CAddColumnDlg m_field OK
+IDC_KEYVAR CDBF2SHPDlg m_X OK
+IDC_KEYVAR2 CDBF2SHPDlg m_Y OK
+IDC_KEYVAR CASC2SHPDlg m_X OK
+IDC_KEYVAR2 CASC2SHPDlg m_Y OK
+IDC_KEYVAR CSHP2ASCDlg m_X OK
+IDC_KEYVAR CJoinTableDlg m_field OK
+IDC_UNARY_OPERATOR CFieldCalcUniDlg m_op OK
+IDC_BINARY_OPERATOR CFieldCalcBinDlg m_op OK
+IDC_CURRENTUSED_W CFieldCalcLagDlg m_weight OK
+IDC_LAG_OPERAND CFieldCalcLagDlg m_var OK
+IDC_RATE_OPERATOR CFieldCalcRateDlg m_method OK
+IDC_RATE_WEIGHT CFieldCalcRateDlg m_weight OK
+IDC_RATE_OPERAND1 CFieldCalcRateDlg m_event OK
+IDC_RATE_OPERAND2 CFieldCalcRateDlg m_base OK
+
+
+
+Current issue: fix font sizes.
+Consider: try out test program.
+
+No need.  Perhaps can do with a simple canvas in main program.
+
+New Scatter Plot to-do:
+
+2. Fix small areas in bubble plot
+3. Add stats line(s) to top of window
+4. List x,y,z values while hovering over
+5. Set font sizes correctly for Windows and Linux
+* Semi-transparent bubbles?
+* Hide/show bubbles?
+* Override display alg so that can display bubbles sorted by Z?
+  Watch out for a performance hit.  Also, be careful of highlight
+  updates.
+
+Statistics Display design:
+
+- Handle infinite slope case by showing nothing?  Note that the
+scatterplot points are do not always represent the points on
+a function since there can be multiple values of y for the
+same value of x.
+- Show axis lines through (0,0), and perhaps make an option
+- provide some buffer for min/max observations on x/y axes.
+
+Hmm, seems that the first thing we want is to set up the menus!
+
+Pre-alpha to-do list:
+
+1. Fix Mac Circle/Line selection.
+2. Fix Windows selection.
+
+Idea: Remove option to select with Circles and Lines for now.  Can
+just comment out of menus. So, assuming we have just point and rectangle:
+
+In all windows, can do the following three things:
+Can select with:
+1. single clicks
+2. drag a rectangle shape
+3. hold down Cmd key and draw a rectangle for brushing.
+
+Notes: a) the shift key allows additional points to be added to current selection
+b) without the shift key, the current selection is cleared and new
+selection is made
+c) once the rectangle is created using CMD, then it becomes a new type
+of pointer for that window that is dragged around.  Whatever it intersects is
+automatically selected.
+
+Once brushing mode is entered, only another left click ends brushing mode.
+Note:we should allow a left or a right click, modified or not to end brushing
+mode.
+
+So, we could describe certain modes:
+1. Brushing / or normal select
+2. Panning
+3. Zoom In / Out.  Note: Zoom In is normally done with a single point
+click.  Could allow both rectangle select and point clicks.
+4. IDEA: Would be nice to add zoom in/out and scale icons just like
+Google Maps has.
+
+So, have to have shared global variable to keep track of set of
+selected objects.  But, brushing mode vs other mode doesn't matter
+since the brush is only local to the current window.  Still, might
+want to restrict frequency of updates to other windows while brushing
+is taking place.  Or, could just restrict update frequency in general.
+
+So: globally will have: Brushing Mode and Regular Mode
+Locally will have to keep track of various options based on which 
+subclass of TemplateCanvas we are talking about.
+All TemplateCanvas frames need the following:
+
+1. Brushing mode vs regular
+
+All MapCanvas frames need:
+
+1. Zoom In Mode
+2. Zoom Out Mode
+3. Panning Mode
+
+Selection notes:
+
+In mapview.h:
+
+const int SELECTION_RECT = 0;
+const int SELECTION_LINE = 1;
+const int SELECTION_CIRCLE = 2;
+
+const int MODE_SELECT = 0;
+const int MODE_ZOOMIN = 1;
+const int MODE_ZOOMOUT = 2;
+const int MODE_PANNING = 3;
+
+extern unsigned int g_pGridCtrl_status;
+extern Selection gSelection;
+extern int gObservation;
+extern double *m_gX, *m_gY;
+extern bool gObjectlinking;
+//extern wxGridEx* g_pGridCtrl;
+
+1. class gSelection is defined in shp2cnt.h.
+  - It is used in every file that has a class that inherits from TemplateCanvas
+     or MapCanvas and it appears as a single global object defined "extern
+     Selection gSelection"
+  - It is used as a globally shared object that keeps track of currently
+  selected points.
+
+2. In shp2cnt.cpp, there is a line:  GeoDaEventType gEvent = NO_EVENTS;
+  - It appears almost everywhere as "extern GeoDaEventType gEvent;"
+  - GeoDaEventType is defined in shp2cnt.h as:
+enum GeoDaEventType  {
+    NO_EVENTS,
+    NEW_SELECTION,
+    ADD_SELECTION,
+    DEL_SELECTION
+};
+
+3. In shp2cnt.h we have
+enum SelectType {         
+	// enumeration for the type of selection
+    NO_SELECT,
+    RECT_SELECT,
+    BRUSH_SELECT,
+	LINE_SELECT
+};
+  - But there is no global instance variable for this.  Instead, in
+  TemplateCanvas class, there is a public variable "SelectType gRegime" and this
+  is the ony instance of SelectType enum.  ToDo: move this definition into
+  TemplateCanvas.
+
+Let's try to understand what NO_SELECT actually does.  My theory is that we can
+get rid of it.  Comments related to this start with // MMMSelect 
+
+4. In OpenGeoDa.cpp, we have
+enum GridCtrlStatusType {
+	NEW_OPEN,
+	NEXT_OPEN
+};
+Which appears as a global variable defined in OpenGeoDa.h
+ unsigned in g_pGridCtrl_status = 0;
+  - g_pGridCtrl_status takes to values defined in OpenGeoDa.cpp:
+GridCtrlStatusType g_pGridCtrl_status = NEW_OPEN;
+
+Carefully map out how mouse selection works in each mode.
+Who uses TemplateCanvas?
+
+
+
+Class list:
+
+C3DPlotFrame
+BoxPlotFrame
+CartogramFrame
+ConditionalViewFrame
+HistFrame
+LisaBoxFrame (not inherited from BoxPlotFrame), but uses ID_BOXPLOT_OPTIONS_MENU
+         and IDR_CONTEXT_BOXPLOT
+LisaMapFrame (inherited from MapChild)
+MoranGFrame (bivariate Moran)
+MoranScatterPlotFrame (univariate Moran)
+MapChild
+MapMovieFrame
+PCPFrame
+ScatterPlotFrame
+TableViewFrame
+
+Frame Type List:
+
+IDR_MAPTPYE
+DONE! IDR_BOXTYPE,  IDR_CONTEXT_BOXTYPE,  BoxPlotFrame, ID_BOXTYPE_OPTIONS_MENU
+DONE! IDR_CARTOGRAM, IDR_CONTEXT_CARTOGRAM, CartogramViewFrame, ID_CARTOGRAM_OPTIONS_MENU
+IDR_GMSPL
+IDR_HISTTYPE
+IDR_LISAMAP
+IDR_MAPMOVIE
+IDR_MSPLTYPE
+IDR_MULTIBOX_TYPE
+IDR_SCATTERTYPE
+IDR_TABLESTYPE
+IDR_PCPTYPE
+
+Context Menu List:
+IDR_CONTEXT_MAPTYPE
+DONE! IDR_CONTEXT_BOXTYPE
+DONE! IDR_CONTEXT_CARTOGRAM
+IDR_CONTEXT_GMSPL          (General Moran Scatter Plot)
+IDR_CONTEXT_HISTTYPE
+IDR_CONTEXT_LISAMAP
+IDR_CONTEXT_MSPLTYPE  (univariate Moran Scatter Plot)
+IDR_CONTEXT_MULTIBOX_PLOT  (ConditionalViewFrame ?)
+IDR_CONTEXT_SCATTERTYPE
+IDR_CONTEXT_TABLESTYPE
+IDR_CONTEXT_PCPTYPE
+IDR_CONTEXT_REPORTTYPE  (Regression?)
+
