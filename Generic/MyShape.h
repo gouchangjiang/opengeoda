@@ -1,0 +1,344 @@
+/**
+ * OpenGeoDa TM, Copyright (C) 2011 by Luc Anselin - all rights reserved
+ *
+ * This file is part of OpenGeoDa.
+ * 
+ * OpenGeoDa is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OpenGeoDa is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef __GEODA_CENTER_MY_SHAPE_H__
+#define __GEODA_CENTER_MY_SHAPE_H__
+
+#undef check // macro undefine needed for Xcode compilation with Boost.Geometry
+#include <wx/gdicmn.h>
+#include <wx/brush.h>
+#include <wx/pen.h>
+#include <wx/region.h>
+#include <wx/string.h>
+#include <wx/dc.h>
+#include "../ShapeOperations/ShpFile.h"
+#include <cmath>
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
+#include "../GenUtils.h"
+
+typedef boost::geometry::model::d2::point_xy<double> point_2d;
+
+struct MyScaleTrans {
+	MyScaleTrans() :
+		scale_x(1.0), scale_y(1.0), trans_x(0.0), trans_y(0.0) {}
+	MyScaleTrans(double s_x, double s_y, double t_x, double t_y) :
+		scale_x(s_x), scale_y(s_y), trans_x(t_x), trans_y(t_y) {}
+	virtual MyScaleTrans& operator=(const MyScaleTrans& s);
+	static void calcAffineParams(double x_min, double y_min,
+								 double x_max, double y_max,
+								 double top_marg, double bottom_marg,
+								 double left_marg, double right_marg,
+								 double screen_width, double screen_height,
+								 bool fixed_aspect_ratio,
+								 bool fit_to_window,
+								 double* scale_x_p, double* scale_y_p,
+								 double* trans_x_p, double* trans_y_p,
+								 double target_width=0, double target_height=0,
+								 double* image_width_p=0,
+								 double* image_height_p=0);
+	wxString GetString();
+	void transform(const point_2d& pt, wxPoint* result) const;
+	void transform(const wxRealPoint& src, wxPoint* result) const;
+	void transform(const wxRealPoint& src, wxRealPoint* result) const;
+	void transform(const wxPoint& src, wxPoint* result) const;
+	void transform(const Shapefile::Point& src, wxPoint* result) const;	
+	
+	double scale_x;
+	double scale_y;
+	double trans_x;
+	double trans_y;	
+};
+
+
+class MyShape {
+public:
+	MyShape();
+	MyShape(const MyShape& s);
+	virtual ~MyShape() {};
+	virtual MyShape* clone() = 0;
+	virtual MyShape& operator=(const MyShape& s);
+	
+	wxPoint getCentroid() { return centroid; }
+	wxPoint getMeanCenter() { return mean_center; }
+	
+	virtual bool pointWithin(const wxPoint& pt) = 0;
+	virtual bool regionIntersect(const wxRegion& region) = 0;
+	virtual void applyScaleTrans(const MyScaleTrans& A);
+
+	virtual void paintSelf(wxDC& dc) = 0;
+	
+	static void partsToCount(const std::vector<wxInt32>& parts,
+							 int total_points,
+							 int* count);
+	static wxRealPoint calculateMeanCenter(int n, wxRealPoint* pts);
+	static wxRealPoint calculateMeanCenter(
+		const std::vector<Shapefile::Point>& pts);
+	static wxRegion createCircleRegion(const wxPoint& center, double radius,
+									   int num_points = 0,
+									   wxPoint* pnts_array = 0,
+									   int* pnts_array_size = 0);
+	static wxRegion createLineRegion(wxPoint a, wxPoint b);
+public:
+	wxBrush brush;
+	wxPen pen;
+	bool highlight;
+	int z;
+protected:
+	wxPoint centroid;
+	wxRealPoint centroid_o;
+	wxPoint mean_center;
+	wxRealPoint mean_center_o;
+};
+
+
+class MyPoint: public MyShape {
+public:
+	MyPoint(const MyPoint& s); 
+	MyPoint(wxRealPoint point_o_s);
+	virtual ~MyPoint() {}
+	virtual MyPoint* clone() { return new MyPoint(*this); }
+	
+	virtual bool pointWithin(const wxPoint& pt);
+	virtual bool regionIntersect(const wxRegion& r);
+	virtual void applyScaleTrans(const MyScaleTrans& A);
+	virtual void paintSelf(wxDC& dc);
+public:
+	wxPoint point;
+	wxRealPoint point_o;
+};
+
+
+class MyCircle: public MyShape {
+public:
+	MyCircle(const MyCircle& s);
+	MyCircle(wxRealPoint center_o_s, double radius_o_s );
+	virtual ~MyCircle() {}
+	virtual MyCircle* clone() { return new MyCircle(*this); }
+	
+	virtual bool pointWithin(const wxPoint& pt);
+	virtual bool regionIntersect(const wxRegion& r);
+	virtual void applyScaleTrans(const MyScaleTrans& A);
+	virtual void paintSelf(wxDC& dc);
+public:
+	wxPoint center;
+	double radius;
+protected:
+	wxRealPoint center_o;
+	double radius_o;
+};
+
+
+class MyPolygon: public MyShape {
+public:
+	MyPolygon(const MyPolygon& s);
+	MyPolygon(int n_s, wxRealPoint* points_o_s);
+	MyPolygon(Shapefile::PolygonContents* pc_s);
+	virtual ~MyPolygon();
+	virtual MyPolygon* clone() { return new MyPolygon(*this); }
+	
+	virtual bool pointWithin(const wxPoint& pt);
+	virtual bool regionIntersect(const wxRegion& r);
+	virtual void applyScaleTrans(const MyScaleTrans& A);
+
+	static wxRealPoint CalculateCentroid(int n, wxRealPoint* pts);
+	virtual void paintSelf(wxDC& dc) {}
+public:
+	wxPoint* points;
+	int n; // size of points array
+	int n_count; // size of count array
+	int* count; // index into various parts of points array
+	bool simple; // true iff polygon has no holes and just one part
+protected:
+	// (pc == 0 && points_o !=0 ) || (pc != 0 && points_o ==0 )
+	Shapefile::PolygonContents* pc;
+	wxRealPoint* points_o;
+	wxRegion region;
+};
+
+
+class MyPolyLine: public MyShape {
+public:
+	MyPolyLine(const MyPolyLine& s);
+	MyPolyLine(int n_s, wxRealPoint* points_o_s);
+	MyPolyLine(double x1, double y1, double x2, double y2);
+	MyPolyLine(Shapefile::PolyLineContents* pc_s);
+	virtual MyPolyLine& operator=(const MyPolyLine& s);
+	virtual ~MyPolyLine();
+	virtual MyPolyLine* clone() { return new MyPolyLine(*this); }
+	
+	virtual bool pointWithin(const wxPoint& pt);
+	virtual bool regionIntersect(const wxRegion& r);
+	virtual void applyScaleTrans(const MyScaleTrans& A);
+	virtual void paintSelf(wxDC& dc);
+
+	static wxRealPoint CalculateCentroid(int n, wxRealPoint* pts)
+	{ return wxRealPoint(0,0); }
+public:
+	wxPoint* points;
+	int n; // size of points array
+	int n_count; // size of count array
+	int* count; // index into various parts of points array
+	bool simple; // true iff polyline has just one part
+protected:
+	// (pc == 0 && points_o !=0 ) || (pc != 0 && points_o ==0 )
+	Shapefile::PolyLineContents* pc;
+	wxRealPoint* points_o;
+	wxRegion region;
+};
+
+
+class MyText: public MyShape {
+public:
+	enum VertAlignment{ top, v_center, bottom };
+	enum HorizAlignment{ left, h_center, right };
+	
+	MyText();
+	MyText(wxString text_s, wxFont font_s, const wxRealPoint& ref_pt_s,
+		   double degs_rot_cc_from_horiz_s = 0,
+		   HorizAlignment h_align = h_center, VertAlignment v_align = v_center,
+		   int x_nudge = 0, int y_nudge = 0);
+	MyText(const MyText& s);
+	virtual MyText& operator=(const MyText& s); 
+	virtual ~MyText() {}
+	virtual MyText* clone() { return new MyText(*this); }
+	
+	virtual bool pointWithin(const wxPoint& pt) { return false; }
+	virtual bool regionIntersect(const wxRegion& r) { return false; }
+	virtual void applyScaleTrans(const MyScaleTrans& A);
+	virtual void paintSelf(wxDC& dc);
+	
+	static wxPoint calcRefPoint(wxDC& dc, const wxString& text,
+								const wxFont& font,
+								const wxRealPoint& ref_pt,
+								double degs_rot_cc_from_horiz = 0,
+								HorizAlignment h_align = h_center,
+								VertAlignment v_align = v_center);
+public:
+	double getDegsRotCcFromHoriz() { return degs_rot_cc_from_horiz; }
+	wxString getText() { return text; }
+	void setText(wxString t) { text = t; }
+	wxString text;
+	wxFont font;
+	wxRealPoint ref_pt;
+	int ref_pt_x_nudge; // number of pixels to nudge ref_pt in x dir.
+	int ref_pt_y_nudge; // number of pixels to nudge ref_pt in y dir.
+	HorizAlignment horiz_align;
+	VertAlignment vert_align;
+protected:
+	double degs_rot_cc_from_horiz;
+	double degs_rot_cc_from_horiz_o;
+	wxRealPoint ref_pt_o;
+};
+
+class MyTable : public MyShape {
+public:
+	struct CellAttrib {
+		wxColour color;
+	};
+	
+	MyTable();
+	MyTable(const std::vector<wxString>& vals,
+			const std::vector<CellAttrib>& attributes,
+			int rows, int cols, wxFont font,
+			const wxRealPoint& ref_pt,
+			MyText::HorizAlignment horiz_align = MyText::h_center,
+			MyText::VertAlignment vert_align = MyText::v_center,
+			MyText::HorizAlignment cell_h_align = MyText::h_center,
+			MyText::VertAlignment cell_v_align = MyText::v_center,
+			int row_gap = 3, int col_gap = 10,
+			int x_nudge = 0, int y_nudge = 0);
+	MyTable(const MyTable& s);
+	virtual MyTable& operator=(const MyTable& s); 
+	virtual ~MyTable() {}
+	virtual MyTable* clone() { return new MyTable(*this); }
+	
+	virtual bool pointWithin(const wxPoint& pt) { return false; }
+	virtual bool regionIntersect(const wxRegion& r) { return false; }
+	virtual void applyScaleTrans(const MyScaleTrans& A);
+	virtual void paintSelf(wxDC& dc);
+	
+public:
+	std::vector<wxString> vals;
+	std::vector<CellAttrib> attributes;
+	wxFont font;
+	int rows;
+	int cols;
+	int row_gap;
+	int col_gap;
+	wxRealPoint ref_pt;
+	int ref_pt_x_nudge; // number of pixels to nudge ref_pt in x dir.
+	int ref_pt_y_nudge; // number of pixels to nudge ref_pt in y dir.
+	MyText::HorizAlignment horiz_align;
+	MyText::VertAlignment vert_align;
+	MyText::HorizAlignment cell_h_align;
+	MyText::VertAlignment cell_v_align;
+protected:
+	wxRealPoint ref_pt_o;
+};
+
+class MyAxis: public MyShape {
+public:
+	MyAxis(const MyAxis& s)
+		: caption(s.caption), scale(s.scale), is_horizontal(s.is_horizontal),
+		caption_font(s.caption_font), font(s.font),
+		a(s.a), b(s.b), a_o(s.a_o), b_o(s.b_o) {}
+	MyAxis(const wxString& caption_s, const AxisScale& s,
+		   const wxPoint& a_s, const wxPoint& b_s);
+	virtual ~MyAxis() {}
+	virtual MyAxis* clone() { return new MyAxis(*this); }
+	
+	virtual bool pointWithin(const wxPoint& pt) { return false; }
+	virtual bool regionIntersect(const wxRegion& r) { return false; }
+	virtual void applyScaleTrans(const MyScaleTrans& A);
+	virtual void paintSelf(wxDC& dc);
+	
+public:
+	wxString getCaption() { return caption; }
+	void setCaption(const wxString& s) { caption = s; } 
+	bool isHorizontal() { return is_horizontal; }
+	AxisScale scale;
+	wxPoint a, b;
+	wxString caption;
+protected:
+	bool is_horizontal;
+	wxPoint a_o;
+	wxPoint b_o;
+	wxFont font;
+	wxFont caption_font;
+};
+
+
+
+/**
+ This class is used for pointer comparisons between MyShape pointers.  If
+ p1 and p2 are pointers to MyShape instances, then p1 < p2 is true
+ if and only if p1->z < p2->z, where z is the z-value integer in each MyShape
+ object.
+ This is only used to specify the std::multiset<MyShape*, my_shp_ptr_comp>
+ template instance so that a multiset of MyShape points has a well-defined
+ partial order.
+ */
+class my_shp_ptr_comp { // used by multiset template for comparison
+public:
+	bool operator() (const MyShape* lhs, const MyShape* rhs) const
+	{ return lhs->z < rhs->z; }
+};
+
+#endif
