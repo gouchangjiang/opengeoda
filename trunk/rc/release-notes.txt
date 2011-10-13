@@ -1,4 +1,7 @@
-OpenGeoDa 0.9.9.15 Release Notes
+OpenGeoDa 1.0 Release Notes
+
+Changes since 0.9.9.15:
+- Bug in Arc Distance option for Theshold Distances fixed.
 
 Changes since 0.9.9.14:
 - Major speedup to LISA and Getis-Ord Gi-Statistics.  When a
