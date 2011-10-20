@@ -94,6 +94,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/Regression/mix.o \
 	${OBJECTDIR}/ShapeOperations/GalWeight.o \
 	${OBJECTDIR}/DialogTools/MovieControlPan.o \
+	${OBJECTDIR}/Explore/ScatterNewPlotView.o \
 	${OBJECTDIR}/kNN/kd_search.o \
 	${OBJECTDIR}/Explore/MoranScatterPlotView.o \
 	${OBJECTDIR}/DialogTools/AddIdVariable.o \
@@ -174,37 +175,37 @@ LDLIBSOPTIONS=-L/usr/local/lib -pthread ${HOME}/CLAPACK-3.2/lapack.a ${HOME}/CLA
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-Release.mk dist/Release/GNU-Linux-x86/alphatrunk
+	"${MAKE}"  -f nbproject/Makefile-Release.mk dist/Release/GNU-Linux-x86/trac_trunk
 
-dist/Release/GNU-Linux-x86/alphatrunk: ${HOME}/CLAPACK-3.2/lapack.a
+dist/Release/GNU-Linux-x86/trac_trunk: ${HOME}/CLAPACK-3.2/lapack.a
 
-dist/Release/GNU-Linux-x86/alphatrunk: ${HOME}/CLAPACK-3.2/blas.a
+dist/Release/GNU-Linux-x86/trac_trunk: ${HOME}/CLAPACK-3.2/blas.a
 
-dist/Release/GNU-Linux-x86/alphatrunk: ${HOME}/CLAPACK-3.2/F2CLIBS/libf2c.a
+dist/Release/GNU-Linux-x86/trac_trunk: ${HOME}/CLAPACK-3.2/F2CLIBS/libf2c.a
 
-dist/Release/GNU-Linux-x86/alphatrunk: /usr/local/lib/libwx_gtk2u_gl-2.9.a
+dist/Release/GNU-Linux-x86/trac_trunk: /usr/local/lib/libwx_gtk2u_gl-2.9.a
 
-dist/Release/GNU-Linux-x86/alphatrunk: /usr/local/lib/libwx_gtk2u_richtext-2.9.a
+dist/Release/GNU-Linux-x86/trac_trunk: /usr/local/lib/libwx_gtk2u_richtext-2.9.a
 
-dist/Release/GNU-Linux-x86/alphatrunk: /usr/local/lib/libwx_gtk2u_xrc-2.9.a
+dist/Release/GNU-Linux-x86/trac_trunk: /usr/local/lib/libwx_gtk2u_xrc-2.9.a
 
-dist/Release/GNU-Linux-x86/alphatrunk: /usr/local/lib/libwx_gtk2u_qa-2.9.a
+dist/Release/GNU-Linux-x86/trac_trunk: /usr/local/lib/libwx_gtk2u_qa-2.9.a
 
-dist/Release/GNU-Linux-x86/alphatrunk: /usr/local/lib/libwx_gtk2u_html-2.9.a
+dist/Release/GNU-Linux-x86/trac_trunk: /usr/local/lib/libwx_gtk2u_html-2.9.a
 
-dist/Release/GNU-Linux-x86/alphatrunk: /usr/local/lib/libwx_gtk2u_adv-2.9.a
+dist/Release/GNU-Linux-x86/trac_trunk: /usr/local/lib/libwx_gtk2u_adv-2.9.a
 
-dist/Release/GNU-Linux-x86/alphatrunk: /usr/local/lib/libwx_gtk2u_core-2.9.a
+dist/Release/GNU-Linux-x86/trac_trunk: /usr/local/lib/libwx_gtk2u_core-2.9.a
 
-dist/Release/GNU-Linux-x86/alphatrunk: /usr/local/lib/libwx_baseu_xml-2.9.a
+dist/Release/GNU-Linux-x86/trac_trunk: /usr/local/lib/libwx_baseu_xml-2.9.a
 
-dist/Release/GNU-Linux-x86/alphatrunk: /usr/local/lib/libwx_baseu_net-2.9.a
+dist/Release/GNU-Linux-x86/trac_trunk: /usr/local/lib/libwx_baseu_net-2.9.a
 
-dist/Release/GNU-Linux-x86/alphatrunk: /usr/local/lib/libwx_baseu-2.9.a
+dist/Release/GNU-Linux-x86/trac_trunk: /usr/local/lib/libwx_baseu-2.9.a
 
-dist/Release/GNU-Linux-x86/alphatrunk: ${OBJECTFILES}
+dist/Release/GNU-Linux-x86/trac_trunk: ${OBJECTFILES}
 	${MKDIR} -p dist/Release/GNU-Linux-x86
-	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/alphatrunk ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/trac_trunk ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/Thiessen/Thiessen.o: Thiessen/Thiessen.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Thiessen
@@ -510,6 +511,11 @@ ${OBJECTDIR}/DialogTools/MovieControlPan.o: DialogTools/MovieControlPan.cpp
 	${MKDIR} -p ${OBJECTDIR}/DialogTools
 	${RM} $@.d
 	$(COMPILE.cc) -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/MovieControlPan.o DialogTools/MovieControlPan.cpp
+
+${OBJECTDIR}/Explore/ScatterNewPlotView.o: Explore/ScatterNewPlotView.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Explore
+	${RM} $@.d
+	$(COMPILE.cc) -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/ScatterNewPlotView.o Explore/ScatterNewPlotView.cpp
 
 ${OBJECTDIR}/kNN/kd_search.o: kNN/kd_search.cpp 
 	${MKDIR} -p ${OBJECTDIR}/kNN
@@ -817,7 +823,7 @@ ${OBJECTDIR}/DialogTools/Dbf2GaussDlg.o: DialogTools/Dbf2GaussDlg.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r build/Release
-	${RM} dist/Release/GNU-Linux-x86/alphatrunk
+	${RM} dist/Release/GNU-Linux-x86/trac_trunk
 
 # Subprojects
 .clean-subprojects:

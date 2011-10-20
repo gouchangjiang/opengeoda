@@ -2778,6 +2778,7 @@ MapFrame::MapFrame(const wxString& fullPathShapefileName,
 {
     LOG_MSG("Entering MapFrame::MapFrame");
     old_style = true;
+	my_children.Append(this);
     SetSizeHints(100, 100);
 
     numBreaks = 0;
@@ -2809,6 +2810,7 @@ MapFrame::MapFrame(const wxString& fullPathShapefileName,
 
 MapFrame::~MapFrame() {
     LOG_MSG("Entering MapFrame::~MapFrame");
+	my_children.DeleteObject(this);
     LOG_MSG("Exiting MapFrame::~MapFrame");
 }
 
@@ -4131,6 +4133,7 @@ MapMovieFrame::MapMovieFrame(wxFrame *parent, Project* project, int type,
 	: TemplateFrame(parent, project, title, pos, size, style)
 {
     old_style = true;
+	my_children.Append(this);
 
     m_splitter = new wxSplitterWindow(this);
     m_splitterMap = new wxSplitterWindow(m_splitter);
@@ -4154,8 +4157,10 @@ MapMovieFrame::MapMovieFrame(wxFrame *parent, Project* project, int type,
     Show(true);
 }
 
-MapMovieFrame::~MapMovieFrame() {
+MapMovieFrame::~MapMovieFrame()
+{
     timer->Stop();
+	my_children.DeleteObject(this);
 }
 
 void MapMovieTimer::Notify() {

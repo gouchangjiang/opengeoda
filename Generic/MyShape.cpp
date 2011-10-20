@@ -182,8 +182,7 @@ void MyScaleTrans::transform(const Shapefile::Point& src, wxPoint* result) const
 
 
 MyShape::MyShape() :
-	highlight(false),
-	z(0),
+	//z(0),
 	centroid(0,0), centroid_o(0.0,0.0),
 	mean_center(0,0), mean_center_o(0.0,0.0),
     pen(*wxBLACK_PEN), brush(*wxTRANSPARENT_BRUSH)
@@ -191,7 +190,7 @@ MyShape::MyShape() :
 }
 
 MyShape::MyShape(const MyShape& s) :
-	brush(s.brush), pen(s.pen), z(s.z), highlight(s.highlight),
+	brush(s.brush), pen(s.pen), //z(s.z)
 	centroid(s.centroid), centroid_o(s.centroid_o),
 	mean_center(s.mean_center), mean_center_o(s.mean_center_o)
 {
@@ -201,8 +200,7 @@ MyShape& MyShape::operator=(const MyShape& s)
 {
 	brush = s.brush;
 	pen = s.pen;
-	highlight = s.highlight;
-	z = s.z;
+	//z = s.z;
 	centroid = s.centroid;
 	centroid_o = s.centroid_o;
 	mean_center = s.mean_center;
@@ -1030,7 +1028,7 @@ MyTable& MyTable::operator=(const MyTable& s)
 void MyTable::paintSelf(wxDC& dc)
 {
 	using namespace std;
-	LOG_MSG("Entering MyTable::paintSelf");
+	//LOG_MSG("Entering MyTable::paintSelf");
 	if (pen == *wxTRANSPARENT_PEN ||
 		vals.size() == 0 || rows*cols != vals.size()) return;
 	dc.SetPen(pen);
@@ -1048,10 +1046,10 @@ void MyTable::paintSelf(wxDC& dc)
 		for (int j=0; j<cols; j++) {
 			int ij = i*cols+j;
 			extents[ij] = dc.GetTextExtent(vals[ij]);
-			wxString msg("extents[");
-			msg << i << "," << j << "] = " << extents[ij].GetWidth();
-			msg << "," << extents[ij].GetHeight();
-			LOG_MSG(msg);			
+			//wxString msg("extents[");
+			//msg << i << "," << j << "] = " << extents[ij].GetWidth();
+			//msg << "," << extents[ij].GetHeight();
+			//LOG_MSG(msg);			
 			
 			if (row_h[i] < extents[ij].GetHeight()) {
 				row_h[i] = extents[ij].GetHeight();
@@ -1061,16 +1059,16 @@ void MyTable::paintSelf(wxDC& dc)
 			}
 		}
 	}
-	for (int i=0; i<rows; i++) {
-		wxString msg("row_h[");
-		msg << i << "] = " << row_h[i];
-		LOG_MSG(msg);
-	}
-	for (int i=0; i<cols; i++) {
-		wxString msg("col_w[");
-		msg << i << "] = " << col_w[i];
-		LOG_MSG(msg);		
-	}
+	//for (int i=0; i<rows; i++) {
+		//wxString msg("row_h[");
+		//msg << i << "] = " << row_h[i];
+		//LOG_MSG(msg);
+	//}
+	//for (int i=0; i<cols; i++) {
+	//	wxString msg("col_w[");
+	//	msg << i << "] = " << col_w[i];
+	//	LOG_MSG(msg);		
+	//}
 	
 	vector<wxPoint> d(rows*cols);
 	for (int i=0; i<rows; i++) {
@@ -1090,10 +1088,10 @@ void MyTable::paintSelf(wxDC& dc)
 			} else {
 				d[ij].y = row_h[i]-extents[ij].GetHeight();
 			}
-			wxString msg("d[");
-			msg << i << "," << j << "] = " << d[ij].x;
-			msg << "," << d[ij].y;
-			LOG_MSG(msg);			
+			//wxString msg("d[");
+			//msg << i << "," << j << "] = " << d[ij].x;
+			//msg << "," << d[ij].y;
+			//LOG_MSG(msg);			
 		}
 	}
 	vector<wxPoint> pos(rows*cols);
@@ -1140,14 +1138,14 @@ void MyTable::paintSelf(wxDC& dc)
 				dc.SetTextForeground(attributes[ij].color);
 			}
 			dc.DrawText(vals[ij], pos[ij]+n_ref_pt);
-			wxString msg(vals[ij]);
-			msg << " = " << pos[ij].x << "," << pos[ij].y;
-			LOG_MSG(msg);
+			//wxString msg(vals[ij]);
+			//msg << " = " << pos[ij].x << "," << pos[ij].y;
+			//LOG_MSG(msg);
 		}
 	}
 	
 	dc.SetTextForeground(*wxBLACK);
-	LOG_MSG("Exiting MyTable::paintSelf");
+	//LOG_MSG("Exiting MyTable::paintSelf");
 }
 
 void MyTable::applyScaleTrans(const MyScaleTrans& A)

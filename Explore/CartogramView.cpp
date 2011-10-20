@@ -94,6 +94,7 @@ CartogramFrame::CartogramFrame(wxFrame *parent, Project* project,
            :TemplateFrame(parent, project, title, pos, size, style)
 {
 	old_style = true;
+	my_children.Append(this);
 	SetSizeHints(100, 100);
 	
 	int width, height;
@@ -117,6 +118,7 @@ CartogramFrame::CartogramFrame(wxFrame *parent, Project* project,
 
 CartogramFrame::~CartogramFrame()
 {
+	my_children.DeleteObject(this);
 }
 
 void CartogramFrame::Update()

@@ -75,6 +75,7 @@ LisaBoxFrame::LisaBoxFrame(wxFrame *parent, Project* project,
 : TemplateFrame(parent, project, title, pos, size, style)
 {
 	old_style = true;
+	my_children.Append(this);
     SetSizeHints(100, 100);
 	int width, height;
 	GetClientSize(&width, &height);
@@ -89,6 +90,7 @@ LisaBoxFrame::LisaBoxFrame(wxFrame *parent, Project* project,
 
 LisaBoxFrame::~LisaBoxFrame()
 {
+	my_children.DeleteObject(this);
 }
 
 /** Update is called from myFrame::UpdateWholeView(wxFrame* caller) which

@@ -48,37 +48,25 @@ BEGIN_EVENT_TABLE(ScatterNewPlotCanvas, TemplateCanvas)
 END_EVENT_TABLE()
 
 ScatterNewPlotCanvas::ScatterNewPlotCanvas(wxWindow *parent,
-										   const wxPoint& pos,
-										   const wxSize& size,
-										   const wxString& varX,
-										   const wxString& varY,
-										   const wxString& varZ,
-										   bool is_bubble_plot,
-										   bool standardized_s)
-	: TemplateCanvas(parent, pos, size, false, true),
-	varX(varX), varY(varY), varZ(varZ),
-	is_bubble_plot(is_bubble_plot),
-	axis_scale_x(), axis_scale_y(),
-	standardized(standardized_s),
-	reg_line(0), reg_line_text1(0), reg_line_text2(0), stats_table(0),
-	reg_line_selected(0), reg_line_selected_text1(0),
-	reg_line_selected_text2(0), reg_line_selected_slope(0),
-	reg_line_selected_infinite_slope(false), reg_line_selected_defined(false),
-	reg_line_excluded(0), reg_line_excluded_text1(0),
-	reg_line_excluded_text2(0), reg_line_excluded_slope(0),
-	reg_line_excluded_infinite_slope(false), reg_line_excluded_defined(false),
-	x_axis_through_origin(0), y_axis_through_origin(0),
-	show_origin_axes(true),
-	selected_stats_text_X(0), excluded_stats_text_X(0),
-	selected_stats_text_Y(0), excluded_stats_text_Y(0),
-	display_stats(false),
-	show_reg_selected(false),
-	show_reg_excluded(false)
+	Project* project, const wxPoint& pos, const wxSize& size,
+	const wxString& varX, const wxString& varY, const wxString& varZ,
+	bool is_bubble_plot, bool standardized_s)
+: TemplateCanvas(parent, pos, size, false, true),
+varX(varX), varY(varY), varZ(varZ), is_bubble_plot(is_bubble_plot),
+axis_scale_x(), axis_scale_y(),
+standardized(standardized_s), reg_line(0), stats_table(0),
+reg_line_selected(0), reg_line_selected_slope(0),
+reg_line_selected_infinite_slope(false), reg_line_selected_defined(false),
+reg_line_excluded(0), reg_line_excluded_slope(0),
+reg_line_excluded_infinite_slope(false), reg_line_excluded_defined(false),
+x_axis_through_origin(0), y_axis_through_origin(0),
+show_origin_axes(true), display_stats(false),
+show_reg_selected(false), show_reg_excluded(false)
 {
 	using namespace Shapefile;
 	
 	LOG_MSG("Entering ScatterNewPlotCanvas::ScatterNewPlotCanvas");
-	highlight_state = &(MyFrame::GetProject()->highlight_state);
+	highlight_state = project->highlight_state;
 	shps_orig_xmin = 0;
 	shps_orig_ymin = 0;
 	shps_orig_xmax = 100;
@@ -88,6 +76,7 @@ ScatterNewPlotCanvas::ScatterNewPlotCanvas(wxWindow *parent,
 	virtual_screen_marg_left = 50;
 	virtual_screen_marg_right = 25;
 
+	highlight_color = *wxRED;
 	PopulateCanvas(standardized);
 	
 	highlight_state->registerObserver(this);
@@ -130,7 +119,7 @@ void ScatterNewPlotCanvas::PopulateCanvas(bool standardized)
 	X.clear();
 	Y.clear();
 	Z.clear();
-
+	
 	this->standardized = standardized;
 	wxSize size(GetVirtualSize());
 	double scale_x, scale_y, trans_x, trans_y;
@@ -198,6 +187,7 @@ void ScatterNewPlotCanvas::PopulateCanvas(bool standardized)
 	LOG_MSG(wxString(axis_scale_y.ToString().c_str(), wxConvUTF8));
 		
 	// Populate TemplateCanvas::selectable_shps
+	selectable_shps_type = points;
 	selectable_shps.resize(project->GetNumRecords());
 	double scaleX = 100.0 / (axis_scale_x.scale_range);
 	double scaleY = 100.0 / (axis_scale_y.scale_range);
@@ -251,14 +241,6 @@ void ScatterNewPlotCanvas::PopulateCanvas(bool standardized)
 	y_baseline = new MyAxis(varY, axis_scale_y,
 							wxPoint(0,0), wxPoint(0, 100));
 	y_baseline->pen = *GeoDaConst::scatterplot_scale_pen;
-	if (display_stats) {
-		wxString x_cap;
-		x_cap << varX << ", " << CreateStatsString(statsX);
-		wxString y_cap;
-		y_cap << varY << ", " << CreateStatsString(statsY);
-		x_baseline->setCaption(x_cap);
-		y_baseline->setCaption(y_cap);
-	}
 	background_shps.push_front(y_baseline);
 	
 	// create optional axes through origin
@@ -281,24 +263,6 @@ void ScatterNewPlotCanvas::PopulateCanvas(bool standardized)
 					   reg_line_defined, a, b, cc_degs_of_rot,
 					   regressionXY, *GeoDaConst::scatterplot_reg_pen);
 	foreground_shps.push_front(reg_line);
-	if (reg_line_defined) {
-		reg_line_text1 = new MyText(RegLineTextFromReg(regressionXY,1),
-									*GeoDaConst::small_font, b, cc_degs_of_rot,
-									MyText::right, MyText::bottom);
-		reg_line_text2 = new MyText(RegLineTextFromReg(regressionXY,2),
-									*GeoDaConst::small_font, b, cc_degs_of_rot,
-									MyText::right, MyText::top);		
-	} else {
-		reg_line_text1 = new MyText();
-		reg_line_text2 = new MyText();
-	}
-	reg_line_text1->pen = IsDisplayStats() ?
-	*GeoDaConst::scatterplot_reg_pen : *wxTRANSPARENT_PEN;
-	reg_line_text2->pen = IsDisplayStats() ?
-	*GeoDaConst::scatterplot_reg_pen : *wxTRANSPARENT_PEN;
-	foreground_shps.push_front(reg_line_text1);
-	foreground_shps.push_front(reg_line_text2);
-	// Create optional regression lines as transparent objects
 	reg_line_selected = new MyPolyLine(0,100,0,100);
 	reg_line_selected->pen = *wxTRANSPARENT_PEN;
 	reg_line_selected->brush= *wxTRANSPARENT_BRUSH;
@@ -307,14 +271,6 @@ void ScatterNewPlotCanvas::PopulateCanvas(bool standardized)
 	reg_line_excluded->pen = *wxTRANSPARENT_PEN;
 	reg_line_excluded->brush= *wxTRANSPARENT_BRUSH;
 	foreground_shps.push_front(reg_line_excluded);
-	reg_line_selected_text1 = new MyText();
-	reg_line_selected_text2 = new MyText();
-	foreground_shps.push_front(reg_line_selected_text1);
-	foreground_shps.push_front(reg_line_selected_text2);
-	reg_line_excluded_text1 = new MyText();
-	reg_line_excluded_text2 = new MyText();
-	foreground_shps.push_front(reg_line_excluded_text1);
-	foreground_shps.push_front(reg_line_excluded_text2);
 	
 	if (IsRegressionSelected() || IsRegressionExcluded()) {
 		CalcStatsFromSelected(); // update both selected and excluded stats
@@ -322,20 +278,11 @@ void ScatterNewPlotCanvas::PopulateCanvas(bool standardized)
 	if (IsRegressionSelected()) UpdateRegSelectedLine();
 	if (IsRegressionExcluded()) UpdateRegExcludedLine();	
 	
-	// Create optional stats texts with a blank strings
-	selected_stats_text_X = new MyText();
-	excluded_stats_text_X = new MyText();
-	selected_stats_text_Y = new MyText();
-	excluded_stats_text_Y = new MyText();
 	stats_table = new MyTable();
 	stats_table->pen = *wxTRANSPARENT_PEN;
 	
 	UpdateDisplayStats();
-	background_shps.push_front(selected_stats_text_X);
-	background_shps.push_front(excluded_stats_text_X);
-	background_shps.push_front(selected_stats_text_Y);
-	background_shps.push_front(excluded_stats_text_Y);
-	background_shps.push_front(stats_table);
+	foreground_shps.push_front(stats_table);
 	ResizeSelectableShps();
 	
 	LOG_MSG("Exiting ScatterNewPlotCanvas::PopulateCanvas");
@@ -386,12 +333,9 @@ void ScatterNewPlotCanvas::ViewRegressionSelected(bool display)
 	LOG_MSG("Entering ScatterNewPlotCanvas::ViewRegressionSelected");
 	if (!display) {
 		reg_line_selected->pen = *wxTRANSPARENT_PEN;
-		reg_line_selected_text1->pen = *wxTRANSPARENT_PEN;
-		reg_line_selected_text2->pen = *wxTRANSPARENT_PEN;
 		if ((show_reg_selected && !show_reg_excluded) && display_stats) {
 			// there is no longer anything showing, but there
 			// was previously something showing
-			virtual_screen_marg_left = 50;
 			virtual_screen_marg_bottom = 50;
 			show_reg_selected = false;
 			UpdateDisplayStats();
@@ -406,11 +350,11 @@ void ScatterNewPlotCanvas::ViewRegressionSelected(bool display)
 			// we want to show something now, but there was previously
 			// nothing showing
 			show_reg_selected = true;
-			virtual_screen_marg_left = 75;
-			virtual_screen_marg_bottom = 140;
+			virtual_screen_marg_bottom = 115;
 			PopulateCanvas(IsStandardized());
 		} else {
 			show_reg_selected = true;
+			CalcStatsFromSelected();
 			UpdateRegSelectedLine();
 			UpdateDisplayStats();
 			Refresh();
@@ -429,28 +373,8 @@ void ScatterNewPlotCanvas::UpdateRegSelectedLine()
 					   reg_line_selected_defined, a, b, cc_degs_of_rot,
 					   regressionXYselected,
 					   *GeoDaConst::scatterplot_reg_selected_pen);
-	if (reg_line_selected_defined) {
-		reg_line_selected_text1->operator=(
-				MyText(RegLineTextFromReg(regressionXYselected,1),
-					   *GeoDaConst::small_font, a, cc_degs_of_rot,
-					   MyText::left, MyText::bottom));
-		reg_line_selected_text1->pen =
-		IsDisplayStats() ?
-			*GeoDaConst::scatterplot_reg_selected_pen : *wxTRANSPARENT_PEN;
-		reg_line_selected_text2->operator=(
-				  MyText(RegLineTextFromReg(regressionXYselected,2),
-						 *GeoDaConst::small_font, a, cc_degs_of_rot,
-						 MyText::left, MyText::top));
-		reg_line_selected_text2->pen =
-		IsDisplayStats() ?
-			*GeoDaConst::scatterplot_reg_selected_pen : *wxTRANSPARENT_PEN;
-	} else {
-		reg_line_selected_text1->operator=(MyText());
-		reg_line_selected_text2->operator=(MyText());
-	}
 	ApplyLastResizeToShp(reg_line_selected);
-	ApplyLastResizeToShp(reg_line_selected_text1);
-	ApplyLastResizeToShp(reg_line_selected_text2);
+	layer2_valid = false;
 	LOG_MSG("Exiting ScatterNewPlotCanvas::UpdateRegSelectedLine");	
 }
 
@@ -459,12 +383,9 @@ void ScatterNewPlotCanvas::ViewRegressionSelectedExcluded(bool display)
 	LOG_MSG("Entering ScatterNewPlotCanvas::ViewRegressionExcluded");
 	if (!display) {
 		reg_line_excluded->pen = *wxTRANSPARENT_PEN;
-		reg_line_excluded_text1->pen = *wxTRANSPARENT_PEN;
-		reg_line_excluded_text2->pen = *wxTRANSPARENT_PEN;
 		if ((!show_reg_selected && show_reg_excluded) && display_stats) {
 			// there is no longer anything showing, but there
 			// was previously something showing
-			virtual_screen_marg_left = 50;
 			virtual_screen_marg_bottom = 50;
 			show_reg_excluded = false;
 			UpdateDisplayStats();
@@ -479,10 +400,10 @@ void ScatterNewPlotCanvas::ViewRegressionSelectedExcluded(bool display)
 			// we want to show something now, but there was previously
 			// nothing showing
 			show_reg_excluded = true;
-			virtual_screen_marg_left = 75;
-			virtual_screen_marg_bottom = 140;
+			virtual_screen_marg_bottom = 115;
 			PopulateCanvas(IsStandardized());
 		} else {
+			CalcStatsFromSelected();
 			show_reg_excluded = true;
 			UpdateRegExcludedLine();
 			UpdateDisplayStats();
@@ -502,28 +423,8 @@ void ScatterNewPlotCanvas::UpdateRegExcludedLine()
 					   reg_line_excluded_defined, a, b, cc_degs_of_rot,
 					   regressionXYexcluded,
 					   *GeoDaConst::scatterplot_reg_excluded_pen);
-	if (reg_line_excluded_defined) {
-		reg_line_excluded_text1->operator=(
-					MyText(RegLineTextFromReg(regressionXYexcluded,1),
-						   *GeoDaConst::small_font, a, cc_degs_of_rot,
-						   MyText::left, MyText::bottom));
-		reg_line_excluded_text1->pen =
-		IsDisplayStats() ?
-			*GeoDaConst::scatterplot_reg_excluded_pen : *wxTRANSPARENT_PEN;
-		reg_line_excluded_text2->operator=(
-					MyText(RegLineTextFromReg(regressionXYexcluded,2),
-						   *GeoDaConst::small_font, a, cc_degs_of_rot,
-						   MyText::left, MyText::top));
-		reg_line_excluded_text2->pen =
-		IsDisplayStats() ?
-			*GeoDaConst::scatterplot_reg_excluded_pen : *wxTRANSPARENT_PEN;
-	} else {
-		reg_line_excluded_text1->operator=(MyText());
-		reg_line_excluded_text2->operator=(MyText());
-	}
 	ApplyLastResizeToShp(reg_line_excluded);
-	ApplyLastResizeToShp(reg_line_excluded_text1);
-	ApplyLastResizeToShp(reg_line_excluded_text2);
+	layer2_valid = false;
 	LOG_MSG("Exiting ScatterNewPlotCanvas::UpdateRegExcludedLine");
 }
 
@@ -532,46 +433,18 @@ void ScatterNewPlotCanvas::DisplayStatistics(bool display_stats_s)
 	LOG_MSG("In ScatterNewPlotCanvas::DisplayStatistics");
 	display_stats = display_stats_s;
 	if (display_stats) {		
-		if (regressionXY.valid)
-			reg_line_text1->pen = *GeoDaConst::scatterplot_reg_pen;
-		reg_line_text2->pen = *GeoDaConst::scatterplot_reg_pen;
 		if (show_reg_selected || show_reg_excluded) {
 			UpdateDisplayStats();
-			virtual_screen_marg_bottom = 140;
-			virtual_screen_marg_left = 75;
-			if (reg_line_selected_defined) {
-				reg_line_selected_text1->pen =
-					*GeoDaConst::scatterplot_reg_selected_pen;
-				reg_line_selected_text2->pen =
-					*GeoDaConst::scatterplot_reg_selected_pen;
-			}
-			if (reg_line_excluded_defined) {
-				reg_line_excluded_text1->pen =
-					*GeoDaConst::scatterplot_reg_excluded_pen;
-				reg_line_excluded_text2->pen =
-					*GeoDaConst::scatterplot_reg_excluded_pen;
-			}
+			virtual_screen_marg_bottom = 115;
+		} else {
+			// add space for just blue regression line statistics
+			UpdateDisplayStats();
+			virtual_screen_marg_bottom = 90;
 		}
-		wxString x_cap;
-		x_cap << varX << ", " << CreateStatsString(statsX);
-		wxString y_cap;
-		y_cap << varY << ", " << CreateStatsString(statsY);
-		x_baseline->setCaption(x_cap);
-		y_baseline->setCaption(y_cap);
 		ResizeSelectableShps();
 	} else {
-		reg_line_text1->pen = *wxTRANSPARENT_PEN;
-		reg_line_text2->pen = *wxTRANSPARENT_PEN;
-		reg_line_selected_text1->pen = *wxTRANSPARENT_PEN;
-		reg_line_selected_text2->pen = *wxTRANSPARENT_PEN;
-		reg_line_excluded_text1->pen = *wxTRANSPARENT_PEN;
-		reg_line_excluded_text2->pen = *wxTRANSPARENT_PEN;
-		selected_stats_text_X->pen = *wxTRANSPARENT_PEN;
-		excluded_stats_text_X->pen = *wxTRANSPARENT_PEN;
-		selected_stats_text_Y->pen = *wxTRANSPARENT_PEN;
-		excluded_stats_text_Y->pen = *wxTRANSPARENT_PEN;
+		UpdateDisplayStats();
 		virtual_screen_marg_bottom = 50;
-		virtual_screen_marg_left = 50;
 		x_baseline->setCaption(varX);
 		y_baseline->setCaption(varY);
 		ResizeSelectableShps();
@@ -881,72 +754,7 @@ void ScatterNewPlotCanvas::CalcRegressionLine(MyPolyLine& reg_line,
  time. It assumes the calling function will do the screen Refresh. */
 void ScatterNewPlotCanvas::UpdateDisplayStats()
 {
-	selected_stats_text_X->pen=*wxTRANSPARENT_PEN;
-	excluded_stats_text_X->pen=*wxTRANSPARENT_PEN;	
-	selected_stats_text_Y->pen=*wxTRANSPARENT_PEN;
-	excluded_stats_text_Y->pen=*wxTRANSPARENT_PEN;	
 	if (display_stats) {
-		if (show_reg_selected && show_reg_excluded) {
-			selected_stats_text_X->
-			operator=(MyText(CreateStatsString(statsXselected),
-							 *wxNORMAL_FONT,
-							 wxRealPoint(0, 0), 0,
-							 MyText::left, MyText::bottom, 0, 60));
-			selected_stats_text_Y->
-			operator=(MyText(CreateStatsString(statsYselected),
-							 *wxNORMAL_FONT,
-							 wxRealPoint(0, 0), 90,
-							 MyText::left, MyText::top, -60, 0));
-			excluded_stats_text_X->
-			operator=(MyText(CreateStatsString(statsXexcluded),
-							 *wxNORMAL_FONT,
-							 wxRealPoint(100, 0), 0,
-							 MyText::right, MyText::bottom, 0, 60));
-			excluded_stats_text_Y->
-			operator=(MyText(CreateStatsString(statsYexcluded),
-							 *wxNORMAL_FONT,
-							 wxRealPoint(0, 100), 90,
-							 MyText::right, MyText::top, -60, 0));			
-		} else if (show_reg_selected && !show_reg_excluded) {
-			selected_stats_text_X->
-			operator=(MyText(CreateStatsString(statsXselected),
-							 *wxNORMAL_FONT,
-							 wxRealPoint(50, 0), 0,
-							 MyText::h_center, MyText::bottom, 0, 60));
-			selected_stats_text_Y->
-			operator=(MyText(CreateStatsString(statsYselected),
-							 *wxNORMAL_FONT,
-							 wxRealPoint(0, 50), 90,
-							 MyText::h_center, MyText::top, -60, 0));			
-		} else if (!show_reg_selected && show_reg_excluded) {
-			excluded_stats_text_X->
-			operator=(MyText(CreateStatsString(statsXexcluded),
-							 *wxNORMAL_FONT,
-							 wxRealPoint(50, 0), 0,
-							 MyText::h_center, MyText::bottom, 0, 60));
-			excluded_stats_text_Y->
-			operator=(MyText(CreateStatsString(statsYexcluded),
-							 *wxNORMAL_FONT,
-							 wxRealPoint(0, 50), 90,
-							 MyText::h_center, MyText::top, -60, 0));			
-		}
-		if (show_reg_selected) {
-			selected_stats_text_X->pen=
-				*GeoDaConst::scatterplot_reg_selected_pen;
-			selected_stats_text_Y->pen=
-				*GeoDaConst::scatterplot_reg_selected_pen;
-		}
-		if (show_reg_excluded) {
-			excluded_stats_text_X->pen=
-				*GeoDaConst::scatterplot_reg_excluded_pen;
-			excluded_stats_text_Y->pen=
-				*GeoDaConst::scatterplot_reg_excluded_pen;	
-		}
-		ApplyLastResizeToShp(selected_stats_text_X);
-		ApplyLastResizeToShp(excluded_stats_text_X);
-		ApplyLastResizeToShp(selected_stats_text_Y);
-		ApplyLastResizeToShp(excluded_stats_text_Y);
-		
 		// fill out the regression stats table
 		int rows = 2;
 		if (show_reg_selected) rows++;
@@ -1015,13 +823,17 @@ void ScatterNewPlotCanvas::UpdateDisplayStats()
 		int x_nudge = (virtual_screen_marg_left-virtual_screen_marg_right)/2;
 		
 		stats_table->operator=(MyTable(vals, attributes, rows, cols,
-									   *GeoDaConst::small_font, wxRealPoint(50, 0),
+									   *GeoDaConst::small_font,
+									   wxRealPoint(50, 0),
 									   MyText::h_center, MyText::top,
 									   MyText::h_center, MyText::v_center,
-									   3, 8, -x_nudge, 62));
+									   3, 8, -x_nudge, 45)); //62));
 		stats_table->pen = *wxBLACK_PEN;
 		ApplyLastResizeToShp(stats_table);
+	} else {
+		stats_table->pen = *wxTRANSPARENT_PEN;
 	}
+	layer2_valid = false;
 }
 
 void ScatterNewPlotCanvas::UpdateAxesThroughOrigin()
@@ -1044,6 +856,7 @@ void ScatterNewPlotCanvas::UpdateAxesThroughOrigin()
 		y_axis_through_origin->pen = *GeoDaConst::scatterplot_origin_axes_pen;
 		ApplyLastResizeToShp(y_axis_through_origin);
 	}
+	layer0_valid = false;
 }
 
 wxString ScatterNewPlotCanvas::CreateStatsString(const SampleStatistics& s)
@@ -1147,7 +960,8 @@ ScatterNewPlotFrame::ScatterNewPlotFrame(wxFrame *parent, Project* project,
 	GetClientSize(&width, &height);
 	LOG(width);
 	LOG(height);
-	template_canvas = new ScatterNewPlotCanvas(this, wxDefaultPosition,
+	template_canvas = new ScatterNewPlotCanvas(this, project,
+											   wxDefaultPosition,
 											   wxSize(width,height),
 											   varX, varY, varZ,
 											   is_bubble_plot, false);

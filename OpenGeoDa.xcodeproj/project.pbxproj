@@ -114,6 +114,8 @@
 		DD89C87813D86BC7006C068D /* FieldNewCalcUniDlg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DD89C87213D86BC7006C068D /* FieldNewCalcUniDlg.cpp */; };
 		DD975A43137C4C31009192A1 /* GenUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DD64A7240F2E26AA006B1E6D /* GenUtils.cpp */; };
 		DDA73B8013672821003783BC /* DataViewerResizeColDlg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDA73B7E13672821003783BC /* DataViewerResizeColDlg.cpp */; };
+		DDA8D55214479228008156FB /* ScatterNewPlotView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DD99BA1911D3F8D6003BB40E /* ScatterNewPlotView.cpp */; };
+		DDA8D5681447948B008156FB /* ShapeUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDDC11EB1159783700E515BB /* ShapeUtils.cpp */; };
 		DDAA6540117F9B5D00D1010C /* Project.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDAA653F117F9B5D00D1010C /* Project.cpp */; };
 		DDB054891353B9DF0044C441 /* GeoDaConst.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DD575B461231B73800AA0C11 /* GeoDaConst.cpp */; };
 		DDB056DB13554F080044C441 /* MyDataViewerAppRes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDB056DA13554F080044C441 /* MyDataViewerAppRes.cpp */; };
@@ -1033,6 +1035,8 @@
 				DDB77F3E140D3CEF0032C7E4 /* FieldNewCalcSpecialDlg.cpp in Sources */,
 				DD6B7289141A61400026D223 /* FramesManager.cpp in Sources */,
 				DD7D5C711427F89B00DCFE5C /* LisaCoordinator.cpp in Sources */,
+				DDA8D55214479228008156FB /* ScatterNewPlotView.cpp in Sources */,
+				DDA8D5681447948B008156FB /* ShapeUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

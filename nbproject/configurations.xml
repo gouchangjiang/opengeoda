@@ -387,9 +387,9 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
-      <item path="Explore/ScatterNewPlotView.cpp" ex="true" tool="1">
-      </item>
       <item path="Generic/TestMapView.cpp" ex="true" tool="1">
+      </item>
+      <item path="Generic/TestScrollWinView.cpp" ex="true" tool="1">
       </item>
       <item path="Generic/TestTableView.cpp" ex="true" tool="1">
       </item>
@@ -469,8 +469,6 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
-      <item path="Explore/ScatterNewPlotView.cpp" ex="true" tool="1">
-      </item>
       <item path="Generic/TestMapView.cpp" ex="true" tool="1">
       </item>
       <item path="Generic/TestTableView.cpp" ex="true" tool="1">

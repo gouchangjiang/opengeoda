@@ -98,8 +98,7 @@ public:
 public:
 	wxBrush brush;
 	wxPen pen;
-	bool highlight;
-	int z;
+	//int z;
 protected:
 	wxPoint centroid;
 	wxRealPoint centroid_o;
@@ -335,10 +334,10 @@ protected:
  template instance so that a multiset of MyShape points has a well-defined
  partial order.
  */
-class my_shp_ptr_comp { // used by multiset template for comparison
-public:
-	bool operator() (const MyShape* lhs, const MyShape* rhs) const
-	{ return lhs->z < rhs->z; }
-};
+//class my_shp_ptr_comp { // used by multiset template for comparison
+//public:
+//	bool operator() (const MyShape* lhs, const MyShape* rhs) const
+//	{ return lhs->z < rhs->z; }
+//};
 
 #endif

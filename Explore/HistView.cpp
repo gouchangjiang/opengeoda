@@ -70,7 +70,7 @@ HistFrame::HistFrame(wxFrame *parent, Project* project, const wxString& title,
 	:TemplateFrame(parent, project, title, pos, size, style)
 {
 	old_style = true;
-    //SetSizeHints(100, 100);
+	my_children.Append(this);
 	
 	int width, height;
 	GetClientSize(&width, &height);
@@ -88,6 +88,7 @@ HistFrame::HistFrame(wxFrame *parent, Project* project, const wxString& title,
 
 HistFrame::~HistFrame()
 {
+	my_children.DeleteObject(this);
 }
 
 void HistFrame::Update()

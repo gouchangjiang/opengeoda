@@ -1,4 +1,7 @@
-OpenGeoDa 1.0 Release Notes
+OpenGeoDa 1.0.1 Release Notes
+
+Changes since 1.0:
+- Fixed a bug in Scatter Plot where plot points were difficult to see.
 
 Changes since 0.9.9.15:
 - Bug in Arc Distance option for Theshold Distances fixed.

@@ -28,18 +28,25 @@
 #include <boost/foreach.hpp>
 #include <boost/geometry/geometry.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/geometry/geometries/polygon.hpp>
+#include <boost/geometry/geometries/ring.hpp> 
 #include <boost/geometry/geometries/adapted/c_array.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/functional/hash.hpp>
 #include "ShpFile.h"
 
+// note: might want to use model::multi_polygon
+
 using namespace Shapefile;
 using namespace boost::geometry;
 BOOST_GEOMETRY_REGISTER_C_ARRAY_CS(boost::geometry::cs::cartesian)
 
+typedef boost::geometry::model::d2::point_xy<double> point_2d;
+typedef boost::geometry::model::ring<point_2d> ring_2d;
+typedef boost::geometry::model::polygon<point_2d> polygon_2d;
+
 namespace ShapeUtils {
-	
 	// a set of Points
 	typedef boost::unordered_set<Shapefile::Point, boost::hash<Shapefile::Point> > Point_set;
 	// a set of Edges

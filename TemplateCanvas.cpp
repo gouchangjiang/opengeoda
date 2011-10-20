@@ -24,13 +24,14 @@
 #endif
 
 #include <wx/image.h>
-#include <wx/xrc/xmlres.h>              // XRC XML resouces
+#include <wx/xrc/xmlres.h>
 #include <wx/clipbrd.h>
 #include <wx/splitter.h>
 #include <wx/overlay.h>
 #include <wx/sizer.h>
 #include <wx/timer.h>
 #include <wx/dcbuffer.h>
+#include <wx/graphics.h>
 #include <boost/foreach.hpp>
 #include <boost/array.hpp>
 #include <boost/bimap.hpp>
@@ -93,7 +94,10 @@ TemplateCanvas::TemplateCanvas(wxWindow *parent, const wxPoint& pos,
 	selectable_outline_color(GeoDaConst::selectable_outline_color),
 	selectable_fill_color(GeoDaConst::selectable_fill_color),
 	highlight_color(GeoDaConst::highlight_color),
-	canvas_background_color(GeoDaConst::canvas_background_color)
+	canvas_background_color(GeoDaConst::canvas_background_color),
+	selectable_shps_type(mixed),
+	layer0_bm(0), layer1_bm(0), layer2_bm(0),
+	layer0_valid(false), layer1_valid(false), layer2_valid(false)
 {
 	SetMouseMode(mousemode); // will set the correct cursor for current mode
 	SetBackgroundStyle(wxBG_STYLE_ERASE);
@@ -115,7 +119,29 @@ TemplateCanvas::~TemplateCanvas()
 	BOOST_FOREACH( MyShape* shp, selectable_shps ) delete shp;
 	BOOST_FOREACH( MyShape* shp, foreground_shps ) delete shp;
 	if (HasCapture()) ReleaseMouse();
+	deleteLayerBms();
 	LOG_MSG("Exiting TemplateCanvas::~TemplateCanvas()");
+}
+
+void TemplateCanvas::deleteLayerBms()
+{
+	if (layer0_bm) delete layer0_bm; layer0_bm = 0;
+	if (layer1_bm) delete layer1_bm; layer1_bm = 0;
+	if (layer2_bm) delete layer2_bm; layer2_bm = 0;
+	layer0_valid = false;
+	layer1_valid = false;
+	layer2_valid = false;
+}
+
+void TemplateCanvas::resizeLayerBms(int width, int height)
+{
+	deleteLayerBms();
+	layer0_bm = new wxBitmap(width, height);
+	layer1_bm = new wxBitmap(width, height);
+	layer2_bm = new wxBitmap(width, height);
+	layer0_valid = false;
+	layer1_valid = false;
+	layer2_valid = false;
 }
 
 bool TemplateCanvas::GetFixedAspectRatioMode()
@@ -260,7 +286,8 @@ void TemplateCanvas::ResizeSelectableShps(int virtual_scrn_w,
 	}
 	BOOST_FOREACH( MyShape* ms, foreground_shps ) {
 		ms->applyScaleTrans(last_scale_trans);
-	}	
+	}
+	layer0_valid = false;
 	LOG_MSG("Exiting TemplateCanvas::ResizeSelectableShps");
 #ifdef __WXGTK__
 	Refresh();  // Unfortunately, this is needed for Linux GTK at the moment
@@ -327,7 +354,6 @@ void TemplateCanvas::CreateSelShpsFromProj(
 	}
 	
 	std::vector<bool>& hl = project->highlight_state->GetHighlight();
-	for (int i=0; i<num_recs; i++) selectable_shps[i]->highlight = hl[i];
 }
 
 void TemplateCanvas::SetSelectableOutlineVisible(bool visible)
@@ -336,6 +362,7 @@ void TemplateCanvas::SetSelectableOutlineVisible(bool visible)
 	if (visible) { msg << "true)"; } else { msg << "false)"; }
 	LOG_MSG(msg);
 	selectable_outline_visible = visible;
+	layer0_valid = false;
 	UpdateSelectableOutlineColors();
 	Refresh();
 }
@@ -349,6 +376,7 @@ void TemplateCanvas::SetSelectableOutlineColor(wxColour color)
 {
 	LOG_MSG("Called TemplateCanvas::SetSelectableOutlineColor");
 	selectable_outline_color = color;
+	layer0_valid = false;
 	UpdateSelectableOutlineColors();
 	Refresh();
 }
@@ -357,18 +385,21 @@ void TemplateCanvas::SetSelectableFillColor(wxColour color)
 {
 	selectable_fill_color = color;
 	UpdateSelectableOutlineColors();
+	layer0_valid = false;
 	Refresh();
 }
 
 void TemplateCanvas::SetHighlightColor(wxColour color)
 {
 	highlight_color = color;
+	layer1_valid = false;
 	Refresh();
 }
 
 void TemplateCanvas::SetCanvasBackgroundColor(wxColour color)
 {
 	canvas_background_color = color;
+	layer0_valid = false;
 	Refresh();
 }
 
@@ -423,6 +454,7 @@ void TemplateCanvas::OnSize(wxSizeEvent& event)
 		}
 		LOG(current_shps_width);
 		LOG(current_shps_height);
+		resizeLayerBms(cs_w, cs_h);
 		SetVirtualSize(cs_w, cs_h);
 		ResizeSelectableShps();
 	} else {
@@ -433,14 +465,16 @@ void TemplateCanvas::OnSize(wxSizeEvent& event)
 		
 		if (shps_n_margs_w <= cs_w && shps_n_margs_h <= cs_h) {
 			LOG_MSG("No Scroll Bars");
+			resizeLayerBms(cs_w, cs_h);
 			ResizeSelectableShps(cs_w, cs_h);
 			SetVirtualSize(cs_w, cs_h);
 			scrollbarmode = none;
 		}
 		if (shps_n_margs_w <= cs_w && shps_n_margs_h > cs_h) {
 			LOG_MSG("Vertical Scroll Bars Only");
+			resizeLayerBms(cs_w, shps_n_margs_h);
 			ResizeSelectableShps(cs_w, shps_n_margs_h);
-			SetVirtualSize(cs_w, shps_n_margs_h);
+			SetVirtualSize(cs_w, shps_n_margs_h);			
 #ifdef __WXMSW__
 			Update();  // Only needed in Windows to get Vertical SB to
 					   // draw automatically
@@ -449,6 +483,7 @@ void TemplateCanvas::OnSize(wxSizeEvent& event)
 		}
 		if (shps_n_margs_w > cs_w && shps_n_margs_h <= cs_h) {
 			LOG_MSG("Horizontal Scroll Bars Only");
+			resizeLayerBms(shps_n_margs_w, cs_h);
 			ResizeSelectableShps(shps_n_margs_w, cs_h);
 			SetVirtualSize(shps_n_margs_w, cs_h);
 			scrollbarmode = horiz_only;
@@ -459,6 +494,7 @@ void TemplateCanvas::OnSize(wxSizeEvent& event)
 		}
 		if (shps_n_margs_w > cs_w && shps_n_margs_h > cs_h) {
 			LOG_MSG("Vertical and Horizontal Scroll Bars");
+			resizeLayerBms(shps_n_margs_w, shps_n_margs_h);
 			SetVirtualSize(shps_n_margs_w, shps_n_margs_h);
 			if (scrollbarmode != horiz_and_vert) {
 				LOG_MSG("One-time shps resize");
@@ -480,36 +516,50 @@ void TemplateCanvas::update(HighlightState* o)
 {
 	LOG_MSG("Entering TemplateCanvas::update");
 		
-	wxClientDC dc(this);
-	DoPrepareDC(dc);
+	//wxClientDC dc(this);
+	//DoPrepareDC(dc);
 	
 	// Draw the updated objects.
-	LOG_MSG("Painting Updated Shapes");
+	//LOG_MSG("Painting Updated Shapes");
 	
-	int total = highlight_state->GetTotalNewlyUnhighlighted();
-	std::vector<int>& nuh = highlight_state->GetNewlyUnhighlighted();
-	for (int i=0; i<total; i++) {
-		selectable_shps[nuh[i]]->highlight = false;
-		DrawMyShape(selectable_shps[nuh[i]], dc);
-	}
-	
-	total = highlight_state->GetTotalNewlyHighlighted();
+	int total = highlight_state->GetTotalNewlyHighlighted();
 	std::vector<int>& nh = highlight_state->GetNewlyHighlighted();
-	for (int i=0; i<total; i++) {
-		selectable_shps[nh[i]]->highlight = true;
-		DrawMyShape(selectable_shps[nh[i]], dc);
+
+	HighlightState::EventType type = highlight_state->GetEventType();
+	if (type == HighlightState::delta) {
+		LOG_MSG("processing HighlightState::delta");
+		wxMemoryDC dc(*layer1_bm);
+		if (!layer0_valid) {
+			DrawLayer0();
+			dc.DrawBitmap(*layer0_bm, 0, 0);
+		}
+		EraseNewUnSelShapes(dc);
+		DrawNewSelShapes(dc);
+		layer1_valid = true;
+		layer2_valid = false;
+	 
+		Refresh();
+	} else {
+		LOG_MSG("processing  HighlightState::unhighlight_all or invert");
+		// type == HighlightState::unhighlight_all
+		// type == HighlightState::invert
+		layer0_valid = false;
+		layer1_valid = false;
+		layer2_valid = false;
+		
+		Refresh();
 	}
 	
 	// Redraw the foreground
-	BOOST_FOREACH(MyShape* shp, foreground_shps) {
-		shp->paintSelf(dc);
-	}
+	//BOOST_FOREACH(MyShape* shp, foreground_shps) {
+	//	shp->paintSelf(dc);
+	//}
 	
 	// Draw the the selection region if needed
-	PaintSelectionOutline(dc);
+	//PaintSelectionOutline(dc);
 	
 	// Draw and scroll/scale-invarant controls such as zoom/pan buttons
-	PaintControls(dc);
+	//PaintControls(dc);
 	LOG_MSG("Exiting TemplateCanvas::update");
 }
 
@@ -526,27 +576,287 @@ void TemplateCanvas::OnPaint(wxPaintEvent& event)
 {
 	LOG_MSG("Entering TemplateCanvas::OnPaint");
 	
-	wxAutoBufferedPaintDC dc(this);
-	DoPrepareDC(dc);  // We certainly need to call this for Mac otherwise
-		// the image doesn't redraw when scrolling.
+	DrawLayers();
+
+	wxMemoryDC dc(*layer2_bm);
+	wxPaintDC paint_dc(this);
+	wxSize sz = GetClientSize();
+	paint_dc.Blit(0, 0, sz.x, sz.y, &dc, 0, 0);
+		
+	//wxAutoBufferedPaintDC dc(this);
+	//DoPrepareDC(dc);  // We certainly need to call this for Mac otherwise
+                      // the image doesn't redraw when scrolling.
 	//LOG_MSG("Painting");
 	
-	PaintBackground(dc);
+	//PaintBackground(dc);
 	
 	// Draw the selectable objects.
-	PaintShapes(dc);
+	//PaintShapes(dc);
 	
 	// Draw the the selection region if needed
-	PaintSelectionOutline(dc);
+	PaintSelectionOutline(paint_dc);
 	
 	// Draw and scroll/scale-invarant controls such as zoom/pan buttons
-	PaintControls(dc);
+	//PaintControls(dc);
 	
 	// redraw scrollbars?
-	GetScrollPos(wxHSCROLL);
+	//GetScrollPos(wxHSCROLL);
 	
 	LOG_MSG("Exiting TemplateCanvas::OnPaint");
 }
+
+void TemplateCanvas::DrawLayers()
+{
+	if (layer2_valid && layer1_valid && layer0_valid) return;
+	if (!layer0_valid) {
+		layer1_valid = false;
+		layer2_valid = false;
+		DrawLayer0();
+		DrawLayer1();
+	} else if (!layer1_valid) {
+		layer2_valid = false;
+		DrawLayer1();
+	}
+	DrawLayer2();
+}
+
+// Draw all solid background, background decorations and unhighlighted
+// shapes.
+void TemplateCanvas::DrawLayer0()
+{
+	LOG_MSG("In TemplateCanvas::DrawLayer0");
+	wxSize sz = GetVirtualSize();
+	if (!layer0_bm) resizeLayerBms(sz.GetWidth(), sz.GetHeight());
+	wxMemoryDC dc(*layer0_bm);
+	dc.SetPen(canvas_background_color);
+	dc.SetBrush(canvas_background_color);
+	dc.DrawRectangle(wxPoint(0,0), sz);
+	
+	BOOST_FOREACH( MyShape* shp, background_shps ) {
+		shp->paintSelf(dc);
+	}
+	DrawSelectableShapes(dc);
+	
+	layer0_valid = true;
+	layer1_valid = false;
+	layer2_valid = false;
+}
+
+// Copy in layer0_bm and draw highlighted shapes.
+void TemplateCanvas::DrawLayer1()
+{
+	LOG_MSG("In TemplateCanvas::DrawLayer1");
+	if (!layer0_valid) DrawLayer0();
+	wxMemoryDC dc(*layer1_bm);
+	dc.DrawBitmap(*layer0_bm, 0, 0);
+	DrawHighlightedShapes(dc);
+	
+	layer1_valid = true;
+	layer2_valid = false;
+}
+
+void TemplateCanvas::DrawLayer2()
+{
+	LOG_MSG("In TemplateCanvas::DrawLayer2");
+	if (!layer1_valid) DrawLayer1();
+	wxMemoryDC dc(*layer2_bm);
+	dc.DrawBitmap(*layer1_bm, 0, 0);
+	BOOST_FOREACH( MyShape* shp, foreground_shps ) {
+		shp->paintSelf(dc);
+	}
+	
+	layer2_valid = true;
+}
+
+void TemplateCanvas::DrawNewSelShapes(wxMemoryDC &dc)
+{
+#ifdef __WXMAC__
+	DrawNewSelShapes_gc(dc);
+#else
+	DrawNewSelShapes_dc(dc);
+#endif
+}
+
+void TemplateCanvas::DrawNewSelShapes_gc(wxMemoryDC &dc)
+{
+	wxGraphicsContext* gc = wxGraphicsContext::Create(dc);
+	if (!gc) return;
+	gc->SetAntialiasMode(wxANTIALIAS_NONE);
+	gc->SetPen(wxPen(selectable_outline_color));
+	gc->SetBrush(wxBrush(highlight_color));
+	
+	int total = highlight_state->GetTotalNewlyHighlighted();
+	std::vector<int>& nh = highlight_state->GetNewlyHighlighted();
+	
+	if (selectable_shps_type == mixed) {
+	}
+	if (selectable_shps_type == points) {
+		gc->SetPen(wxPen(highlight_color));
+		wxGraphicsPath path = gc->CreatePath();
+		wxDouble r = GeoDaConst::my_point_click_radius;
+		
+		for (int i=0; i<total; i++) {
+			path.AddCircle(((MyPoint*) selectable_shps[nh[i]])->point.x,
+						   ((MyPoint*) selectable_shps[nh[i]])->point.y, r);
+		}
+		//gc->FillPath(path, wxWINDING_RULE);
+		gc->StrokePath(path);
+	}
+	delete gc;
+	
+}
+
+void TemplateCanvas::DrawNewSelShapes_dc(wxMemoryDC &dc)
+{
+}
+
+void TemplateCanvas::EraseNewUnSelShapes(wxMemoryDC &dc)
+{
+#ifdef __WXMAC__
+	EraseNewUnSelShapes_gc(dc);
+#else
+	EraseNewUnSelShapes_dc(dc);
+#endif
+}
+
+void TemplateCanvas::EraseNewUnSelShapes_gc(wxMemoryDC &dc)
+{
+	wxGraphicsContext* gc = wxGraphicsContext::Create(dc);
+	if (!gc) return;
+	gc->SetAntialiasMode(wxANTIALIAS_NONE);
+	gc->SetPen(wxPen(selectable_outline_color));
+	gc->SetBrush(wxBrush(selectable_fill_color));
+	
+	int total = highlight_state->GetTotalNewlyUnhighlighted();
+	std::vector<int>& nuh = highlight_state->GetNewlyUnhighlighted();
+
+	if (selectable_shps_type == mixed) {
+	}
+	if (selectable_shps_type == points) {
+		gc->SetPen(wxPen(selectable_fill_color));
+		wxGraphicsPath path = gc->CreatePath();
+		wxDouble r = GeoDaConst::my_point_click_radius;
+				
+		for (int i=0; i<total; i++) {
+			path.AddCircle(((MyPoint*) selectable_shps[nuh[i]])->point.x,
+						   ((MyPoint*) selectable_shps[nuh[i]])->point.y, r);
+		}
+		//gc->FillPath(path, wxWINDING_RULE);
+		gc->StrokePath(path);
+	}
+	delete gc;
+	
+}
+
+void TemplateCanvas::EraseNewUnSelShapes_dc(wxMemoryDC &dc)
+{
+}
+
+// draw unhighlighted selectable shapes
+void TemplateCanvas::DrawSelectableShapes(wxMemoryDC &dc)
+{
+#ifdef __WXMAC__
+	DrawSelectableShapes_gc(dc);
+#else
+	DrawSelectableShapes_dc(dc);
+#endif
+}
+
+// draw unhighlighted selectable shapes with wxGraphicsContext
+void TemplateCanvas::DrawSelectableShapes_gc(wxMemoryDC &dc)
+{
+	wxGraphicsContext* gc = wxGraphicsContext::Create(dc);
+	if (!gc) return;
+	gc->SetAntialiasMode(wxANTIALIAS_NONE);
+	gc->SetPen(wxPen(selectable_outline_color));
+	gc->SetBrush(wxBrush(selectable_fill_color));
+	
+	if (selectable_shps_type == mixed) {
+	}
+	if (selectable_shps_type == points) {
+		gc->SetPen(wxPen(selectable_fill_color));
+		wxGraphicsPath path = gc->CreatePath();
+		wxDouble r = GeoDaConst::my_point_click_radius;
+		for (int i=0, iend=selectable_shps.size(); i<iend; i++) {
+			path.AddCircle(((MyPoint*) selectable_shps[i])->point.x,
+						  ((MyPoint*) selectable_shps[i])->point.y, r);
+		}
+		//gc->FillPath(path, wxWINDING_RULE);
+		gc->StrokePath(path);
+	}
+	delete gc;
+}
+
+// draw unhighlighted selectable shapes with wxDC
+void TemplateCanvas::DrawSelectableShapes_dc(wxMemoryDC &dc)
+{	
+	if (selectable_shps_type == mixed) return;
+	if (selectable_shps_type == points) {
+		dc.SetPen(wxPen(selectable_outline_color));
+		dc.SetBrush(wxBrush(selectable_fill_color));
+		for (int i=0, iend=selectable_shps.size(); i<iend; i++) {
+			dc.DrawCircle(((MyPoint*) selectable_shps[i])->point,
+						  GeoDaConst::my_point_click_radius);
+		}
+	}
+}
+
+// draw highlighted selectable shapes
+void TemplateCanvas::DrawHighlightedShapes(wxMemoryDC &dc)
+{
+#ifdef __WXMAC__
+	DrawHighlightedShapes_gc(dc);
+#else
+	DrawHighlightedShapes_dc(dc);
+#endif
+}
+
+// draw highlighted selectable shapes with wxGraphicsContext
+void TemplateCanvas::DrawHighlightedShapes_gc(wxMemoryDC &dc)
+{
+	std::vector<bool>& hs = highlight_state->GetHighlight();
+	
+	wxGraphicsContext* gc = wxGraphicsContext::Create(dc);
+	if (!gc) return;
+	gc->SetAntialiasMode(wxANTIALIAS_NONE);
+	gc->SetPen(wxPen(selectable_outline_color));
+	gc->SetBrush(wxBrush(highlight_color));
+	if (selectable_shps_type == mixed) {
+	}
+	if (selectable_shps_type == points) {
+		gc->SetPen(wxPen(highlight_color));
+		wxGraphicsPath path = gc->CreatePath();
+		wxDouble r = GeoDaConst::my_point_click_radius;
+		for (int i=0, iend=selectable_shps.size(); i<iend; i++) {
+			if (hs[i]) {
+				path.AddCircle(((MyPoint*) selectable_shps[i])->point.x,
+							   ((MyPoint*) selectable_shps[i])->point.y, r);
+			}
+		}
+		//gc->FillPath(path, wxWINDING_RULE);
+		gc->StrokePath(path);
+	}
+	delete gc;
+}
+
+// draw highlighted selectable shapes with wxDC
+void TemplateCanvas::DrawHighlightedShapes_dc(wxMemoryDC &dc)
+{
+	std::vector<bool>& hs = highlight_state->GetHighlight();
+	
+	if (selectable_shps_type == mixed) return;
+	if (selectable_shps_type == points) {
+		dc.SetPen(wxPen(highlight_color));
+		dc.SetBrush(wxBrush(highlight_color));
+		for (int i=0, iend=selectable_shps.size(); i<iend; i++) {
+			if (hs[i]) {
+				dc.DrawCircle(((MyPoint*) selectable_shps[i])->point,
+							  GeoDaConst::my_point_click_radius);
+			}
+		}
+	}
+}
+
 
 // We will handle drawing our background in a paint event
 // handler.  So, do nothing in this handler.
@@ -859,11 +1169,9 @@ void TemplateCanvas::PaintShapes(wxDC& dc)
 	BOOST_FOREACH( MyShape* shp, background_shps ) {
 		shp->paintSelf(dc);
 	}
-	//LOG(selectable_shps.size());
-	std::vector<MyShape*>::iterator it;
-	for ( it=selectable_shps.begin(); it != selectable_shps.end(); it++ )
-		DrawMyShape(*it, dc);
-	
+	for (int i=0, iend=selectable_shps.size(); i<iend; i++) {
+		DrawMySelShape(i, dc);
+	}
 	BOOST_FOREACH( MyShape* shp, foreground_shps ) {
 		shp->paintSelf(dc);
 	}	
@@ -926,27 +1234,30 @@ wxPoint TemplateCanvas::GetActualPos(const wxMouseEvent& event) {
 	return wxPoint(xx/1.0,yy/1.0); // zoom_factor = 1.0
 }
 
-void TemplateCanvas::DrawMyShape(MyShape* shape, wxDC& dc)
+void TemplateCanvas::DrawMySelShape(int i, wxDC& dc)
 {
+	MyShape* shape = selectable_shps[i];
+	std::vector<bool>& hs = highlight_state->GetHighlight();
+	
 	dc.SetPen(shape->pen);
 	dc.SetBrush(shape->brush);
 	wxBrush h_brush(highlight_color, wxCROSSDIAG_HATCH);
 	wxPen h_pen(highlight_color);
 	if (MyPoint* p = dynamic_cast<MyPoint*> (shape)) {
 		dc.DrawCircle(p->point, GeoDaConst::my_point_click_radius);
-		if (p->highlight) {
+		if (hs[i]) {
 			dc.SetPen(h_pen);
 			dc.DrawCircle(p->point, GeoDaConst::my_point_click_radius);
 		}
 	} else if (MyCircle* p = dynamic_cast<MyCircle*> (shape)) {
 		dc.DrawCircle(p->center, p->radius);
-		if (p->highlight) {
+		if (hs[i]) {
 			dc.SetBrush(h_brush);
 			dc.DrawCircle(p->center, p->radius);
 		}
 	} else if (MyPolygon* p = dynamic_cast<MyPolygon*> (shape)) {
 		dc.DrawPolygon(p->n, p->points);
-		if (p->highlight) {
+		if (hs[i]) {
 			dc.SetBrush(h_brush);
 			dc.DrawPolygon(p->n, p->points);
 		}
@@ -955,7 +1266,7 @@ void TemplateCanvas::DrawMyShape(MyShape* shape, wxDC& dc)
 		for (int h=0; h < p->n_count; h++) {
 			if (p->count[h] > 1) {  // ensure this is a valid part
 				dc.DrawLines(p->count[h],p->points+chunk_index);
-				if (p->highlight) {
+				if (hs[i]) {
 					dc.SetPen(h_pen);
 					dc.DrawLines(p->count[h],p->points+chunk_index);
 				}
@@ -993,44 +1304,59 @@ void TemplateCanvas::UpdateSelectRegion(bool translate, wxPoint diff)
 	}
 }
 
+// This is a good candidate for parallelization in the future.  Could
+// also use an r-tree to greatly reduce number of comparisons needed.
+// For efficency sake, will make this default solution assume that
+// selectable shapes and highlight state are in a one-to-one
+// correspondence.  Special views such as histogram, or perhaps
+// even map legends will have to override UpdateSelection and
+// NotifyObservables.
 void TemplateCanvas::UpdateSelection(bool shiftdown, bool pointsel)
 {
 	LOG_MSG("Entering TemplateCanvas::UpdateSelection");
-	int cnt = 0;  // number of deltas
+	int hl_size = highlight_state->GetHighlightSize();
+	if (hl_size != selectable_shps.size()) return;
+	std::vector<bool>& hs = highlight_state->GetHighlight();
+	std::vector<int>& nh = highlight_state->GetNewlyHighlighted();
+	std::vector<int>& nuh = highlight_state->GetNewlyUnhighlighted();
+	int total_newly_selected = 0;
+	int total_newly_unselected = 0;
+	
 	int total_sel_shps = selectable_shps.size();
 	if (pointsel) { // a point selection
-		for (int i=0; i<total_sel_shps; i++) {
+		for (int i=0; i<hl_size; i++) {
 			if (selectable_shps[i]->pointWithin(sel1)) {
-				selectable_shps[i]->highlight = !selectable_shps[i]->highlight;
+				if (hs[i]) {
+					nuh[total_newly_unselected++] = i;
+				} else {
+					nh[total_newly_selected++] = i; 
+				}
 			} else {
-				if (!shiftdown && selectable_shps[i]->highlight) {
-					selectable_shps[i]->highlight = false;
+				if (!shiftdown && hs[i]) {
+					nuh[total_newly_unselected++] = i;
 				}
 			}			
 		}
-	} else { // determine which centroids intersect the selection region.
-		
-		for (int i=0; i<total_sel_shps; i++) {
+	} else { // determine which obs intersect the selection region.
+		for (int i=0; i<hl_size; i++) {
 			if (!shiftdown) {
-				if (!selectable_shps[i]->highlight &&
-					selectable_shps[i]->regionIntersect(sel_region))
-				{
-					selectable_shps[i]->highlight = true;
-				} else if (selectable_shps[i]->highlight &&
-						   !selectable_shps[i]->regionIntersect(sel_region))
-				{
-					selectable_shps[i]->highlight = false;
+				if (selectable_shps[i]->regionIntersect(sel_region)) {
+					if (!hs[i]) nh[total_newly_selected++] = i;
+				} else {
+					if (hs[i]) nuh[total_newly_unselected++] = i;
 				}
 			} else { // do not unhighlight if not in intersection region
-				if (!selectable_shps[i]->highlight &&
-					selectable_shps[i]->regionIntersect(sel_region))
-				{
-					selectable_shps[i]->highlight = true;
+				if (selectable_shps[i]->regionIntersect(sel_region) && !hs[i]) {
+					nh[total_newly_selected++] = i;
 				}
 			}
 		}		
 	}
-	NotifyObservables();
+	if (total_newly_selected > 0 || total_newly_unselected > 0) {
+		highlight_state->SetTotalNewlyHighlighted(total_newly_selected);
+		highlight_state->SetTotalNewlyUnhighlighted(total_newly_unselected);
+		NotifyObservables();
+	}
 	LOG_MSG("Exiting TemplateCanvas::UpdateSelection");
 }
 
@@ -1038,34 +1364,31 @@ void TemplateCanvas::UpdateSelection(bool shiftdown, bool pointsel)
  that the selectable_shps are in one-to-one correspondence
  with the shps in the highlight_state observable vector.  If this is
  not true, then NotifyObservables() needs to be redefined in the
- child class.  This method compares the currently selected objects
- in this view with the currently selected objects in the shared
- HighlightState Observable instance and notifies the Observable instance
- of any changes.
+ child class.  This method looks at the vectors of newly highlighted
+ and unhighlighted observations as set by the calling UpdateSelection
+ method, and determines the best notification to broadcast to all
+ other HighlightStateObserver instances.
  */
 void TemplateCanvas::NotifyObservables()
 {
 	LOG_MSG("Entering TemplateCanvas::NotifyObservables");
-	int total_newly_selected = 0;
-	int total_newly_unselected = 0;
+	
+	// Goal: assuming that all views have the ability to draw
+	// deltas, try to determine set of operations that will minimize
+	// number of shapes to draw/erease.  Remember that all classes
+	// have the ability to erase all shapes for free.  But, we will also
+	// assume that when a delta update is given, that the class can
+	// also determine how best to do the update.
+	
+	int total_newly_selected = highlight_state->GetTotalNewlyHighlighted();
+	int total_newly_unselected = highlight_state->GetTotalNewlyUnhighlighted();
 	int hl_size = highlight_state->GetHighlightSize();
-	std::vector<bool>& hs = highlight_state->GetHighlight();
-	std::vector<int>& nh = highlight_state->GetNewlyHighlighted();
-	std::vector<int>& nuh = highlight_state->GetNewlyUnhighlighted();
-	for (int i=0; i<hl_size; i++) {
-		//LOG(hs[i]);
-		//LOG(selectable_shps[i]->highlight);
-		if (hs[i] && !selectable_shps[i]->highlight) {
-			hs[i] = false;
-			nuh[total_newly_unselected++] = i;
-		} else if (!hs[i] && selectable_shps[i]->highlight) {
-			hs[i] = true;
-			nh[total_newly_selected++] = i;
-		}
-	}
-	LOG(total_newly_selected);
-	LOG(total_newly_unselected);
-	if (total_newly_selected > 0 || total_newly_unselected > 0) {
+	
+	if (total_newly_selected == 0) {
+		highlight_state->SetEventType(HighlightState::unhighlight_all);
+		highlight_state->notifyObservers();
+	} else {
+		highlight_state->SetEventType(HighlightState::delta);
 		highlight_state->SetTotalNewlyHighlighted(total_newly_selected);
 		highlight_state->SetTotalNewlyUnhighlighted(total_newly_unselected);
 		highlight_state->notifyObservers();

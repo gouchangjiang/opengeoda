@@ -70,6 +70,7 @@ ConditionalViewFrame::ConditionalViewFrame(wxFrame *parent,
 	:TemplateFrame(parent, project, title, pos, size, style )
 {
 	old_style = true;
+	my_children.Append(this);
     SetSize(800, 600);
 	DbfGridTableBase* grid_base = project->GetGridBase();
 	
@@ -449,10 +450,10 @@ void ConditionalViewFrame::YCategory()
 
 ConditionalViewFrame::~ConditionalViewFrame()
 {
-
 	if (RawDataX) delete [] RawDataX; RawDataX = NULL;
 	if (RawDataY) delete [] RawDataY; RawDataY = NULL;
 	if (flags) delete [] flags; flags = NULL;
+	my_children.DeleteObject(this);
 }
  
 void ConditionalViewFrame::UpdateViews()

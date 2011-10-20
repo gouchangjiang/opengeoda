@@ -151,6 +151,9 @@ public:
 	/** The selection/brushing tool can be either a rectangle, line or a
 	 circle. */
 	enum ScrollBarMode { none, horiz_only, vert_only, horiz_and_vert };
+	
+	enum SelectableShpType { mixed, circles, points, rectangles, polygons,
+		polylines };
 
 public:
 	/** Colors */
@@ -254,7 +257,7 @@ public:
 	
 	virtual void DisplayRightClickMenu(const wxPoint& pos);
 	
-	virtual void DrawMyShape(MyShape* shape, wxDC& dc);
+	virtual void DrawMySelShape(int i, wxDC& dc);
 	
 	virtual void UpdateSelection(bool shiftdown = false,
 								 bool pointsel = false);
@@ -318,6 +321,7 @@ protected:
 	 these would be the bars of the histogram. This array of shapes is drawn
 	 after the background_shps multi-set. */
 	std::vector<MyShape*> selectable_shps;
+	SelectableShpType selectable_shps_type;
 	std::list<MyShape*> foreground_shps;
 	
 	wxPoint GetActualPos(const wxMouseEvent& event);
@@ -332,6 +336,30 @@ protected:
 	wxPoint scroll_diff;
 	MyScaleTrans last_scale_trans;
 	
+	void deleteLayerBms();
+	void resizeLayerBms(int width, int height);
+	wxBitmap* layer0_bm; // background items + unhighlighted obs
+	wxBitmap* layer1_bm; // layer0_bm + highlighted obs
+	wxBitmap* layer2_bm; // layer1_bm + foreground obs
+	bool layer0_valid; // if false, then needs to be redrawn
+	bool layer1_valid; // if false, then needs to be redrawn
+	bool layer2_valid; // if flase, then needs to be redrawn
+	void DrawLayer0();
+	void DrawLayer1();
+	void DrawLayer2();
+	void DrawLayers();
+	void DrawSelectableShapes(wxMemoryDC &dc); // draw unhighlighted sel shapes
+	void DrawSelectableShapes_gc(wxMemoryDC &dc);
+	void DrawSelectableShapes_dc(wxMemoryDC &dc);
+	void DrawHighlightedShapes(wxMemoryDC &dc); // draw highlighted sel shapes
+	void DrawHighlightedShapes_gc(wxMemoryDC &dc);
+	void DrawHighlightedShapes_dc(wxMemoryDC &dc);
+	void DrawNewSelShapes(wxMemoryDC &dc);
+	void DrawNewSelShapes_gc(wxMemoryDC &dc);
+	void DrawNewSelShapes_dc(wxMemoryDC &dc);
+	void EraseNewUnSelShapes(wxMemoryDC &dc);
+	void EraseNewUnSelShapes_gc(wxMemoryDC &dc);
+	void EraseNewUnSelShapes_dc(wxMemoryDC &dc);
 public:
 	TemplateFrame* template_frame;
 	
