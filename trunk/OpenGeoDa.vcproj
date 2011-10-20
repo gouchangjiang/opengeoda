@@ -1073,6 +1073,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Explore\ScatterNewPlotView.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Explore\ScatterNewPlotView.h"
+				>
+			</File>
+			<File
 				RelativePath=".\explore\ScatterPlotView.cpp"
 				>
 			</File>

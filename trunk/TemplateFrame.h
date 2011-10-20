@@ -44,7 +44,6 @@ public:
 	void DeregisterAsActive();
 	static wxString GetActiveName();
 	static TemplateFrame* GetActiveFrame();
-	static bool IsAllClosedOrHidden();
 	
 protected:
 	bool old_style;

@@ -75,7 +75,7 @@
 #include "mapview.h"
 #include "Explore/CartogramView.h"
 #include "Explore/ScatterPlotView.h"
-//#include "Explore/ScatterNewPlotView.h"
+#include "Explore/ScatterNewPlotView.h"
 #include "DialogTools/ScatterPlotVarsDlg.h"
 //#include "Generic/TestMapView.h"
 //#include "Generic/TestTableView.h"
@@ -976,10 +976,6 @@ bool MyFrame::OnCloseMap()
 		}
 	}
 	
-	//int cnt = TemplateFrame::my_children.GetCount();
-	//for (int i=0; i<cnt; i++) {
-	//	((wxFrame*) TemplateFrame::my_children[cnt-i-1])->Close(true);
-	//}
 	TemplateFrame::my_children.Clear();
 	
 	if (project_p && project_p->regression_dlg) {
@@ -2148,8 +2144,10 @@ void MyFrame::OnExploreHist(wxCommandEvent& WXUNUSED(event))
 	LOG_MSG("Exiting MyFrame::OnExploreHist");
 }
 
-void MyFrame::OnExploreScatterplot(wxCommandEvent& WXUNUSED(event))
+void MyFrame::OnExploreScatterplot(wxCommandEvent& event)
 {
+	//OnExploreScatterNewPlot(event);
+	
 	if (GetVariableSetting(false)) {
 		if (!CheckDataValidity(gObservation, m_gX)) {
 			wxMessageBox("It has no regression!");
@@ -2170,15 +2168,15 @@ void MyFrame::OnExploreScatterNewPlot(wxCommandEvent& WXUNUSED(event))
 	ScatterPlotVarsDlg dlg(m_gVar1 , m_gVar2, m_gVar3,
 							project_p->GetGridBase() );
 	if(dlg.ShowModal() == wxID_OK) {
-//		ScatterNewPlotFrame* subframe =
-//		new ScatterNewPlotFrame(frame, project_p,
-//								"New Scatter Plot - " + dlg.var_Y
-//								+ " vs "+ dlg.var_X,
-//								wxDefaultPosition,
-//								GeoDaConst::scatterplot_default_size,
-//								wxDEFAULT_FRAME_STYLE,
-//								dlg.var_X, dlg.var_Y, dlg.var_Z,
-//								dlg.is_include_bubble_size);
+		ScatterNewPlotFrame* subframe =
+		new ScatterNewPlotFrame(frame, project_p,
+								"Scatter Plot - " + dlg.var_Y
+								+ " vs "+ dlg.var_X,
+								wxDefaultPosition,
+								GeoDaConst::scatterplot_default_size,
+								wxDEFAULT_FRAME_STYLE,
+								dlg.var_X, dlg.var_Y, dlg.var_Z,
+								dlg.is_include_bubble_size);
 	}
 }
 
@@ -3150,10 +3148,9 @@ void MyFrame::OnViewStandardizedData(wxCommandEvent& event)
 		f->OnViewStandardizedData(event);
 	} else if (PCPFrame* f = dynamic_cast<PCPFrame*>(t)) {
 		f->OnViewStandardizedData(event);
-	}
-	//} else if (ScatterNewPlotFrame* f = dynamic_cast<ScatterNewPlotFrame*>(t)) {
-	//	f->OnViewStandardizedData(event);
-	//}	
+	} else if (ScatterNewPlotFrame* f = dynamic_cast<ScatterNewPlotFrame*>(t)) {
+		f->OnViewStandardizedData(event);
+	}	
 }
 
 void MyFrame::OnViewOriginalData(wxCommandEvent& event)
@@ -3164,10 +3161,9 @@ void MyFrame::OnViewOriginalData(wxCommandEvent& event)
 		f->OnViewOriginalData(event);
 	} else if (PCPFrame* f = dynamic_cast<PCPFrame*>(t)) {
 		f->OnViewOriginalData(event);
+	} else if (ScatterNewPlotFrame* f = dynamic_cast<ScatterNewPlotFrame*>(t)) {
+		f->OnViewOriginalData(event);
 	}
-	//} else if (ScatterNewPlotFrame* f = dynamic_cast<ScatterNewPlotFrame*>(t)) {
-	//	f->OnViewOriginalData(event);
-	//}
 }
 
 void MyFrame::OnViewRegressionSelectedExcluded(wxCommandEvent& event)
@@ -3181,37 +3177,36 @@ void MyFrame::OnViewRegressionSelectedExcluded(wxCommandEvent& event)
 	} else if (MoranScatterPlotFrame* f = 
 				dynamic_cast<MoranScatterPlotFrame*>(t)) {
 		f->OnViewRegressionSelectedExcluded(event);
+	} else if (ScatterNewPlotFrame* f = dynamic_cast<ScatterNewPlotFrame*>(t)) {
+		f->OnViewRegressionSelectedExcluded(event);
 	}
-	//} else if (ScatterNewPlotFrame* f = dynamic_cast<ScatterNewPlotFrame*>(t)) {
-	//	f->OnViewRegressionSelectedExcluded(event);
-	//}
 }
 
 void MyFrame::OnViewRegressionSelected(wxCommandEvent& event)
 {
 	TemplateFrame* t = TemplateFrame::GetActiveFrame();
 	if (!t) return;
-	//if (ScatterNewPlotFrame* f = dynamic_cast<ScatterNewPlotFrame*>(t)) {
-	//	f->OnViewRegressionSelected(event);
-	//}
+	if (ScatterNewPlotFrame* f = dynamic_cast<ScatterNewPlotFrame*>(t)) {
+		f->OnViewRegressionSelected(event);
+	}
 }
 
 void MyFrame::OnDisplayStatistics(wxCommandEvent& event)
 {
 	TemplateFrame* t = TemplateFrame::GetActiveFrame();
 	if (!t) return;
-	//if (ScatterNewPlotFrame* f = dynamic_cast<ScatterNewPlotFrame*>(t)) {
-	//	f->OnDisplayStatistics(event);
-	//}
+	if (ScatterNewPlotFrame* f = dynamic_cast<ScatterNewPlotFrame*>(t)) {
+		f->OnDisplayStatistics(event);
+	}
 }
 
 void MyFrame::OnShowAxesThroughOrigin(wxCommandEvent& event)
 {
 	TemplateFrame* t = TemplateFrame::GetActiveFrame();
 	if (!t) return;
-	//if (ScatterNewPlotFrame* f = dynamic_cast<ScatterNewPlotFrame*>(t)) {
-	//	f->OnShowAxesThroughOrigin(event);
-	//}
+	if (ScatterNewPlotFrame* f = dynamic_cast<ScatterNewPlotFrame*>(t)) {
+		f->OnShowAxesThroughOrigin(event);
+	}
 }
 
 void MyFrame::OnHelpAbout(wxCommandEvent& WXUNUSED(event) )
@@ -3335,16 +3330,7 @@ void HiddenCanvas::update(HighlightState* o)
 			gSelection.Update();
 			MyFrame::theFrame->UpdateWholeView((wxFrame*) GetParent());
 			gSelection.Reset(true);
-		}		
-	} else if (type == HighlightState::highlight_all) {
-		gSelection.Reset(true);
-		gEvent = ADD_SELECTION;
-		for (int i=0, iend=gSelection.GetBitmapSize(); i<iend; i++) {
-			if (gSelection.selected(i)) gSelection.Push(nh[i]);
 		}
-		gSelection.Update();
-		MyFrame::theFrame->UpdateWholeView((wxFrame*) GetParent());
-		gSelection.Reset(true);
 	} else if (type == HighlightState::unhighlight_all) {
 		gSelection.Reset(true);
 		gEvent = NEW_SELECTION;
@@ -3370,6 +3356,7 @@ HiddenFrame::HiddenFrame(wxFrame *parent, Project* project,
 	: TemplateFrame(parent, project, title, pos, size, style)
 {
 	LOG_MSG("Entering HiddenFrame::HiddenFrame");
+	my_children.Append(this);
 	int width, height;
 	GetClientSize(&width, &height);
 	canvas = new HiddenCanvas(this, wxDefaultPosition, wxSize(width,height));
@@ -3383,6 +3370,7 @@ HiddenFrame::~HiddenFrame()
 {
 	LOG_MSG("In HiddenFrame::~HiddenFrame()");
 	MyFrame::hidden_frame = 0;
+	my_children.DeleteObject(this);
 }
 
 /** 
@@ -3457,8 +3445,11 @@ void HiddenFrame::Update()
 	LOG(nuh_cnt);
 	highlight_state->SetTotalNewlyHighlighted(nh_cnt);
 	highlight_state->SetTotalNewlyUnhighlighted(nuh_cnt);
-	highlight_state->SetEventType(HighlightState::delta);
-
+	if (nh_cnt == 0) {
+		highlight_state->SetEventType(HighlightState::unhighlight_all);
+	} else {
+		highlight_state->SetEventType(HighlightState::delta);
+	}
 	// Send update message to HighlightState class Observers, but specify
 	// not to receive update message ourself.
 	if (nh_cnt > 0 || nuh_cnt > 0) {

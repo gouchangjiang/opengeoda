@@ -86,14 +86,12 @@ public:
 	void		UpdateRegressionOption();
 	void		CheckOption(const RegressionType rType);
 
-	void		MyDrawAllPoints(wxGCDC& dc);
 	void		DrawAllPoints(wxDC* pDC);
 	virtual int	SelectByRect(wxMouseEvent& event);
     virtual void SelectByPoint(wxMouseEvent& event);
     virtual void Selection(wxDC* pDC);
 	virtual void CheckSize();
 	virtual void Draw(wxDC* pDC);
-	virtual void MyDraw(wxGCDC& dc);
 	bool		Small() { return (Height < 100 || Width < 100);};
 
     bool  InTheArea(const BasePoint p, const BasePoint p1,

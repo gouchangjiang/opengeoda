@@ -105,7 +105,7 @@ point_2d ShapeUtils::centroid(const std::list<polygon_2d>& poly_list)
 	point_2d cent;
 	double A = 0;
 	BOOST_FOREACH( const polygon_2d& p, poly_list ) {
-		centroid(p, cent);
+		boost::geometry::centroid<polygon_2d, point_2d>(p, cent);
 		A = area(p);
 		total_x += A*cent.x();
 		total_y += A*cent.y();

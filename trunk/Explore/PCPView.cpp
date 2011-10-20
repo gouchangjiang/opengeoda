@@ -65,6 +65,7 @@ PCPFrame::PCPFrame(const std::vector<int>& pcp_col_ids,
 	: TemplateFrame(parent, project, title, pos, size, style)
 {
 	old_style = true;
+	my_children.Append(this);
     SetSizeHints(100, 100);
 	
 	int width, height;
@@ -81,6 +82,7 @@ PCPFrame::~PCPFrame()
 {
 	LOG_MSG("In PCPFrame::~PCPFrame");
 	DeregisterAsActive();
+	my_children.DeleteObject(this);
 }
 
 void PCPFrame::Update()

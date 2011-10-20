@@ -106,18 +106,6 @@ void HighlightState::ApplyChanges()
 			}
 		}
 			break;
-		case highlight_all:
-		{
-			if (total_highlighted = highlight.size()) {
-				//MMM: figure out why this short-cut isn't always working
-				//event_type = empty;
-			}
-			for (int i=0, iend=highlight.size(); i<iend; i++) {
-				highlight[i] = true;
-			}
-			total_highlighted = highlight.size();
-		}
-			break;
 		case unhighlight_all:
 		{
 			if (total_highlighted == 0) {

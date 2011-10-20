@@ -1007,6 +1007,7 @@ C3DPlotFrame::C3DPlotFrame(wxFrame *parent, Project* project,
 	:TemplateFrame(parent, project, title, pos, size, style)
 {
 	old_style = true;
+	my_children.Append(this);
 	m_splitter = new wxSplitterWindow(this);
     
 	canvas = new C3DPlotCanvas(project->GetGridBase(), m_splitter, -1,
@@ -1031,6 +1032,7 @@ C3DPlotFrame::C3DPlotFrame(wxFrame *parent, Project* project,
 
 C3DPlotFrame::~C3DPlotFrame()
 {
+	my_children.DeleteObject(this);
 }
 
 

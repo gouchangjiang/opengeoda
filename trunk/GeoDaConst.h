@@ -74,7 +74,7 @@ public:
 	// MyShape constantants
 	 
 	// MyPoint radius to give a larger target for clicking on
-	static const int my_point_click_radius = 3;
+	static const int my_point_click_radius = 2;
 	
 	// Shared Colours
 	

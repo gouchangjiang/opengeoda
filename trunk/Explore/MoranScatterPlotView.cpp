@@ -100,7 +100,7 @@ MoranScatterPlotFrame::MoranScatterPlotFrame(wxFrame *parent,
            : TemplateFrame(parent, project, title, pos, size, style)
 {
 	old_style = true;
-	
+	my_children.Append(this);
     // this should work for MDI frames as well as for normal ones
     SetSizeHints(100, 100);
 	
@@ -119,6 +119,7 @@ MoranScatterPlotFrame::MoranScatterPlotFrame(wxFrame *parent,
 
 MoranScatterPlotFrame::~MoranScatterPlotFrame()
 {
+	my_children.DeleteObject(this);
 }
 
 void MoranScatterPlotFrame::Update()

@@ -54,7 +54,6 @@ TemplateFrame::TemplateFrame(wxFrame *parent, Project* project_s,
 	old_style(false), frames_manager(project_s->GetFramesManager())
 {
 	SetIcon(wxIcon(oGeoDaIcon_16x16_xpm));
-	my_children.Append(this);
 	frames_manager->registerObserver(this);
 }
 
@@ -63,15 +62,6 @@ TemplateFrame::~TemplateFrame()
 	LOG_MSG("Called TemplateFrame::~TemplateFrame()");
 	if (HasCapture()) ReleaseMouse();
 	frames_manager->removeObserver(this);
-	// this should not not call the destructor for this object since
-	// DeleteContents( true ) was not previously called
-	my_children.DeleteObject(this);
-	if (MyFrame::theFrame) {
-		if (IsAllClosedOrHidden()) {
-			MyFrame::theFrame->EnableTool(XRCID("ID_OPEN_SHAPE_FILE"), true);
-			MyFrame::theFrame->EnableTool(XRCID("ID_OPEN_TABLE_ONLY"), true);
-		}
-	}
 }
 
 void TemplateFrame::OnSelectWithRect(wxCommandEvent& event)
@@ -275,14 +265,6 @@ void TemplateFrame::MapMenus()
 	LOG_MSG("In TemplateFrame::MapMenus");
 }
 
-bool TemplateFrame::IsAllClosedOrHidden()
-{
-	for(unsigned int i = 0; i < TemplateFrame::my_children.GetCount(); i++) {
-		if (((wxFrame*) TemplateFrame::my_children[i])->IsVisible())
-			return false;
-	}
-	return true;
-}
 
 /** MMM: ExportImage assuemes the old style template canvas.  We should have
       a second version available.  OnDraw is used by the older

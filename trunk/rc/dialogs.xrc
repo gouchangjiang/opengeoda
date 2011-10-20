@@ -29,7 +29,7 @@ All Rights Reserved</label>
           <orient>wxHORIZONTAL</orient>
           <object class="sizeritem">
             <object class="wxStaticText" name="ID_STATICTEXT">
-              <label>OpenGeoDa 1.0 (October 10, 2011)</label>
+              <label>OpenGeoDa 1.0.1 (October 20, 2011)</label>
               <style>wxALIGN_CENTRE</style>
             </object>
             <flag>wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE</flag>

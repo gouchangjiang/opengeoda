@@ -182,14 +182,14 @@ void TestTableFrame::update(HighlightState* o)
 
 	//for (int i=0; i<total; i++) {
 		//selectable_shps[nuh[i]]->highlight = false;
-		//DrawMyShape(selectable_shps[nuh[i]], dc);
+		//DrawMySelShape(nuh[i], dc);
 	//}
 	
 	//total = highlight_state->GetTotalNewlyHighlighted();
 	//std::vector<int>& nh = highlight_state->GetNewlyHighlighted();
 	//for (int i=0; i<total; i++) {
 		//selectable_shps[nh[i]]->highlight = true;
-		//DrawMyShape(selectable_shps[nh[i]], dc);
+		//DrawMySelShape(nh[i], dc);
 	//}
 	
 	// Redraw the foreground

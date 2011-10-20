@@ -1350,7 +1350,16 @@ void DbfGridTableBase::FromGridDeselect(int row)
 
 void DbfGridTableBase::SelectAll()
 {
-	highlight_state->SetEventType(HighlightState::highlight_all);
+	int total_newly_selected = 0;
+	int hl_size = highlight_state->GetHighlightSize();
+	std::vector<bool>& hs = highlight_state->GetHighlight();
+	std::vector<int>& nh = highlight_state->GetNewlyHighlighted();
+	for (int i=0; i<hl_size; i++) {
+		if (!hs[i]) nh[total_newly_selected++] = i;
+	}
+	highlight_state->SetEventType(HighlightState::delta);
+	highlight_state->SetTotalNewlyHighlighted(total_newly_selected);
+	highlight_state->SetTotalNewlyUnhighlighted(0);
 	highlight_state->notifyObservers();
 }
 

@@ -31,7 +31,9 @@ class ScatterNewPlotFrame;
 class ScatterNewPlotCanvas : public TemplateCanvas {
 	DECLARE_CLASS(ScatterNewPlotCanvas)	
 public:
-	ScatterNewPlotCanvas(wxWindow *parent, const wxPoint& pos,
+	ScatterNewPlotCanvas(wxWindow *parent,
+						 Project* project,
+						 const wxPoint& pos,
 						 const wxSize& size,
 						 const wxString& varX,
 						 const wxString& varY,
@@ -82,6 +84,7 @@ protected:
 								   double b_x, double b_y);
 	wxString RegLineTextFromReg(const SimpleLinearRegression& reg, int line);
 	
+	HighlightState* highlight_state;
 	wxString varX;
 	wxString varY;
 	wxString varZ;
@@ -106,26 +109,16 @@ protected:
 	bool standardized;
 
 	MyPolyLine* reg_line;
-	MyText* reg_line_text1;
-	MyText* reg_line_text2;
 	MyTable* stats_table;
 	
 	bool show_reg_selected;
 	MyPolyLine* reg_line_selected;
-	MyText* reg_line_selected_text1;
-	MyText* reg_line_selected_text2;
-	MyText* selected_stats_text_X;
-	MyText* selected_stats_text_Y;
 	double reg_line_selected_slope;
 	bool reg_line_selected_infinite_slope;
 	bool reg_line_selected_defined;
 
 	bool show_reg_excluded;
 	MyPolyLine* reg_line_excluded;
-	MyText* reg_line_excluded_text1;
-	MyText* reg_line_excluded_text2;
-	MyText* excluded_stats_text_X;
-	MyText* excluded_stats_text_Y;
 	double reg_line_excluded_slope;
 	bool reg_line_excluded_infinite_slope;
 	bool reg_line_excluded_defined;

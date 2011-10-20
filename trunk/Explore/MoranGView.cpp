@@ -103,6 +103,7 @@ MoranGFrame::MoranGFrame(wxFrame *parent,
 	: TemplateFrame(parent, project, title, pos, size, style)
 {
 	old_style = true;
+	my_children.Append(this);
 
     // this should work for MDI frames as well as for normal ones
     SetSizeHints(100, 100);
@@ -119,6 +120,7 @@ MoranGFrame::MoranGFrame(wxFrame *parent,
 
 MoranGFrame::~MoranGFrame()
 {
+	my_children.DeleteObject(this);
 }
 
 void MoranGFrame::Update()

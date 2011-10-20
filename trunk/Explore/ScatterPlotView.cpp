@@ -69,6 +69,7 @@ ScatterPlotFrame::ScatterPlotFrame(wxFrame *parent, Project* project,
 	: TemplateFrame(parent, project, title, pos, size, style)
 {
 	old_style = true;
+	my_children.Append(this);
 	int width, height;
 	GetClientSize(&width, &height);
 	template_canvas = new ScatterPlotCanvas(this, wxPoint(0, 0),
@@ -82,6 +83,7 @@ ScatterPlotFrame::~ScatterPlotFrame()
 {
 	LOG_MSG("In ScatterPlotFrame::~ScatterPlotFrame");
 	DeregisterAsActive();
+	my_children.DeleteObject(this);
 }
 
 void ScatterPlotFrame::Update()
@@ -164,7 +166,7 @@ ScatterPlotCanvas::ScatterPlotCanvas(wxWindow *parent, const wxPoint& pos,
 	symmetricflag = true;
 
 	Init();
-    //SetBackgroundColour(wxColour("WHITE"));
+    //SetBackgroundColour(*wxWHITE);
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM);  // default style
     CheckSize();
     Refresh();
@@ -186,18 +188,13 @@ void ScatterPlotCanvas::OnMyPaint(wxPaintEvent& event)
 {
 	LOG_MSG("Entering ScatterPlotCanvas::OnMyPaint");
 	
-	//wxGCDC dc(this);
-	
 	wxAutoBufferedPaintDC dc(this);
 	//wxBufferedPaintDC dc(this);
 	//DoPrepareDC(dc);  // We certainly need to call this for Mac otherwise
 	// the image doesn't redraw when scrolling.
 	//LOG_MSG("Painting");
 	selection_outline_visible = false;
-
-	PaintBackground(dc);
 	
-	//MyDraw(dc);
 	Draw(&dc);
 	
 	LOG_MSG("Exiting ScatterPlotCanvas::OnMyPaint");
@@ -428,6 +425,7 @@ void ScatterPlotCanvas::Destandardized()
 void ScatterPlotCanvas::Draw(wxDC* pDC)
 {
 	LOG_MSG("Entering ScatterPlotCanvas::Draw");
+	PaintBackground(*pDC);
 	DrawLegend(pDC);
 	DrawAllPoints(pDC);
 	DrawAxes(pDC);
@@ -435,16 +433,11 @@ void ScatterPlotCanvas::Draw(wxDC* pDC)
 	LOG_MSG("Exiting ScatterPlotCanvas::Draw");
 }
 
-void ScatterPlotCanvas::MyDraw(wxGCDC& dc)
-{
-	LOG_MSG("Entering ScatterPlotCanvas::Draw");
-	MyDrawAllPoints(dc);
-	LOG_MSG("Exiting ScatterPlotCanvas::Draw");
-}
-
 
 void ScatterPlotCanvas::DrawLegend(wxDC* dc)
 {
+	dc->SetTextBackground(canvas_background_color);
+	dc->SetTextForeground(*wxBLACK);
 	char  buf[64];
 	double    scale= 1;
 
@@ -533,7 +526,7 @@ void ScatterPlotCanvas::DrawLegend(wxDC* dc)
 	}
 }
 
-inline void ScatterPlotCanvas::MyDrawAllPoints(wxGCDC& dc)  
+inline void ScatterPlotCanvas::DrawAllPoints(wxDC* pDC)  
 {
 	wxStopWatch sw;
 	wxPen unsel_pen;
@@ -541,37 +534,6 @@ inline void ScatterPlotCanvas::MyDrawAllPoints(wxGCDC& dc)
 	wxPen sel_pen;
 	sel_pen.SetColour(*wxRED);
 	
-//#define __GEODA_CENTER_USEGC__
-#ifdef __GEODA_CENTER_USEGC__	
-	// The following way of creating a graphics context only works
-	// on Mac.
-	//wxGCDC* gdc = (wxGCDC*)pDC;
-	wxGraphicsContext *gc = dc.GetGraphicsContext();
-	
-	// This way of creating a graphics context works on Windows and
-	// Linux, but the resulting performance is not fast.
-	//wxGraphicsContext* gc = wxGraphicsContext::Create(this);
-	
-	wxGraphicsPath path1 = gc->CreatePath();
-	wxGraphicsPath path2 = gc->CreatePath();
-	for (int cnt=0; cnt<gObservation; cnt++) {
-		if (!conditionFlag[cnt]) continue;
-		
-		if (gSelection.selected(cnt)) {
-			path2.AddRectangle(location[cnt].x-1.0, location[cnt].y-1.0, 2, 2);	
-		} else {
-			path1.AddRectangle(location[cnt].x-1.0, location[cnt].y-1.0, 2, 2);
-		}	
-	}
-	gc->SetPen( gc->CreatePen(unsel_pen) );
-	gc->StrokePath(path1);
-	gc->SetPen( gc->CreatePen(sel_pen) );	
-	gc->StrokePath(path2);
-	
-	LOG_MSG(wxString::Format("ScatterPlotCanvas::MyDrawAllPoints took %ld ms"
-							 " using wxGDC", (long) sw.Time()));
-#else
-	wxDC* pDC = &dc;
 	for (int cnt=0; cnt<gObservation; cnt++) {
 		if (!conditionFlag[cnt]) continue;
 		
@@ -585,69 +547,8 @@ inline void ScatterPlotCanvas::MyDrawAllPoints(wxGCDC& dc)
 									GeoDaConst::textColor);			
 		}
 	}
-	
-	LOG_MSG(wxString::Format("ScatterPlotCanvas::MyDrawAllPoints took %ld ms"
-							 " using wxDC", (long) sw.Time()));	
-#endif
-}
-
-
-inline void ScatterPlotCanvas::DrawAllPoints(wxDC* pDC)  
-{
-	wxStopWatch sw;
-	wxPen unsel_pen;
-	unsel_pen.SetColour(GeoDaConst::textColor);
-	wxPen sel_pen;
-	sel_pen.SetColour(*wxRED);
-	
-//#define __GEODA_CENTER_USEGC__
-#ifdef __GEODA_CENTER_USEGC__	
-	// The following way of creating a graphics context only works
-	// on Mac.
-	wxGCDC* gdc = (wxGCDC*)pDC;
-	wxGraphicsContext *gc = gdc->GetGraphicsContext();
-	
-	// This way of creating a graphics context works on Windows and
-	// Linux, but the resulting performance is not fast.
-	//wxGraphicsContext* gc = wxGraphicsContext::Create(this);
-	
-	wxGraphicsPath path1 = gc->CreatePath();
-	wxGraphicsPath path2 = gc->CreatePath();
-	for (int cnt=0; cnt<gObservation; cnt++) {
-		if (!conditionFlag[cnt]) continue;
-		
-		if (gSelection.selected(cnt)) {
-			path2.AddRectangle(location[cnt].x-1.0, location[cnt].y-1.0, 2, 2);	
-		} else {
-			path1.AddRectangle(location[cnt].x-1.0, location[cnt].y-1.0, 2, 2);
-		}	
-	}
-	gc->SetPen( gc->CreatePen(unsel_pen) );
-	gc->StrokePath(path1);
-	gc->SetPen( gc->CreatePen(sel_pen) );	
-	gc->StrokePath(path2);
-	
 	LOG_MSG(wxString::Format("ScatterPlotCanvas::DrawAllPoints took %ld ms"
-							 " using wxGDC", (long) sw.Time()));
-#else
-	for (int cnt=0; cnt<gObservation; cnt++) {
-		if (!conditionFlag[cnt]) continue;
-		
-		if (gSelection.selected(cnt)) {
-			pDC->DrawPoint((int) location[cnt].x, (int) location[cnt].y);
-			//GenUtils::DrawSmallCirc(pDC, (int)(location[cnt].x),
-			//						(int)(location[cnt].y), starSize,
-			//						GeoDaConst::highlight_color);
-		} else {
-			pDC->DrawPoint((int) location[cnt].x, (int) location[cnt].y);
-			//GenUtils::DrawSmallCirc(pDC, (int)(location[cnt].x),
-			//						(int)(location[cnt].y), starSize,
-			//						GeoDaConst::textColor);			
-		}
-	}
-	LOG_MSG(wxString::Format("ScatterPlotCanvas::DrawAllPoints took %ld ms"
-							 " using wxDC", (long) sw.Time()));	
-#endif
+							 " using wxDC", (long) sw.Time()));
 }
 
 void ScatterPlotCanvas::DrawAxes(wxDC* dc)
@@ -655,7 +556,7 @@ void ScatterPlotCanvas::DrawAxes(wxDC* dc)
 	double steps;
 	int coord;
 
-	BPbackColor = GetBackgroundColour();
+	BPbackColor = canvas_background_color;
 	if (yMin < 0 && yMax > 0) {
 
 		steps = -yMin / (yMax - yMin);
@@ -750,13 +651,9 @@ void ScatterPlotCanvas::SlopeReport(wxDC* dc,const char * header)
 		wxFont m_font(*wxNORMAL_FONT);
 		m_font.SetPointSize(max(sz,6));
 		
-		BPbackColor = GetBackgroundColour();
 		dc->SetFont(m_font);
-		
-		wxPen pen;
-		pen.SetColour(BPbackColor);
-		dc->SetPen(pen);
-		dc->SetBrush(BPbackColor);
+		dc->SetPen(canvas_background_color);
+		dc->SetBrush(canvas_background_color);
 		dc->DrawRectangle(Left, Top/8-1,Width, sz+5);
 		
 		char bf[40];
@@ -877,23 +774,13 @@ void ScatterPlotCanvas::Selection(wxDC* dc)
 	unsel_pen.SetColour(GeoDaConst::textColor);
 	wxPen sel_pen;
 	sel_pen.SetColour(*wxRED);
-	
-//#define	 __GEODA_CENTER_USEGC__
-#ifdef __GEODA_CENTER_USEGC__
-	//wxGraphicsContext *gc = wxGraphicsContext::Create(dc);
-	wxGCDC* gdc = (wxGCDC*)dc;
-	wxGraphicsContext *gc = gdc->GetGraphicsContext();
-	wxGraphicsPath path1 = gc->CreatePath();
-	wxGraphicsPath path2 = gc->CreatePath();
-#endif
-	
+		
 	int cnt;
 	bool regressUpdate = excludeSelected && (hasRegression == REGRESS_LINEAR);
 	switch(gEvent) {
 		case NEW_SELECTION :
 		{
-			DrawAllPoints(dc);
-			DrawAxes(dc);
+			Draw(dc);
 		}
 			break;
 		case ADD_SELECTION :
@@ -902,14 +789,9 @@ void ScatterPlotCanvas::Selection(wxDC* dc)
 			if (cnt == GeoDaConst::EMPTY) regressUpdate= false;
 			while (cnt != GeoDaConst::EMPTY) {
 				if (!conditionFlag[cnt]) continue;
-#ifdef __GEODA_CENTER_USEGC__
-				path2.AddRectangle(location[cnt].x-1.0,
-								   location[cnt].y-1.0, 2, 2);				
-#else
 				GenUtils::DrawSmallCirc(dc,(int)(location[cnt].x),
 										(int)(location[cnt].y), starSize,
-										GeoDaConst::highlight_color);				
-#endif
+										GeoDaConst::highlight_color);
 				cnt = gSelection.Pop();
 			}
 		}
@@ -918,27 +800,15 @@ void ScatterPlotCanvas::Selection(wxDC* dc)
 		{
 			while ((cnt= gSelection.Pop()) != GeoDaConst::EMPTY) {
 				if (!conditionFlag[cnt]) continue;
-#ifdef __GEODA_CENTER_USEGC__
-				path1.AddRectangle(location[cnt].x-1.0,
-								   location[cnt].y-1.0, 2, 2);
-#else
 				GenUtils::DrawSmallCirc(dc,(int)(location[cnt].x),
 										(int)(location[cnt].y), starSize,
-										GeoDaConst::textColor);				
-#endif
+										GeoDaConst::textColor);
 			}
 		}
 			break;
 		default :
 			break;
 	}
-
-#ifdef __GEODA_CENTER_USEGC__
-	gc->SetPen( gc->CreatePen(unsel_pen) );
-	gc->StrokePath(path1);
-	gc->SetPen( gc->CreatePen(sel_pen) );	
-	gc->StrokePath(path2);
-#endif	
 	
 	if (regressUpdate) {
 		const bool saveRegressionUnselected= regressionUnselected;

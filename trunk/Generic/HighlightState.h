@@ -65,7 +65,6 @@ public:
 	enum EventType {
 		empty, // an empty event, observers should not be notified
 		delta, // check both newly_highlighted and newly_unhighlighted
-		highlight_all, // select everything
 		unhighlight_all, // unhighlight everything
 		invert // flip highlight state for all observations
 	};
