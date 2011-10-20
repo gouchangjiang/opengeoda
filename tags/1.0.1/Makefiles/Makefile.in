@@ -1,0 +1,70 @@
+# locate all sources
+include objs.mk
+
+# In objs.mk, to add platform specific source files to the build, place
+# them in a list whose name has the form ARCH_srcs or ARCH_hdrs, where
+# ARCH is MAC, LINUX, WINDOWS, etc.
+srcs += $(@arch@_srcs)
+hdrs += $(@arch@_hdrs)
+
+depfile = Makefile.dep
+
+# configure the compiler and some other tools
+LDFLAGS += @wx_libs@ @opengl_libs@ @lapack_libs@ @corefoundation_libs@ -g
+CXXFLAGS += @wx_cxxflags@ @lapack_cflags@ \
+	-O2 -fno-common -Wno-deprecated -g
+
+MKDIR_P = mkdir -p
+ECHO_N = echo @ECHO_N@
+
+# Locations in the source tree
+src_base = ..
+rc_dir = $(src_base)/rc
+
+# create a list of objects
+objname = $(subst .cpp,.o,$(1))
+objs = $(foreach src,$(srcs),$(call objname,$(src)))
+
+# Some files used in the MacOSX build
+mac_rcfiles += $(wildcard $(rc_dir)/*.bmp)
+mac_rcfiles += $(wildcard $(rc_dir)/*.xrc)
+mac_rcfiles += $(rc_dir)/wxmac.icns
+
+# The configure script will tell us whether we are making just the
+# binary, or an application bundle (in the case of MacOSX).
+#
+# The autoconf output variable, output_file, will either be $(opengeoda)
+# or $(opengeoda_app).
+opengeoda = ../OpenGeoDa
+opengeoda_app = ../OpenGeoDa.app
+out = ../@output_file@
+all : $(depfile) $(out)
+
+# generate dependencies
+$(depfile) : $(hdrs)
+	$(CXX) -MM $(CXXFLAGS) $(srcs) > $@
+
+# the executable
+$(opengeoda) : $(objs)
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+$(opengeoda_app) : $(opengeoda)
+	@rez_command@ $<
+	$(MKDIR_P) $@/Contents/MacOS
+	$(MKDIR_P) $@/Contents/Resources
+	cp -f $< $@/Contents/MacOS
+	cp -f $(rc_dir)/Info.plist $@/Contents
+	cp -f $(mac_rcfiles) $@/Contents/Resources
+	$(ECHO_N) "APPL????" > $@/Contents/PkgInfo
+
+
+.PHONY: all clean depclean
+
+clean:
+	-rm -f $(objs) $(opengeoda)
+	-rm -rf $(opengeoda_app)
+
+depclean:
+	-rm -f $(depfile)
+
+include $(depfile)
