@@ -50,9 +50,12 @@ public:
 
 	void OnAddColumnClick( wxCommandEvent& event );
     void OnBinaryResultUpdated( wxCommandEvent& event );
-    void OnBinaryOperand1Updated( wxCommandEvent& event );
+    void OnBinaryResultTmUpdated( wxCommandEvent& event );
+	void OnBinaryOperand1Updated( wxCommandEvent& event );
+	void OnBinaryOperand1TmUpdated( wxCommandEvent& event );
     void OnBinaryOperatorUpdated( wxCommandEvent& event );
     void OnBinaryOperand2Updated( wxCommandEvent& event );
+	void OnBinaryOperand2TmUpdated( wxCommandEvent& event );
 	
 	void UpdateOtherPanels();
 	void SetOtherPanelPointers(FieldNewCalcSpecialDlg* s_panel_s,
@@ -66,15 +69,24 @@ public:
 	FieldNewCalcLagDlg* l_panel;
 	FieldNewCalcRateDlg* r_panel;
 
+	bool IsTimeVariant(int col_id);
+	bool IsAllTime(int col_id, int tm_sel);
+	
 	bool all_init;
-	std::vector<wxString> m_var_str;
+	bool is_space_time;
+	std::vector<wxString> m_var1_str;
+	std::vector<wxString> m_var2_str;
+	
     wxChoice* m_result;
+	wxChoice* m_result_tm;
 	wxChoice* m_op;
     wxComboBox* m_var1;
+	wxChoice* m_var1_tm;
 	double m_const1;
 	bool m_valid_const1;
 	int m_var1_sel;
     wxComboBox* m_var2;
+	wxChoice* m_var2_tm;
 	double m_const2;
 	bool m_valid_const2;
 	int m_var2_sel;
@@ -88,6 +100,7 @@ public:
 	
 	void Apply();
 	void InitFieldChoices();
+	void InitTime(wxChoice* time_list);
 	void Display();
 	
 	enum OpType {

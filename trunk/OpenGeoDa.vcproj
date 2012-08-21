@@ -337,6 +337,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ShapeOperations\CsvFileUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ShapeOperations\CsvFileUtils.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ShapeOperations\DBF.cpp"
 				>
 			</File>
@@ -426,6 +434,14 @@
 			</File>
 			<File
 				RelativePath=".\ShapeOperations\ShapeFileType.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ShapeOperations\ShapeUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ShapeOperations\ShapeUtils.h"
 				>
 			</File>
 			<File
@@ -613,14 +629,6 @@
 			Name="DialogTools"
 			>
 			<File
-				RelativePath=".\dialogtools\3DDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\dialogtools\3DDlg.h"
-				>
-			</File>
-			<File
 				RelativePath=".\dialogtools\AddCentroidsDlg.cpp"
 				>
 			</File>
@@ -653,14 +661,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\dialogtools\CCVariableDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\dialogtools\CCVariableDlg.h"
-				>
-			</File>
-			<File
 				RelativePath=".\dialogtools\ConditionViewDlg.cpp"
 				>
 			</File>
@@ -674,6 +674,14 @@
 			</File>
 			<File
 				RelativePath=".\dialogtools\CreateGridDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogTools\CreateSpTmProjectDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogTools\CreateSpTmProjectDlg.h"
 				>
 			</File>
 			<File
@@ -698,6 +706,14 @@
 			</File>
 			<File
 				RelativePath=".\dialogtools\DBF2SHPDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogTools\ExportCsvDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogTools\ExportCsvDlg.h"
 				>
 			</File>
 			<File
@@ -765,6 +781,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DialogTools\ImportCsvDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogTools\ImportCsvDlg.h"
+				>
+			</File>
+			<File
 				RelativePath=".\dialogtools\LisaWhat2OpenDlg.cpp"
 				>
 			</File>
@@ -786,6 +810,14 @@
 			</File>
 			<File
 				RelativePath=".\dialogtools\MovieControlPan.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogTools\OpenSpaceTimeDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogTools\OpenSpaceTimeDlg.h"
 				>
 			</File>
 			<File
@@ -829,14 +861,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\dialogtools\RateSmootherDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\dialogtools\RateSmootherDlg.h"
-				>
-			</File>
-			<File
 				RelativePath=".\dialogtools\RegressionDlg.cpp"
 				>
 			</File>
@@ -877,14 +901,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\dialogtools\ScatterPlotVarsDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\dialogtools\ScatterPlotVarsDlg.h"
-				>
-			</File>
-			<File
 				RelativePath=".\dialogtools\SelectWeightDlg.cpp"
 				>
 			</File>
@@ -914,6 +930,22 @@
 			</File>
 			<File
 				RelativePath=".\dialogtools\ThiessenPolygonDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogTools\TimeChooserDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogTools\TimeChooserDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogTools\TimeVariantImportDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogTools\TimeVariantImportDlg.h"
 				>
 			</File>
 			<File
@@ -965,6 +997,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Explore\BoxNewPlotView.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Explore\BoxNewPlotView.h"
+				>
+			</File>
+			<File
 				RelativePath=".\explore\BoxPlotView.cpp"
 				>
 			</File>
@@ -997,11 +1037,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Explore\GetisOrdMapView.cpp"
+				RelativePath=".\Explore\GetisOrdMapNewView.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Explore\GetisOrdMapView.h"
+				RelativePath=".\Explore\GetisOrdMapNewView.h"
 				>
 			</File>
 			<File
@@ -1013,19 +1053,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Explore\HistogramView.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Explore\HistogramView.h"
+				>
+			</File>
+			<File
 				RelativePath=".\explore\HistView.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\explore\HistView.h"
-				>
-			</File>
-			<File
-				RelativePath=".\explore\LisaBoxView.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\explore\LisaBoxView.h"
 				>
 			</File>
 			<File
@@ -1041,35 +1081,35 @@
 				>
 			</File>
 			<File
-				RelativePath=".\explore\LisaMapView.cpp"
+				RelativePath=".\Explore\LisaMapNewView.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\explore\LisaMapView.h"
+				RelativePath=".\Explore\LisaMapNewView.h"
 				>
 			</File>
 			<File
-				RelativePath=".\explore\MoranGView.cpp"
+				RelativePath=".\Explore\LisaScatterPlotView.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\explore\MoranGView.h"
+				RelativePath=".\Explore\LisaScatterPlotView.h"
 				>
 			</File>
 			<File
-				RelativePath=".\explore\MoranScatterPlotView.cpp"
+				RelativePath=".\Explore\MapNewView.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\explore\MoranScatterPlotView.h"
+				RelativePath=".\Explore\MapNewView.h"
 				>
 			</File>
 			<File
-				RelativePath=".\explore\PCPView.cpp"
+				RelativePath=".\Explore\PCPNewView.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\explore\PCPView.h"
+				RelativePath=".\Explore\PCPNewView.h"
 				>
 			</File>
 			<File
@@ -1086,6 +1126,14 @@
 			</File>
 			<File
 				RelativePath=".\explore\ScatterPlotView.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Explore\ThemeUtilities.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Explore\ThemeUtilities.h"
 				>
 			</File>
 		</Filter>

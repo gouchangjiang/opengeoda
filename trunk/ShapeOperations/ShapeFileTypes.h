@@ -21,7 +21,7 @@
 #define __GEODA_CENTER_SHAPE_FILE_TYPES_H__
 
 namespace ShapeFileTypes {
-	enum ShapeType { // constants describing types of the shapefiles
+	enum ShapeType { // constants describing types of the Shapefiles
 		SPOINT      = 1,
 		ARC         = 3,
 		POLYGON     = 5,

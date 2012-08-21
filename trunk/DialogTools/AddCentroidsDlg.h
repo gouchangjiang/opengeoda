@@ -23,14 +23,14 @@
 #define IDD_ADD_CENTROIDS 10000
 #define IDOK_ADD 10001
 
-class CAddCentroidsDlg: public wxDialog
+class AddCentroidsDlg: public wxDialog
 {    
-    DECLARE_CLASS( CAddCentroidsDlg )
+    DECLARE_CLASS( AddCentroidsDlg )
     DECLARE_EVENT_TABLE()
 
 public:
-    CAddCentroidsDlg( );
-    CAddCentroidsDlg( bool mean_center, wxWindow* parent, wxWindowID id = -1,
+    AddCentroidsDlg( );
+    AddCentroidsDlg( bool mean_center, wxWindow* parent, wxWindowID id = -1,
 					 const wxString& caption = "EXPORT CENTROIDS->DBF",
 					 const wxPoint& pos = wxDefaultPosition,
 					 const wxSize& size = wxDefaultSize, 

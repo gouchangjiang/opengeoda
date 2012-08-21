@@ -26,47 +26,32 @@
 #include <wx/valtext.h>
 #include <wx/image.h>
 #include <wx/xrc/xmlres.h> // XRC XML resouces
-#include "../ShapeOperations/shp.h"
-#include "../ShapeOperations/shp2gwt.h"
-#include "../ShapeOperations/shp2cnt.h"
+#include "../DataViewer/DbfGridTableBase.h"
+#include "../ShapeOperations/GalWeight.h"
+#include "../ShapeOperations/GwtWeight.h"
 #include "../GenUtils.h"
 #include "WeightCharacterDlg.h"
 
-extern wxString gCompleteFileName;
-extern int gObservation;
-extern	GalElement	*ReadTxtGal(const char *fname, long gObs,
-								const wxString& full_dbf_name);
-extern	GwtElement	*ReadTxtGwt(const char *fname, long gObs,
-								const wxString& full_dbf_name);
-
-
-BEGIN_EVENT_TABLE( CWeightCharacterDlg, wxDialog )
+BEGIN_EVENT_TABLE( WeightCharacterDlg, wxDialog )
     EVT_BUTTON( XRCID("IDC_OPEN_FILEWEIGHT"),
-			   CWeightCharacterDlg::OnCOpenFileweightClick )
-    EVT_BUTTON( XRCID("wxID_OK"), CWeightCharacterDlg::OnOkClick )
+			   WeightCharacterDlg::OnCOpenFileweightClick )
+    EVT_BUTTON( XRCID("wxID_OK"), WeightCharacterDlg::OnOkClick )
 END_EVENT_TABLE()
 
-CWeightCharacterDlg::CWeightCharacterDlg( )
-{
-	m_gal = NULL;
-	m_gwt = NULL;
-	m_freq = NULL;
-}
-
-CWeightCharacterDlg::CWeightCharacterDlg( wxWindow* parent, wxWindowID id,
-										 const wxString& caption,
-										 const wxPoint& pos, const wxSize& size,
-										 long style )
+WeightCharacterDlg::WeightCharacterDlg( wxWindow* parent,
+									   DbfGridTableBase* grid_base_s,
+									   wxWindowID id,
+									   const wxString& caption,
+									   const wxPoint& pos, const wxSize& size,
+									   long style )
+: grid_base(grid_base_s)
 {
 	Create(parent, id, caption, pos, size, style);
-	m_obs = gObservation;
-	m_gwt = NULL;
-	m_gal = NULL;
 	m_WeightFile = wxEmptyString;
 	m_freq = NULL;
 }
 
-bool CWeightCharacterDlg::Create( wxWindow* parent, wxWindowID id,
+bool WeightCharacterDlg::Create( wxWindow* parent, wxWindowID id,
 								 const wxString& caption, const wxPoint& pos,
 								 const wxSize& size, long style )
 {
@@ -78,7 +63,7 @@ bool CWeightCharacterDlg::Create( wxWindow* parent, wxWindowID id,
     return true;
 }
 
-void CWeightCharacterDlg::CreateControls()
+void WeightCharacterDlg::CreateControls()
 {    
 
     wxXmlResource::Get()->LoadDialog(this, GetParent(),
@@ -88,14 +73,14 @@ void CWeightCharacterDlg::CreateControls()
 }
 
 
-void CWeightCharacterDlg::OnOkClick( wxCommandEvent& event )
+void WeightCharacterDlg::OnOkClick( wxCommandEvent& event )
 {
 	event.Skip();
 	EndDialog(wxID_OK);
 }
 
 
-void CWeightCharacterDlg::OnCOpenFileweightClick( wxCommandEvent& event )
+void WeightCharacterDlg::OnCOpenFileweightClick( wxCommandEvent& event )
 {
     wxFileDialog dlg(this, "Input Weights File", "", "",
                     "Weights Files (*.gal; *.gwt)|*.gal;*.gwt");
@@ -107,10 +92,6 @@ void CWeightCharacterDlg::OnCOpenFileweightClick( wxCommandEvent& event )
     if (dlg.ShowModal() == wxID_OK) {
 		m_path  = dlg.GetPath();
 		m_name->SetValue(m_path);
-		
-		char buf_flname[512];
-		strcpy( buf_flname, (const char*)m_path.mb_str(wxConvUTF8) );
-		char* flname = buf_flname;
 
 		wxString ext = wxEmptyString;
 		wxString fname = m_path;
@@ -128,39 +109,35 @@ void CWeightCharacterDlg::OnCOpenFileweightClick( wxCommandEvent& event )
 
 		ext.MakeLower();
 
-		m_freq = NULL;
-		m_freq = new long[m_obs];
-		for (int j=0;j<m_obs; j++) m_freq[j] = 0;
-
-		if (ext == "gal") {
-			if ((m_gal = ReadTxtGal(flname, m_obs,
-				  GenUtils::swapExtension(gCompleteFileName, "dbf"))) == NULL) {
-				wxMessageBox("Fail reading "+ m_path);
-				FindWindow(XRCID("wxID_OK"))->Enable(false);
-				delete [] m_freq;
-				m_freq = NULL;
-			} else {
-				m_freq = new long[m_obs];
-				for (int i=0; i<m_obs;i++) m_freq[i] = m_gal[i].Size();
-	
-				FindWindow(XRCID("wxID_OK"))->Enable(true);
-				done = true;
-				delete [] m_gal; m_gal = NULL;
-			}
-		} else if(ext == "gwt") {
-			int type = 0;
-			if ((m_gwt = ReadTxtGwt(flname, m_obs,
-				  GenUtils::swapExtension(gCompleteFileName, "dbf"))) == NULL) {
-				wxMessageBox("Fail reading "+m_path);
-				FindWindow(XRCID("wxID_OK"))->Enable(false);
-				delete [] m_freq;
-				m_freq = NULL;
-			} else {
-				for (int i=0; i<m_obs;i++) m_freq[i] = m_gwt[i].nbrs; 
+		int num_obs = grid_base->GetNumberRows();
+		m_freq = new long[num_obs];
+		for (int i=0; i<num_obs; i++) m_freq[i]=0;
 		
+		if (ext == "gal") {
+			GalElement* tempGal = WeightUtils::ReadGal(m_path, grid_base);
+			if (tempGal == NULL) {
+				FindWindow(XRCID("wxID_OK"))->Enable(false);
+				delete [] m_freq;
+				m_freq = NULL;
+				return;
+			} else {
+				for (int i=0; i<num_obs;i++) m_freq[i] = tempGal[i].Size();
 				FindWindow(XRCID("wxID_OK"))->Enable(true);
 				done = true;
-				delete [] m_gwt; m_gwt = NULL;
+				delete [] tempGal;
+			}
+		} else if (ext == "gwt") {
+			GalElement* tempGal = WeightUtils::ReadGwtAsGal(m_path, grid_base);
+			if (tempGal == NULL) {
+				FindWindow(XRCID("wxID_OK"))->Enable(false);
+				delete [] m_freq;
+				m_freq = NULL;
+				return;
+			} else {
+				for (int i=0; i<num_obs;i++) m_freq[i] = tempGal[i].Size();
+				FindWindow(XRCID("wxID_OK"))->Enable(true);
+				done = true;
+				delete [] tempGal;
 			}
 		} else {
 			wxMessageBox("Wrong file extension!");
@@ -169,9 +146,4 @@ void CWeightCharacterDlg::OnCOpenFileweightClick( wxCommandEvent& event )
 
 }
 
-
-bool CWeightCharacterDlg::ShowToolTips()
-{
-    return true;
-}
 

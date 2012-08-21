@@ -51,7 +51,7 @@ bool WeightsManager::clean()
 	return true;
 }
 
-bool WeightsManager::AddWeightFile(GeodaWeight* weight, bool set_as_default)
+bool WeightsManager::AddWeightFile(GeoDaWeight* weight, bool set_as_default)
 {
 	if (weight && (num_weights < MAX_OPEN_WEIGHTS)) {
 		if (num_weights == 0) {
@@ -93,13 +93,13 @@ bool WeightsManager::IsGwtWeight(int pos)
 	return (GetGwtWeight(pos) != NULL);
 }
 
-GeodaWeight* WeightsManager::GetWeight(int pos)
+GeoDaWeight* WeightsManager::GetWeight(int pos)
 {
 	if ((pos < 0) || (pos >= num_weights)) return NULL;
 	return weights.at(pos);
 }
 
-GeodaWeight* WeightsManager::GetCurrWeight()
+GeoDaWeight* WeightsManager::GetCurrWeight()
 {
 	if ((current_weight < 0) || (current_weight >= num_weights)) {
 		return NULL;
@@ -110,8 +110,8 @@ GeodaWeight* WeightsManager::GetCurrWeight()
 GalWeight* WeightsManager::GetGalWeight(int pos)
 {
 	if ((pos < 0) || (pos >= num_weights)) return NULL;
-	GeodaWeight* w = weights.at(pos);
-	if (w->weight_type != GeodaWeight::gal_type) return NULL;
+	GeoDaWeight* w = weights.at(pos);
+	if (w->weight_type != GeoDaWeight::gal_type) return NULL;
 	if (pos != current_weight) is_default_weight_set = false;
 	current_weight = pos;
 	return (GalWeight*) w;
@@ -120,8 +120,8 @@ GalWeight* WeightsManager::GetGalWeight(int pos)
 GwtWeight* WeightsManager::GetGwtWeight(int pos)
 {
 	if ((pos < 0) || (pos >= num_weights)) return NULL;
-	GeodaWeight* w = weights.at(pos);
-	if (w->weight_type != GeodaWeight::gwt_type) return NULL;
+	GeoDaWeight* w = weights.at(pos);
+	if (w->weight_type != GeoDaWeight::gwt_type) return NULL;
 	if (pos != current_weight) is_default_weight_set = false;
 	current_weight = pos;
 	return (GwtWeight*) w;
@@ -130,7 +130,7 @@ GwtWeight* WeightsManager::GetGwtWeight(int pos)
 wxString WeightsManager::GetWFilename(int pos)
 {
 	if ((pos < 0) || (pos >= num_weights)) return wxEmptyString;
-	GeodaWeight* w = weights.at(pos);
+	GeoDaWeight* w = weights.at(pos);
 	if (!w) return wxEmptyString;
 	return w->wflnm;
 }
@@ -155,7 +155,7 @@ wxString WeightsManager::GetCurrWeightTitle()
 bool WeightsManager::IsWSymmetric(int pos)
 {
 	if ((pos < 0) || (pos >= num_weights)) return false;
-	GeodaWeight* w = weights.at(pos);
+	GeoDaWeight* w = weights.at(pos);
 	if (!w) return false;
 	return w->is_symmetric;
 }
@@ -163,7 +163,7 @@ bool WeightsManager::IsWSymmetric(int pos)
 void WeightsManager::SetWSymmetric(int pos, bool symmetric)
 {
 	if ((pos < 0) || (pos >= num_weights)) return;
-	GeodaWeight* w = weights.at(pos);
+	GeoDaWeight* w = weights.at(pos);
 	if (!w) return;
 	w->is_symmetric = symmetric;
 }
@@ -171,7 +171,7 @@ void WeightsManager::SetWSymmetric(int pos, bool symmetric)
 bool WeightsManager::IsWSymmetricValid(int pos)
 {
 	if ((pos < 0) || (pos >= num_weights)) return false;
-	GeodaWeight* w = weights.at(pos);
+	GeoDaWeight* w = weights.at(pos);
 	if (!w) return false;
 	return w->symmetry_checked;
 }
@@ -179,16 +179,16 @@ bool WeightsManager::IsWSymmetricValid(int pos)
 void WeightsManager::SetWSymmetricValid(int pos, bool valid)
 {
 	if ((pos < 0) || (pos >= num_weights)) return;
-	GeodaWeight* w = weights.at(pos);
+	GeoDaWeight* w = weights.at(pos);
 	if (!w) return;
 	w->symmetry_checked = valid;
 }
 
 
-bool WeightsManager::CheckWeightSymmetry(GeodaWeight* w, ProgressDlg* p_dlg)
+bool WeightsManager::CheckWeightSymmetry(GeoDaWeight* w, ProgressDlg* p_dlg)
 {
 	if (!w->symmetry_checked) {
-		if (w->weight_type == GeodaWeight::gal_type) {
+		if (w->weight_type == GeoDaWeight::gal_type) {
 			w->is_symmetric = CheckGalSymmetry((GalWeight*) w, p_dlg);
 		} else {
 			w->is_symmetric = CheckGwtSymmetry((GwtWeight*) w, p_dlg);
@@ -275,9 +275,9 @@ bool WeightsManager::CheckGwtSymmetry(GwtWeight* w, ProgressDlg* p_dlg)
 	return true;
 }
 
-void WeightsManager::DumpWeight(GeodaWeight* w)
+void WeightsManager::DumpWeight(GeoDaWeight* w)
 {
-	if (w->weight_type == GeodaWeight::gal_type) {
+	if (w->weight_type == GeoDaWeight::gal_type) {
 		DumpGal((GalWeight*) w);
 	} else {
 		DumpGwt((GwtWeight*) w);

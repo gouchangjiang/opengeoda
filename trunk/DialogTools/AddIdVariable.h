@@ -30,36 +30,27 @@ class DbfGridTableBase;
 
 class AddIdVariable: public wxDialog {
 public:
-	AddIdVariable(const wxString& dbf_fnm,
-				   wxWindow* parent, wxWindowID id = -1,
-				   const wxString& caption = "Add New ID Variable",
-				   const wxPoint& pos = wxDefaultPosition,
-				   const wxSize& size = wxDefaultSize,
-				   long style = wxCAPTION|wxSYSTEM_MENU );
-	
-	bool Create(const wxString& dbf_fnm,
-				wxWindow* parent, wxWindowID id = -1,
-				const wxString& caption = "Add New ID Variable",
-				const wxPoint& pos = wxDefaultPosition,
-				const wxSize& size = wxDefaultSize,
-				long style = wxCAPTION|wxSYSTEM_MENU );
+	AddIdVariable(const wxString& dbf_fname,
+				  DbfGridTableBase* grid_base,
+				  wxWindow* parent, wxWindowID id = -1,
+				  const wxString& caption = "Add New ID Variable",
+				  const wxPoint& pos = wxDefaultPosition,
+				  const wxSize& size = wxDefaultSize,
+				  long style = wxCAPTION|wxSYSTEM_MENU );
 	
 	void CreateControls();
-	
 	void OnOkClick( wxCommandEvent& event );
-	
 	void OnCancelClick( wxCommandEvent& event );
-	
-	static bool ShowToolTips();
-	
 	wxString GetIdVarName();
 	
 private:
+	bool m_is_current_project;
 	wxString new_id_var_name;
 	wxTextCtrl *new_id_var;
 	wxListBox *existing_vars_list;
-	wxString dbf_fname;
+	wxString dbf_fname; // can be empty
 	std::vector<DbfFieldDesc> fields;
+	DbfGridTableBase* grid_base; // can be NULL
 	
 	DECLARE_EVENT_TABLE();
 };

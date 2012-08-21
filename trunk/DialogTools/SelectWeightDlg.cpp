@@ -30,8 +30,6 @@
 #include "CreatingWeightDlg.h"
 #include "SelectWeightDlg.h"
 
-extern wxString gCompleteFileName;
-
 BEGIN_EVENT_TABLE( SelectWeightDlg, wxDialog )
     EVT_RADIOBUTTON( XRCID("IDC_RADIO_OPENWEIGHT1"),
 					SelectWeightDlg::OnCRadioOpenweight1Selected )
@@ -190,14 +188,9 @@ void SelectWeightDlg::OnOkClick( wxCommandEvent& event )
 
 void SelectWeightDlg::OnCOpenFileweightClick( wxCommandEvent& event )
 {
-    wxFileName ifn(gCompleteFileName);
-    wxString defaultDir(ifn.GetPath());
-    wxString defaultFile;
-
     wxFileDialog dlg( this,
 					 "Input Weights File",
-					 defaultDir,
-					 defaultFile,
+					 project->GetMainDir(),
 					 "Weights Files (*.gal, *.gwt)|*.gal;*.gwt");
 
 	// m_path contains the path and the file name + ext

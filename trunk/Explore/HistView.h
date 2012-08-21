@@ -26,6 +26,7 @@ class HistCanvas : public TemplateCanvas, public Conditionable
 {
 public:
     HistCanvas(bool ViewCC, wxWindow *parent,
+			   double* v1, int num_obs, const wxString& v1_name,
 			   const wxPoint& pos, const wxSize& size,
 			   bool conditional_view = false,
 			   wxString hist_weight_file = wxEmptyString,
@@ -69,6 +70,7 @@ public:
     char** LegendItems;
     wxColour* RangeColor;
 	double minData, maxData;
+	int num_obs;
 
 	void UpdateBins();
 protected:
@@ -102,7 +104,9 @@ class HistFrame: public TemplateFrame
 {
 public:
     HistCanvas *canvas;
-    HistFrame(wxFrame *parent, Project* project, const wxString& title,
+    HistFrame(wxFrame *parent,
+			  double* v1, int num_obs, const wxString& v1_name,
+			  Project* project, const wxString& title,
 			  const wxPoint& pos, const wxSize& size, const long style,
 			  wxString hist_weight_file = wxEmptyString,
 			  long* hist_weight_freq = 0);

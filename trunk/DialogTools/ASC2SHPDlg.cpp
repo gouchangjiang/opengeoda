@@ -37,18 +37,18 @@ extern bool CreatePointShapeFile(
                 double *y);          // y-ccordinates vector
 
 
-BEGIN_EVENT_TABLE( CASC2SHPDlg, wxDialog )
-    EVT_BUTTON( XRCID("IDOK_ADD"), CASC2SHPDlg::OnOkAddClick )
-    EVT_BUTTON( XRCID("IDC_OPEN_IASC"), CASC2SHPDlg::OnCOpenIascClick )
-    EVT_BUTTON( XRCID("IDC_OPEN_OSHP"), CASC2SHPDlg::OnCOpenOshpClick )
-    EVT_BUTTON( XRCID("IDCANCEL"), CASC2SHPDlg::OnCancelClick )
+BEGIN_EVENT_TABLE( ASC2SHPDlg, wxDialog )
+    EVT_BUTTON( XRCID("IDOK_ADD"), ASC2SHPDlg::OnOkAddClick )
+    EVT_BUTTON( XRCID("IDC_OPEN_IASC"), ASC2SHPDlg::OnCOpenIascClick )
+    EVT_BUTTON( XRCID("IDC_OPEN_OSHP"), ASC2SHPDlg::OnCOpenOshpClick )
+    EVT_BUTTON( XRCID("IDCANCEL"), ASC2SHPDlg::OnCancelClick )
 END_EVENT_TABLE()
 
-CASC2SHPDlg::CASC2SHPDlg( )
+ASC2SHPDlg::ASC2SHPDlg( )
 {
 }
 
-CASC2SHPDlg::CASC2SHPDlg( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+ASC2SHPDlg::ASC2SHPDlg( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
     Create(parent, id, caption, pos, size, style);
 
@@ -59,7 +59,7 @@ CASC2SHPDlg::CASC2SHPDlg( wxWindow* parent, wxWindowID id, const wxString& capti
 	FindWindow(XRCID("IDOK_ADD"))->Enable(false);
 }
 
-bool CASC2SHPDlg::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool ASC2SHPDlg::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
     SetParent(parent);
     CreateControls();
@@ -68,7 +68,7 @@ bool CASC2SHPDlg::Create( wxWindow* parent, wxWindowID id, const wxString& capti
     return true;
 }
 
-void CASC2SHPDlg::CreateControls()
+void ASC2SHPDlg::CreateControls()
 {    
     wxXmlResource::Get()->LoadDialog(this, GetParent(), "IDD_CONVERT_ASC2SHP");
     m_inputfile = XRCCTRL(*this, "IDC_FIELD_ASC", wxTextCtrl);
@@ -79,14 +79,14 @@ void CASC2SHPDlg::CreateControls()
     m_Y = XRCCTRL(*this, "IDC_KEYVAR2", wxChoice);
 }
 
-void CASC2SHPDlg::OnOkAddClick( wxCommandEvent& event )
+void ASC2SHPDlg::OnOkAddClick( wxCommandEvent& event )
 {
 	wxString m_iASC = m_inputfile->GetValue();
 	wxString m_oSHP = m_outputfile->GetValue();
     int idx_x = m_X->GetSelection();
 	int idx_y = m_Y->GetSelection();
 	std::ifstream ias;
-	ias.open(m_iASC.wx_str());
+	ias.open(m_iASC.mb_str());
 	int n_recs;
 	int n_fields;
 		
@@ -262,7 +262,7 @@ void CASC2SHPDlg::OnOkAddClick( wxCommandEvent& event )
 }
 
 
-void CASC2SHPDlg::OnCOpenIascClick( wxCommandEvent& event )
+void ASC2SHPDlg::OnCOpenIascClick( wxCommandEvent& event )
 {
     wxFileDialog dlg( this, "Input ASCII file", "", "",
 					 "ASCII files (*.txt)|*.txt");
@@ -284,7 +284,7 @@ void CASC2SHPDlg::OnCOpenIascClick( wxCommandEvent& event )
 		m_Y->Clear();
 
 		ifstream ias;
-		ias.open(m_iASC.wx_str());
+		ias.open(m_iASC.mb_str());
 
 		int n_recs;
 		int n_fields;
@@ -296,13 +296,13 @@ void CASC2SHPDlg::OnCOpenIascClick( wxCommandEvent& event )
 
 		if( (n_recs <= 0) ) {
 			wxString msg = "Error: number of records must be > 0,\nbut only ";
-			msg += n_recs + " records found.";
+			msg << n_recs << " records found.";
 			wxMessageBox(msg);
 		}
 
 		if( (n_fields <= 2) ) {
 			wxString msg = "Error: number of fields must be > 2,\nbut only ";
-			msg += n_fields + " fields found.";
+			msg << n_fields << " fields found.";
 			wxMessageBox(msg);
 		}
 
@@ -358,7 +358,7 @@ void CASC2SHPDlg::OnCOpenIascClick( wxCommandEvent& event )
 	}		 
 }
 
-void CASC2SHPDlg::OnCOpenOshpClick( wxCommandEvent& event )
+void ASC2SHPDlg::OnCOpenOshpClick( wxCommandEvent& event )
 {
     wxFileDialog dlg(this, "Output Shp file", wxEmptyString, fn + ".shp",
                     "Shp files (*.shp)|*.shp",
@@ -375,13 +375,13 @@ void CASC2SHPDlg::OnCOpenOshpClick( wxCommandEvent& event )
 	}
 }
 
-void CASC2SHPDlg::OnCancelClick( wxCommandEvent& event )
+void ASC2SHPDlg::OnCancelClick( wxCommandEvent& event )
 {
 	event.Skip(); // wxDialog::OnCancel(event);
 	EndDialog(wxID_CANCEL);
 }
 
-bool CASC2SHPDlg::ShowToolTips()
+bool ASC2SHPDlg::ShowToolTips()
 {
     return true;
 }

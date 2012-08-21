@@ -51,6 +51,7 @@ public:
 
 	void OnAddColumnClick( wxCommandEvent& event );
     void OnSpecialResultUpdated( wxCommandEvent& event );
+    void OnSpecialResultTmUpdated( wxCommandEvent& event );
     void OnSpecialOperand1Updated( wxCommandEvent& event );
     void OnSpecialOperatorUpdated( wxCommandEvent& event );
     void OnSpecialOperand2Updated( wxCommandEvent& event );
@@ -67,8 +68,13 @@ public:
 	FieldNewCalcLagDlg* l_panel;
 	FieldNewCalcRateDlg* r_panel;
 
+	bool IsTimeVariant(int col_id);
+	bool IsAllTime(int col_id, int tm_sel);
+	
 	bool all_init;
+	bool is_space_time;
     wxChoice* m_result;
+	wxChoice* m_result_tm;
 	wxChoice* m_op;
 	wxStaticText* m_var1_label;
     wxTextCtrl* m_var1;
@@ -88,6 +94,7 @@ public:
 	
 	void Apply();
 	void InitFieldChoices();
+	void InitTime(wxChoice* time_list);
 	void Display();
 	
 	enum OpType {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <resource>
   <object class="wxToolBar" name="ToolBar">
-    <object class="tool" name="ID_OPEN_SHAPE_FILE">
+    <object class="tool" name="ID_OPEN_CHOICES">
       <bitmap>ToolBar-open-folder.png</bitmap>
       <bitmap2>ToolBar-open-folder_disabled.png</bitmap2>
       <tooltip>Open Project</tooltip>
@@ -17,7 +17,6 @@
       <bitmap2>ToolBarBitmaps_18_disabled.png</bitmap2>
       <tooltip>Open Table</tooltip>
     </object>
-    
     <object class="tool" name="ID_SET_DEFAULT_VARIABLE_SETTINGS">
       <bitmap>ToolBarBitmaps_10.png</bitmap>
       <bitmap2>ToolBarBitmaps_10_disabled.png</bitmap2>
@@ -37,18 +36,13 @@
     <object class="tool" name="ID_TOOLS_WEIGHTS_CHAR">
       <bitmap>ToolBarBitmaps_5.png</bitmap>
       <bitmap2>ToolBarBitmaps_5_disabled.png</bitmap2>
-      <tooltip>Weight neighbors histogram</tooltip>
+      <tooltip>Weights neighbors histogram</tooltip>
     </object>
     <object class="separator"/>
     <object class="tool" name="ID_MAP_CHOICES">
-      <bitmap>ToolBarBitmaps_MapChoices.png</bitmap>
-      <bitmap2>ToolBarBitmaps_MapChoices_disabled.png</bitmap2>
-      <tooltip>Maps and Smoothing</tooltip>
-    </object>
-    <object class="tool" name="ID_NEW_MAP_WINDOW">
-      <bitmap>ToolBarBitmaps_9.png</bitmap>
-      <bitmap2>ToolBarBitmaps_9_disabled.png</bitmap2>
-      <tooltip>New Map Window</tooltip>
+      <bitmap>ToolBarBitmaps_MapChoices2.png</bitmap>
+      <bitmap2>ToolBarBitmaps_MapChoices2_disabled.png</bitmap2>
+      <tooltip>Maps and Rates</tooltip>
     </object>
     <object class="tool" name="ID_SHOW_CARTOGRAM_MAP">
       <bitmap>ToolBarBitmaps_30.png</bitmap>
@@ -61,20 +55,30 @@
       <tooltip>Map Movie (cumulative selection)</tooltip>
     </object>
     <object class="separator"/>
-    <object class="tool" name="IDM_BOX">
-      <bitmap>ToolBarBitmaps_14.png</bitmap>
-      <bitmap2>ToolBarBitmaps_14_disabled.png</bitmap2>
-      <tooltip>Box Plot</tooltip>
-    </object>
     <object class="tool" name="IDM_HIST">
       <bitmap>ToolBarBitmaps_12.png</bitmap>
       <bitmap2>ToolBarBitmaps_12_disabled.png</bitmap2>
       <tooltip>Histogram</tooltip>
     </object>
+    <object class="tool" name="IDM_BOX">
+      <bitmap>ToolBarBitmaps_14.png</bitmap>
+      <bitmap2>ToolBarBitmaps_14_disabled.png</bitmap2>
+      <tooltip>Box Plot</tooltip>
+    </object>
     <object class="tool" name="IDM_SCATTERPLOT">
       <bitmap>ToolBarBitmaps_13.png</bitmap>
       <bitmap2>ToolBarBitmaps_13_disabled.png</bitmap2>
       <tooltip>Scatter Plot</tooltip>
+    </object>
+    <object class="tool" name="IDM_BUBBLECHART">
+      <bitmap>ToolBarBitmaps_41.png</bitmap>
+      <bitmap2>ToolBarBitmaps_41_disabled.png</bitmap2>
+      <tooltip>Bubble Chart</tooltip>
+    </object>
+    <object class="tool" name="IDM_3DP">
+      <bitmap>ToolBarBitmaps_16.png</bitmap>
+      <bitmap2>ToolBarBitmaps_16_disabled.png</bitmap2>
+      <tooltip>3D Scatter Plot</tooltip>
     </object>
     <object class="tool" name="IDM_PCP">
       <bitmap>ToolBarBitmaps_15.png</bitmap>
@@ -86,11 +90,6 @@
       <bitmap2>ToolBarBitmaps_17_disabled.png</bitmap2>
       <tooltip>Conditional Plot</tooltip>
     </object>
-    <object class="tool" name="IDM_3DP">
-      <bitmap>ToolBarBitmaps_16.png</bitmap>
-      <bitmap2>ToolBarBitmaps_16_disabled.png</bitmap2>
-      <tooltip>3D Scatter Plot</tooltip>
-    </object>
     <object class="separator"/>
     <object class="tool" name="IDM_MSPL">
       <bitmap>ToolBarBitmaps_19.png</bitmap>
@@ -100,7 +99,7 @@
     <object class="tool" name="IDM_GMORAN">
       <bitmap>ToolBarBitmaps_20.png</bitmap>
       <bitmap2>ToolBarBitmaps_20_disabled.png</bitmap2>
-      <tooltip>Multivariate Moran's I</tooltip>
+      <tooltip>Bivariate Moran's I</tooltip>
     </object>
     <object class="tool" name="IDM_MORAN_EBRATE">
       <bitmap>ToolBarBitmaps_21.png</bitmap>
@@ -110,19 +109,19 @@
     <object class="tool" name="IDM_UNI_LISA">
       <bitmap>ToolBarBitmaps_22.png</bitmap>
       <bitmap2>ToolBarBitmaps_22_disabled.png</bitmap2>
-      <tooltip>Univariate LISA</tooltip>
+      <tooltip>Univariate Local Moran's I</tooltip>
     </object>
     <object class="tool" name="IDM_MULTI_LISA">
       <bitmap>ToolBarBitmaps_23.png</bitmap>
       <bitmap2>ToolBarBitmaps_23_disabled.png</bitmap2>
-      <tooltip>Multivariate LISA</tooltip>
+      <tooltip>Bivariate Local Moran's I</tooltip>
     </object>
     <margins>1,1</margins>
     <style>wxTB_FLAT|wxTB_NODIVIDER</style>
     <object class="tool" name="IDM_LISA_EBRATE">
       <bitmap>ToolBarBitmaps_24.png</bitmap>
       <bitmap2>ToolBarBitmaps_24_disabled.png</bitmap2>
-      <tooltip>LISA EB Rate</tooltip>
+      <tooltip>Local Moran's I with EB Rate</tooltip>
     </object>
     <object class="tool" name="IDM_GETIS_ORD">
       <bitmap>ToolBarBitmaps_37.png</bitmap>
@@ -156,7 +155,7 @@
       <bitmap2>ToolBarBitmaps_3_disabled.png</bitmap2>
       <tooltip>Select Weights</tooltip>
     </object>
-    <object class="tool" name="ID_SHOW_CONVERTED_FEATURES">
+    <object class="tool" name="ID_OPEN_MATCHING_MAP">
       <bitmap>ToolBarBitmaps_6.png</bitmap>
       <bitmap2>ToolBarBitmaps_6_disabled.png</bitmap2>
       <tooltip>Show Converted Features</tooltip>

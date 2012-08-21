@@ -61,14 +61,11 @@ public:
 					  const bool std=true) const;
     double SpatialLag(const double* x, const int* perm,
 					  const bool std=true) const;
-    void Write(std::ofstream &out) const;
-    void Read(std::ifstream &in);
-	
-	int ReadTxt(std::ifstream &in, long ob);
-	int ReadTxt(int dim, long* dt, long ob);
+	double SpatialLag(const std::vector<double>& x, const int* perm,
+					  const bool std=true) const;
 };
 
-class GalWeight : public GeodaWeight {
+class GalWeight : public GeoDaWeight {
 public:
 	GalWeight() : gal(0) { weight_type = gal_type; }
 	virtual ~GalWeight() { if (gal) delete [] gal; gal = 0; }

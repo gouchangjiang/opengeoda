@@ -22,6 +22,7 @@
 
 #undef check // macro undefine needed for Xcode compilation with Boost.Geometry
 #include <list>
+#include <vector>
 #include <cmath> // for double abs(doube);
 //#include "DbfFile.h"
 #include "ShpFile.h"
@@ -89,6 +90,11 @@ namespace ShapeUtils {
 	double CalcMapWidth(Shapefile::Header header);
 	double CalcMapHeight(Shapefile::Header header);
 	double CalcAspectRatio(Shapefile::Header header);
+	
+	void populatePointShpFile(const std::vector<double>& x,
+							  const std::vector<double>& y,
+							  Shapefile::Index& index, Shapefile::Main& main);
+	void initHeader(Shapefile::Header& header);
 }
 
 #endif

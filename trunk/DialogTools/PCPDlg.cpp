@@ -44,7 +44,6 @@ PCPDlg::PCPDlg(DbfGridTableBase* grid_base_s, wxWindow* parent,
 : grid_base(grid_base_s)
 {
     SetParent(parent);
-	grid_base->FillNumericColIdMap(col_id_map);
     CreateControls();
 	Init();
 	SetPosition(pos);
@@ -62,36 +61,25 @@ void PCPDlg::CreateControls()
 
 void PCPDlg::Init()
 {
-	std::map<wxString, int> dbf_fn_freq; // field name frequency
-	std::set<wxString> dups;
-	dedup_to_id.clear();
+	grid_base->FillNumericColIdMap(col_id_map);
+	name_to_id.clear(); // map to grid_base col id
+	name_to_tm_id.clear(); // map to corresponding time id
 	for (int i=0, iend=col_id_map.size(); i<iend; i++) {
-		wxString name = grid_base->col_data[col_id_map[i]]->name.Upper();
-		if (dbf_fn_freq.find(name) != dbf_fn_freq.end()) {
-			dbf_fn_freq[name]++;
+		int id = col_id_map[i];
+		wxString name = grid_base->col_data[id]->name.Upper();
+		if (grid_base->IsColTimeVariant(id)) {
+			for (int t=0; t<grid_base->col_data[id]->time_steps; t++) {
+				wxString nm = name;
+				nm << " (" << grid_base->time_ids[t] << ")";
+				name_to_id[nm] = id;
+				name_to_tm_id[nm] = t;
+				m_exclude_list->Append(nm);
+			}
 		} else {
-			dbf_fn_freq[name] = 1;
+			name_to_id[name] = id;
+			name_to_tm_id[name] = 0;
+			m_exclude_list->Append(name);
 		}
-	}
-	
-	for (std::map<wxString, int>::iterator it=dbf_fn_freq.begin();
-		 it!=dbf_fn_freq.end(); it++) {
-		if ((*it).second > 1) dups.insert((*it).first);
-	}
-	
-	std::map<wxString, int> dups_cntr;
-	for (std::set<wxString>::iterator it=dups.begin(); it!=dups.end(); it++) {
-		dups_cntr[(*it)] = 1;
-	}
-	
-	for (int i=0, iend=col_id_map.size(); i<iend; i++) {
-		wxString name = grid_base->col_data[col_id_map[i]]->name.Upper();
-		wxString dedup_name = name;
-		if (dbf_fn_freq[name] > 1) {
-			dedup_name << " (" << dups_cntr[name]++ << ")";
-		}
-		dedup_to_id[dedup_name] = col_id_map[i]; // map to grid_base col id
-		m_exclude_list->Append(dedup_name);
 	}
 	
 	UpdateOkButton();
@@ -150,18 +138,30 @@ void PCPDlg::OnOkClick( wxCommandEvent& event )
 {
 	int n_pcp_obs_sel = m_include_list->GetCount();
 	
+	col_ids.resize(m_include_list->GetCount());
+	var_info.resize(m_include_list->GetCount());
+	
 	pcp_col_ids.resize(m_include_list->GetCount());
+	pcp_col_tm_ids.resize(m_include_list->GetCount());
 
-	// dups tell us which strings need to be renamed, while
-	// dedup_to_id tell us which col id this maps to in the original dbf
+	// name_to_id tell us which col id this maps to in the original dbf
 	// we need to create a final list of names to col id.
 	
-	std::map<wxString,int> fname_to_id; // field name to col id map
-	std::map<int,wxString> inc_order_to_fname; // keep track of order
-	
 	for (int i=0, iend=m_include_list->GetCount(); i<iend; i++) {
-		pcp_col_ids[i] = dedup_to_id[m_include_list->GetString(i)];
+		pcp_col_ids[i] = name_to_id[m_include_list->GetString(i)];
+		pcp_col_tm_ids[i] = name_to_tm_id[m_include_list->GetString(i)];
+		
+		col_ids[i] = pcp_col_ids[i];
+		var_info[i].time = pcp_col_tm_ids[i];
+		var_info[i].name = grid_base->GetColName(col_ids[i]);
+		var_info[i].is_time_variant = grid_base->IsColTimeVariant(col_ids[i]);
+		grid_base->GetMinMaxVals(col_ids[i], var_info[i].min, var_info[i].max);
+		var_info[i].sync_with_global_time = var_info[i].is_time_variant;
+		var_info[i].fixed_scale = true;
 	}
+	// Call function to set all Secondary Attributes based on Primary Attributes
+	GeoDa::UpdateVarInfoSecondaryAttribs(var_info);
+	GeoDa::PrintVarInfoVector(var_info);
 	
 	event.Skip();
 	EndDialog(wxID_OK);
@@ -178,5 +178,3 @@ void PCPDlg::UpdateOkButton()
 {
 	FindWindow(XRCID("wxID_OK"))->Enable(m_include_list->GetCount() >= 2);
 }
-
-

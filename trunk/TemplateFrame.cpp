@@ -26,6 +26,7 @@
 #include <wx/image.h>
 #include <wx/icon.h>
 #include <wx/xrc/xmlres.h>
+#include "DataViewer/DbfGridTableBase.h"
 #include "FramesManager.h"
 #include "TemplateFrame.h"
 #include "TemplateCanvas.h"
@@ -39,6 +40,7 @@
 IMPLEMENT_CLASS(TemplateFrame, wxFrame)
 
 BEGIN_EVENT_TABLE(TemplateFrame, wxFrame)
+	EVT_CHAR_HOOK(TemplateFrame::OnKeyEvent)
 END_EVENT_TABLE()
 
 wxList TemplateFrame::my_children;
@@ -51,7 +53,8 @@ TemplateFrame::TemplateFrame(wxFrame *parent, Project* project_s,
 							 const wxSize& size, const long style)
 : wxFrame(parent, -1, title, pos, size, style),
 	template_canvas(0), template_legend(0), project(project_s),
-	old_style(false), frames_manager(project_s->GetFramesManager())
+	old_style(false), frames_manager(project_s->GetFramesManager()),
+	is_status_bar_visible(false)
 {
 	SetIcon(wxIcon(oGeoDaIcon_16x16_xpm));
 	frames_manager->registerObserver(this);
@@ -175,7 +178,9 @@ void TemplateFrame::UpdateOptionMenuItems()
 								  TemplateCanvas::pan);
 	GeneralWxUtils::CheckMenuItem(mb, XRCID("ID_SELECTABLE_OUTLINE_VISIBLE"),
 								  template_canvas->
-									IsSelectableOutlineVisible());	
+									IsSelectableOutlineVisible());
+	GeneralWxUtils::CheckMenuItem(mb, XRCID("ID_DISPLAY_STATUS_BAR"),
+								  IsStatusBarVisible());
 }
 
 void TemplateFrame::UpdateContextMenuItems(wxMenu* menu)
@@ -209,7 +214,71 @@ void TemplateFrame::UpdateContextMenuItems(wxMenu* menu)
 								  TemplateCanvas::pan);
 	GeneralWxUtils::CheckMenuItem(menu, XRCID("ID_SELECTABLE_OUTLINE_VISIBLE"),
 								  template_canvas->
-									IsSelectableOutlineVisible());	
+									IsSelectableOutlineVisible());
+	GeneralWxUtils::CheckMenuItem(menu, XRCID("ID_DISPLAY_STATUS_BAR"),
+								  IsStatusBarVisible());
+}
+
+void TemplateFrame::OnTimeSyncVariable(int var_index)
+{
+	if (!template_canvas) return;
+	template_canvas->TimeSyncVariableToggle(var_index);
+	UpdateOptionMenuItems();
+}
+
+void TemplateFrame::OnFixedScaleVariable(int var_index)
+{
+	if (!template_canvas) return;
+	template_canvas->FixedScaleVariableToggle(var_index);
+	UpdateOptionMenuItems();
+}
+
+void TemplateFrame::OnPlotsPerView(int plots_per_view)
+{
+	if (!template_canvas) return;
+	template_canvas->PlotsPerView(plots_per_view);
+	UpdateOptionMenuItems();
+	UpdateTitle();
+}
+
+void TemplateFrame::OnPlotsPerViewOther()
+{
+	if (!template_canvas) return;
+	template_canvas->PlotsPerViewOther();
+	UpdateOptionMenuItems();
+	UpdateTitle();
+}
+
+void TemplateFrame::OnPlotsPerViewAll()
+{
+	if (!template_canvas) return;
+	template_canvas->PlotsPerViewAll();
+	UpdateOptionMenuItems();
+	UpdateTitle();
+}
+
+void TemplateFrame::DisplayStatusBar(bool show)
+{
+	LOG_MSG("Entering TemplateFrame::DisplayStatusBar");
+	wxStatusBar* sb = 0;
+	if (!is_status_bar_visible && show) {
+		is_status_bar_visible = true;
+		if (!GetStatusBar()) {
+			sb = new wxStatusBar(this);
+			SetStatusBar(sb);
+		}
+		SendSizeEvent();
+	} else if (is_status_bar_visible && !show) {
+		is_status_bar_visible = false;
+		sb = GetStatusBar();
+		if (sb) {
+			SetStatusBar(0);
+			delete sb;
+		}
+		SendSizeEvent();
+	}
+	LOG(is_status_bar_visible);
+	LOG_MSG("Exiting TemplateFrame::DisplayStatusBar");
 }
 
 void TemplateFrame::RegisterAsActive(const wxString& name,
@@ -265,6 +334,29 @@ void TemplateFrame::MapMenus()
 	LOG_MSG("In TemplateFrame::MapMenus");
 }
 
+void TemplateFrame::OnKeyEvent(wxKeyEvent& event)
+{
+	//LOG_MSG("In TemplateFrame::OnKeyEvent");
+	if (event.GetModifiers() == wxMOD_CMD &&
+		project && project->GetGridBase() &&
+		project->GetGridBase()->IsTimeVariant() &&
+		(event.GetKeyCode() == WXK_LEFT || event.GetKeyCode() == WXK_RIGHT)) {
+		DbfGridTableBase* grid_base = project->GetGridBase();
+		int del = (event.GetKeyCode() == WXK_LEFT) ? -1 : 1;
+		LOG(del);
+		grid_base->curr_time_step = grid_base->curr_time_step + del;
+		if (grid_base->curr_time_step < 0) {
+			grid_base->curr_time_step = grid_base->time_steps-1;
+		} else if (grid_base->curr_time_step >= grid_base->time_steps) {
+			grid_base->curr_time_step = 0;
+		}
+		if (project->GetFramesManager()) {
+			project->GetFramesManager()->notifyObservers();
+		}
+		return;
+	}
+	event.Skip();
+}
 
 /** MMM: ExportImage assuemes the old style template canvas.  We should have
       a second version available.  OnDraw is used by the older
@@ -274,12 +366,21 @@ void TemplateFrame::ExportImage(TemplateCanvas* canvas, const wxString& type)
 {
 	LOG_MSG("Entering TemplateFrame::ExportImage");
 	
+	wxString default_fname(project->GetMainName() + type + ".svg");
+	wxString filter("BMP|*.bmp|PNG|*.png|SVG|*.svg");
+	int filter_index = 2;
+	//"BMP|*.bmp|PNG|*.png|PostScript|*.ps|SVG|*.svg"
+	//if (!old_style) {
+	//	default_fname = wxEmptyString;
+	//	default_fname << project->GetMainName() << type << ".png";
+	//	filter = wxEmptyString;
+	//	filter << "BMP|*.bmp|PNG|*.png";
+	//	filter_index = 1;
+	//}
     wxFileDialog dialog(canvas, "Save Image to File", wxEmptyString,
-						project->GetMainName() + type + ".svg",
-						//"BMP|*.bmp|PNG|*.png|PostScript|*.ps|SVG|*.svg",
-						"BMP|*.bmp|PNG|*.png|SVG|*.svg",
+						default_fname, filter,
 						wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-	dialog.SetFilterIndex(2);
+	dialog.SetFilterIndex(filter_index);
 	
     if (dialog.ShowModal() != wxID_OK) return;
 	
@@ -294,11 +395,16 @@ void TemplateFrame::ExportImage(TemplateCanvas* canvas, const wxString& type)
 			LOG_MSG("BMP selected");
 			wxBitmap bitmap( sz.x, sz.y );
 			wxMemoryDC dc;
-			dc.SelectObject( bitmap );
-			dc.SetBrush(*wxWHITE_BRUSH);
-			dc.SetPen(*wxWHITE_PEN);
-			dc.DrawRectangle(0,0,sz.x,sz.y);
-			canvas->Draw(&dc);
+			dc.SelectObject(bitmap);
+			if (old_style) {
+				dc.SetBrush(*wxWHITE_BRUSH);
+				dc.SetPen(*wxWHITE_PEN);
+				dc.DrawRectangle(0,0,sz.x,sz.y);
+				dc.SetPen(*wxBLACK_PEN);
+				canvas->Draw(&dc);
+			} else {
+				dc.DrawBitmap(*template_canvas->GetLayer1(), 0, 0);
+			}
 			dc.SelectObject( wxNullBitmap );
 			
 			wxImage image = bitmap.ConvertToImage();
@@ -315,13 +421,17 @@ void TemplateFrame::ExportImage(TemplateCanvas* canvas, const wxString& type)
 			LOG_MSG("PNG selected");
 			wxBitmap bitmap( sz.x, sz.y );
 			wxMemoryDC dc;
-			dc.SelectObject( bitmap );
-			wxColour brushColour(255, 255, 255, wxALPHA_TRANSPARENT); 
-			wxBrush brush;
-			dc.SetBrush(brushColour);
-			dc.SetPen(*wxTRANSPARENT_PEN);
-			dc.DrawRectangle(0,0,sz.x,sz.y);
-			canvas->Draw(&dc);
+			dc.SelectObject(bitmap);
+			if (old_style) {
+				wxColour brushColour(255, 255, 255, wxALPHA_TRANSPARENT); 
+				wxBrush brush;
+				dc.SetBrush(brushColour);
+				dc.SetPen(*wxTRANSPARENT_PEN);
+				dc.DrawRectangle(0,0,sz.x,sz.y);
+				canvas->Draw(&dc);
+			} else {
+				dc.DrawBitmap(*template_canvas->GetLayer1(), 0, 0);
+			}
 			dc.SelectObject( wxNullBitmap );
 			
 			wxImage image = bitmap.ConvertToImage();
@@ -388,9 +498,13 @@ void TemplateFrame::ExportImage(TemplateCanvas* canvas, const wxString& type)
 		{
 			LOG_MSG("SVG selected");
 			wxSVGFileDC dc(str_fname + ".svg", sz.x, sz.y);
-			dc.SetBrush(*wxTRANSPARENT_BRUSH);
-			dc.SetPen(*wxTRANSPARENT_PEN);
-			canvas->Draw(&dc);
+			if (old_style) {
+				dc.SetBrush(*wxTRANSPARENT_BRUSH);
+				dc.SetPen(*wxBLACK_PEN);
+				canvas->Draw(&dc);
+			} else {
+				template_canvas->RenderToDC(dc, true);
+			}
 		}
 			break;
 			
@@ -425,7 +539,9 @@ void TemplateFrame::OnOldStyleCopyImageToClipboard(wxCommandEvent& event)
     wxBrush brush;
     brush.SetColour(template_canvas->GetBackgroundColour());
     dc.SetBrush(brush);
+	dc.SetPen(*wxTRANSPARENT_PEN);
     dc.DrawRectangle(0, 0, sz.x, sz.y);
+	dc.SetPen(*wxBLACK_PEN);
     template_canvas->Draw(&dc);
     dc.SelectObject(wxNullBitmap);
 	
@@ -452,7 +568,9 @@ void TemplateFrame::OnOldStyleCopyLegendToClipboard(wxCommandEvent& event)
     wxBrush brush;
     brush.SetColour(template_legend->GetBackgroundColour());
     dc.SetBrush(brush);
+	dc.SetPen(*wxTRANSPARENT_PEN);
     dc.DrawRectangle(0, 0, sz.x, sz.y);
+	dc.SetPen(*wxBLACK_PEN);
     template_legend->OnDraw(dc);
     dc.SelectObject(wxNullBitmap);
 	
@@ -474,15 +592,10 @@ void TemplateFrame::OnCopyImageToClipboard(wxCommandEvent& event)
 	wxSize sz = template_canvas->GetVirtualSize();
 		
 	wxBitmap bitmap( sz.x, sz.y );
-		
+	
 	wxMemoryDC dc;
 	dc.SelectObject( bitmap );
-		
-	wxBrush brush;
-	brush.SetColour(wxColour("WHITE"));
-	dc.SetBrush(brush);
-	dc.DrawRectangle(0,0,sz.x,sz.y);
-	template_canvas->PaintShapes(dc);
+	dc.DrawBitmap(*template_canvas->GetLayer1(), 0, 0);
 	dc.SelectObject( wxNullBitmap );
 
 	if ( !wxTheClipboard->Open() ) {

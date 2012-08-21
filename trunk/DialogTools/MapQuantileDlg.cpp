@@ -19,60 +19,57 @@
 
 // For compilers that support precompilation, includes <wx/wx.h>.
 #include <wx/wxprec.h>
-
 #include <wx/wx.h>
 #include <wx/xrc/xmlres.h>
 #include <wx/valtext.h>
+#include "../GenUtils.h"
 #include "MapQuantileDlg.h"
 
-BEGIN_EVENT_TABLE( CMapQuantileDlg, wxDialog )
-    EVT_BUTTON( wxID_OK, CMapQuantileDlg::OnOkClick )
-    EVT_BUTTON( wxID_CANCEL, CMapQuantileDlg::OnCancelClick )
+BEGIN_EVENT_TABLE( MapQuantileDlg, wxDialog )
+    EVT_BUTTON( wxID_OK, MapQuantileDlg::OnOkClick )
+    EVT_BUTTON( wxID_CANCEL, MapQuantileDlg::OnCancelClick )
 END_EVENT_TABLE()
 
-CMapQuantileDlg::CMapQuantileDlg( int max_classes_s, bool dup_val_warning_s,
-								 wxWindow* parent, wxWindowID id,
-								 const wxString& caption, const wxPoint& pos,
-								 const wxSize& size, long style )
-: max_classes(max_classes_s), dup_val_warning(dup_val_warning_s)
-{	
+MapQuantileDlg::MapQuantileDlg(wxWindow* parent,
+							   int min_classes_s,
+							   int max_classes_s,
+							   int default_classes_s,
+							   const wxString& title,
+							   const wxString& text)
+: min_classes(min_classes_s), max_classes(max_classes_s),
+default_classes(default_classes_s)
+{
+	classes = GenUtils::min<int>(default_classes, max_classes);
+	
+	wxXmlResource::Get()->LoadDialog(this, GetParent(),
+									 "IDD_DIALOG_QUANTILE");
+	m_classes = wxDynamicCast(FindWindow(XRCID("IDC_EDIT_QUANTILE")),
+							  wxSpinCtrl);
+	m_classes->SetRange(min_classes, max_classes);
+
+	stat_text = wxDynamicCast(FindWindow(XRCID("IDC_STATIC")), wxStaticText);
+	stat_text->SetLabelText(text);
+	wxString val;
+	val << classes;
+	m_classes->SetValue(val);
+
 	SetParent(parent);
-    CreateControls();
+	SetTitle(title);
     Centre();
 }
 
-void CMapQuantileDlg::CreateControls()
-{    
-    wxXmlResource::Get()->LoadDialog(this, GetParent(), "IDD_DIALOG_QUANTILE");
-	m_classes = wxDynamicCast(FindWindow(XRCID("IDC_EDIT_QUANTILE")),
-							  wxSpinCtrl);
-	if (max_classes > 9) max_classes = 9;
-	m_classes->SetRange(1, max_classes);
-	wxString val;
-	val << wxMin(4, max_classes);
-	m_classes->SetValue(val);
-	
-}
-
-void CMapQuantileDlg::OnOkClick( wxCommandEvent& event )
+void MapQuantileDlg::OnOkClick( wxCommandEvent& event )
 {
-	int num = m_classes->GetValue();
-	if( (num < 1) || (num > 9) ) {
-		wxMessageBox("Please enter a number between 1 and 9");
-		return;
-	} else {
-		event.Skip();
-		EndDialog(wxID_OK);
-	}
+	classes = m_classes->GetValue();
+	if (classes < 1) classes = 1;
+	if (classes > max_classes) classes = max_classes;
+
+	event.Skip();
+	EndDialog(wxID_OK);
 }
 
-void CMapQuantileDlg::OnCancelClick( wxCommandEvent& event )
+void MapQuantileDlg::OnCancelClick( wxCommandEvent& event )
 {
 	event.Skip();
 	EndDialog(wxID_CANCEL);
-}
-
-bool CMapQuantileDlg::ShowToolTips()
-{
-    return true;
 }

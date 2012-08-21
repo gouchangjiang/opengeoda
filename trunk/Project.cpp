@@ -17,18 +17,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
-#include <sstream>
 #include <assert.h>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <wx/filename.h>
 #include "logger.h"
 #include "FramesManager.h"
 #include "DataViewer/DbfGridTableBase.h"
-#include "ShapeOperations/WeightsManager.h"
-#include "ShapeOperations/GalWeight.h"
+#include "DialogTools/SaveToTableDlg.h"
+#include "Explore/ThemeUtilities.h"
+#include "Generic/MyShape.h"
 #include "ShapeOperations/DbfFile.h"
+#include "ShapeOperations/GalWeight.h"
+#include "ShapeOperations/ShapeUtils.h"
+#include "ShapeOperations/WeightsManager.h"
+#include "Thiessen/VorDataType.h" // for myBox
 //#include "ShapeOperations/ShapeUtils.h"
 #include "Project.h"
 
+i_array_type Project::shared_category_scratch; // used by TemplateCanvas
 int Project::next_project_id = 0;
 
 Project::Project(int num_records_s)
@@ -36,33 +44,47 @@ Project::Project(int num_records_s)
 grid_base(0), map_aspect_ratio(0),
 table_only_project(false), is_project_valid(false),
 num_records(num_records_s),
-regression_dlg(0)
+regression_dlg(0),
+default_v1_time(0), default_v2_time(0), default_v3_time(0), default_v4_time(0),
+default_v1_name(""), default_v2_name(""), default_v3_name(""),
+default_v4_name(""), allow_enable_save(true),
+shp_file_needs_first_save(false), mean_centers(0), centroids(0)
 {
 	frames_manager = new FramesManager();
-	highlight_state = new HighlightState();
+	highlight_state = new HighlightState;
 	highlight_state->SetSize(num_records);
-	w_manager = new WeightsManager(num_records);	
+	w_manager = new WeightsManager(num_records);
 }
 
 void Project::Init(DbfGridTableBase* grid_base_s)
 {
+	int num_obs = grid_base_s->GetNumberRows();
+	shared_category_scratch.resize(
+		boost::extents[ThemeUtilities::max_num_classes][num_obs]);
 	grid_base = grid_base_s;
 	table_only_project = true;
 	is_project_valid = true;
+	allow_enable_save = wxFileExists(grid_base->GetDbfFileName().GetFullPath());
 }
 
 void Project::Init(DbfGridTableBase* grid_base_s, wxFileName shp_fname)
 {
+	int num_obs = grid_base_s->GetNumberRows();
+	shared_category_scratch.resize(
+		boost::extents[ThemeUtilities::max_num_classes][num_obs]);	
 	grid_base = grid_base_s;
 	table_only_project = false;
 	is_project_valid = true;
 	OpenShpFile(shp_fname);
+	allow_enable_save = wxFileExists(grid_base->GetDbfFileName().GetFullPath());
 }
 
 Project::~Project()
 {
 	LOG_MSG("Entering Project::~Project");
 	if (w_manager) delete w_manager; w_manager = 0;
+	for (int i=0, iend=mean_centers.size(); i<iend; i++) delete mean_centers[i];
+	for (int i=0, iend=centroids.size(); i<iend; i++) delete centroids[i];
 	//NOTE: the wxGrid instance in NewTableViewerFrame has
 	// ownership and is therefore responsible for deleting the
 	// grid_base when it closes.
@@ -90,8 +112,9 @@ bool Project::OpenShpFile(wxFileName shp_fname_s)
 	//wxString msg1(index_strm.str().c_str(), wxConvUTF8);
 	//LOG_MSG(msg1);
 	
-	//Shapefile::populateMain(index_data, m_shp_str, main_data);
+	Shapefile::populateMain(index_data, m_shp_str, main_data);
 
+	
     //std::ostringstream main_strm;
 	//Shapefile::printMain(main_data, main_strm);
 	//wxString msg2(main_strm.str().c_str(), wxConvUTF8);
@@ -99,7 +122,7 @@ bool Project::OpenShpFile(wxFileName shp_fname_s)
 	
     int shp_num_recs = Shapefile::calcNumIndexHeaderRecords(index_data.header);
     LOG(shp_num_recs);
-	//LOG(main_data.records.size());
+	LOG(main_data.records.size());
 
 	map_aspect_ratio = 1;
 	//map_aspect_ratio = ShapeUtils::CalcAspectRatio(index_data.header);
@@ -178,6 +201,21 @@ wxString Project::GetMainName()
 	}
 }
 
+
+void Project::CreateShapefileFromPoints(const std::vector<double> x,
+										const std::vector<double> y)
+{
+	if (!IsTableOnlyProject()) return;
+	
+	shp_fname = wxFileName();
+	ShapeUtils::populatePointShpFile(x, y, index_data, main_data);
+	map_aspect_ratio = 1;
+	
+	table_only_project = false;
+	allow_enable_save = false;
+	shp_file_needs_first_save = true;
+}
+
 void Project::AddNeighborsToSelection()
 {
 	if (!GetWManager() || (GetWManager() && !GetWManager()->GetCurrWeight())) {
@@ -186,12 +224,12 @@ void Project::AddNeighborsToSelection()
 	LOG_MSG("Entering Project::AddNeighborsToSelection");
 	GalWeight* gal_weights = 0;
 
-	GeodaWeight* w = GetWManager()->GetCurrWeight();
+	GeoDaWeight* w = GetWManager()->GetCurrWeight();
 	if (!w) {
 		LOG_MSG("Warning: no current weight matrix found");
 		return;
 	}
-	if (w->weight_type != GeodaWeight::gal_type) {
+	if (w->weight_type != GeoDaWeight::gal_type) {
 		LOG_MSG("Error: Only GAL type weights are currently supported. "
 				"Other weight types are internally converted to GAL.");
 		return;
@@ -232,6 +270,124 @@ void Project::AddNeighborsToSelection()
 		LOG_MSG("No elements to add to current selection");
 	}
 	LOG_MSG("Exiting Project::AddNeighborsToSelection");
+}
+
+void Project::AddMeanCenters()
+{
+	LOG_MSG("In Project::AddMeanCenters");
+	
+	if (!grid_base || main_data.records.size() == 0) return;
+	GetMeanCenters();
+	if (mean_centers.size() != num_records) return;
+
+	std::vector<double> x(num_records);
+	std::vector<double> y(num_records);
+	for (int i=0; i<num_records; i++) {
+		x[i] = mean_centers[i]->center_o.x;
+		y[i] = mean_centers[i]->center_o.y;
+	}
+	
+	std::vector<SaveToTableEntry> data(2);
+	data[0].d_val = &x;
+	data[0].label = "X-Coordinates";
+	data[0].field_default = "XMCTR";
+	data[0].type = GeoDaConst::double_type;
+	
+	data[1].d_val = &y;
+	data[1].label = "Y-Coordinates";
+	data[1].field_default = "YMCTR";
+	data[1].type = GeoDaConst::double_type;	
+	
+	SaveToTableDlg dlg(grid_base, NULL, data,
+					   "Add Mean Centers to Table",
+					   wxDefaultPosition, wxSize(400,400));
+	dlg.ShowModal();
+}
+
+void Project::AddCentroids()
+{
+	LOG_MSG("In Project::AddCentroids");
+	
+	if (!grid_base || main_data.records.size() == 0) return;	
+	GetCentroids();
+	if (centroids.size() != num_records) return;
+	
+	std::vector<double> x(num_records);
+	std::vector<double> y(num_records);
+	for (int i=0; i<num_records; i++) {
+		x[i] = centroids[i]->center_o.x;
+		y[i] = centroids[i]->center_o.y;
+	}
+	
+	std::vector<SaveToTableEntry> data(2);
+	data[0].d_val = &x;
+	data[0].label = "X-Coordinates";
+	data[0].field_default = "XCNTRD";
+	data[0].type = GeoDaConst::double_type;
+	
+	data[1].d_val = &y;
+	data[1].label = "Y-Coordinates";
+	data[1].field_default = "YCNTRD";
+	data[1].type = GeoDaConst::double_type;	
+	
+	SaveToTableDlg dlg(grid_base, NULL, data,
+					   "Add Centroids to Table",
+					   wxDefaultPosition, wxSize(400,400));
+	dlg.ShowModal();
+}
+
+const std::vector<MyPoint*>& Project::GetMeanCenters()
+{
+	int num_obs = main_data.records.size();
+	if (mean_centers.size() == 0 && num_obs > 0) {
+		if (main_data.header.shape_type == Shapefile::POINT) {
+			mean_centers.resize(num_obs);
+			Shapefile::PointContents* pc;
+			for (int i=0; i<num_obs; i++) {
+				pc = (Shapefile::PointContents*)
+					main_data.records[i].contents_p;
+				mean_centers[i] = new MyPoint(wxRealPoint(pc->x, pc->y));
+			}
+		} else if (main_data.header.shape_type == Shapefile::POLYGON) {
+			mean_centers.resize(num_obs);
+			Shapefile::PolygonContents* pc;
+			for (int i=0; i<num_obs; i++) {
+				pc = (Shapefile::PolygonContents*)
+					main_data.records[i].contents_p;
+				MyPolygon poly(pc);
+				mean_centers[i] =
+					new MyPoint(MyShapeAlgs::calculateMeanCenter(&poly));
+			}
+		}
+	}
+	return mean_centers;
+}
+
+const std::vector<MyPoint*>& Project::GetCentroids()
+{
+	int num_obs = main_data.records.size();
+	if (centroids.size() == 0 && num_obs > 0) {
+		if (main_data.header.shape_type == Shapefile::POINT) {
+			centroids.resize(num_obs);
+			Shapefile::PointContents* pc;
+			for (int i=0; i<num_obs; i++) {
+				pc = (Shapefile::PointContents*)
+				main_data.records[i].contents_p;
+				centroids[i] = new MyPoint(wxRealPoint(pc->x, pc->y));
+			}
+		} else if (main_data.header.shape_type == Shapefile::POLYGON) {
+			centroids.resize(num_obs);
+			Shapefile::PolygonContents* pc;
+			for (int i=0; i<num_obs; i++) {
+				pc = (Shapefile::PolygonContents*)
+					main_data.records[i].contents_p;
+				MyPolygon poly(pc);
+				centroids[i] =
+					new MyPoint(MyShapeAlgs::calculateCentroid(&poly));
+			}
+		}
+	}
+	return centroids;	
 }
 
 

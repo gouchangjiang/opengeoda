@@ -22,14 +22,16 @@
 
 #include <map>
 #include <vector>
+#include <boost/multi_array.hpp>
 #include <wx/filename.h>
 #include <wx/grid.h>
 #include "../GeoDaConst.h"
 #include "../Generic/HighlightStateObserver.h"
 #include "../ShapeOperations/DbfFile.h"
 
+
 /** DbfColContainer notes: when a DBF file is read from disk, we initially
- just read it's data into the raw_data array in raw form to minimize table
+ just read its data into the raw_data array in raw form to minimize table
  loading time.  The corrseponding data vector d_vec, l_vec or s_vec are
  not filled.  When a new column is created, only d_vec, l_vec, or s_vec are
  created and raw_data is left as empty.  When data is written out to disk,
@@ -64,37 +66,50 @@
  */
 class DbfGridTableBase;
 
+typedef boost::multi_array<double, 2> d_array_type;
+typedef boost::multi_array<wxInt64, 2> l_array_type;
+typedef boost::multi_array<wxString, 2> s_array_type;
+typedef boost::multi_array<bool, 2> b_array_type;
+typedef boost::multi_array<std::string, 2> std_str_array_type;
+
 class DbfColContainer
 {
 public:
 	DbfColContainer(DbfGridTableBase* grid_base);
 	DbfColContainer(DbfFileReader& dbf, int field, DbfGridTableBase* grid_base);
 	virtual ~DbfColContainer();
-	bool Init(int size, GeoDaConst::FieldType type, const wxString& name,
+	bool Init(int size, int time_steps, GeoDaConst::FieldType type,
+			  const wxString& name,
 			  int field_len, int decimals, int displayed_decimals,
 			  bool alloc_raw_data,
 			  bool alloc_vector_data,
 			  bool mark_all_defined);
-	int size;
+	int size; // number of rows
+	int time_steps; // number of time steps.  If time_steps=1, then
+	// not time-series data.
 	GeoDaConst::FieldType type;
 	wxString name;
 	int field_len; // number of chars in DBF field
 	int decimals;
 	int displayed_decimals; // number of decimal places shown in wxGrid
 	
+	void AllocRawData();
+	bool IsRawDataAlloc();
+	void FreeRawData();
+	
 	// raw character data directly from the DBF file but with null-terminated
 	// strings.  If raw_data is valid, then the pointer is non-null,
 	// otherwise it is set to zero.
 	// When vector_valid is false, size of corresponding vector should be
 	// zero to save memory.
-	char* raw_data;
+	std::vector<char*> raw_data;
 	// true if one of d_vec, l_vec, or s_vec is valid, depending on data type
 	bool vector_valid;
-	std::vector<double> d_vec;
-	std::vector<wxInt64> l_vec;
-	std::vector<wxString> s_vec;
+	d_array_type d_vec;
+	l_array_type l_vec;
+	s_array_type s_vec;
 	// for use by d_vec and l_vec to denote either empty or undefined values.
-	std::vector<bool> undefined;
+	b_array_type undefined;
 	// when reading in a large DBF file, we do not take the time to
 	// check that all numbers are valid.  When a data column is read
 	// for the first time, we will take the time to properly set the
@@ -103,31 +118,45 @@ public:
 	// undefined vector.
 	bool undefined_initialized;
 	
+	void GetMinMaxVals(std::vector<double>& min_vals,
+					   std::vector<double>& max_vals);
+	std::vector<bool> stale_min_max_val;
+	std::vector<double> min_val;
+	std::vector<double> max_val;
+	void UpdateMinMaxVals();
+	
 	// Function to change properties.
 	bool ChangeProperties(const wxString& new_name, int new_len, int new_dec=0,
 						  int new_disp_dec=0);
 
-	void GetVec(std::vector<double>& vec);
-	void GetVec(std::vector<wxInt64>& vec);
-	void GetVec(std::vector<wxString>& vec);
+	void GetVec(std::vector<double>& vec, int time=0);
+	void GetVec(std::vector<wxInt64>& vec, int time=0);
+	void GetVec(std::vector<wxString>& vec, int time=0);
+	void GetVec(d_array_type& data);
+	void GetVec(l_array_type& data);
 	
 	// note: the following two functions only have an
 	// effect on numeric fields currently.
-	void SetFromVec(std::vector<double>& vec);
-	void SetFromVec(std::vector<wxInt64>& vec);
+	void SetFromVec(std::vector<double>& vec, int time=0);
+	void SetFromVec(std::vector<wxInt64>& vec, int time=0);
+	void SetFromVec(std::vector<std::string>& vec, int time=0);
 	void CheckUndefined();
-	void SetUndefined(const std::vector<bool>& undef_vec);
-	void GetUndefined(std::vector<bool>& undef_vec);
+	void SetUndefined(const std::vector<bool>& undef_vec, int time=0);
+	void GetUndefined(std::vector<bool>& undef_vec, int time=0);
+	void GetUndefined(b_array_type& data);
 	
-	bool IsVecItemDefined(int i);
-	bool IsRawItemDefined(int i);
+	bool IsVecItemDefined(int i, int time=0);
+	bool IsRawItemDefined(int i, int time=0);
 	
 	void CopyRawDataToVector();
 	void CopyVectorToRawData();
 protected:
-	void raw_data_to_vec(std::vector<double>& vec);
-	void raw_data_to_vec(std::vector<wxInt64>& vec);
-	void raw_data_to_vec(std::vector<wxString>& vec);
+	void raw_data_to_vec(d_array_type& vec);
+	void raw_data_to_vec(std::vector<double>& vec, int time);
+	void raw_data_to_vec(l_array_type& vec);
+	void raw_data_to_vec(std::vector<wxInt64>& vec, int time);
+	void raw_data_to_vec(s_array_type& vec);
+	void raw_data_to_vec(std::vector<wxString>& vec, int time);
 	
 	void d_vec_to_raw_data();
 	void l_vec_to_raw_data();
@@ -157,10 +186,20 @@ private:
 class DbfGridTableBase : public wxGridTableBase, public HighlightStateObserver
 {
 public:
+	DbfGridTableBase(const std_str_array_type& string_table,
+					 const std::vector<std::string>& field_names,
+					 const std::string file_name,
+					 HighlightState* highlight_state);
 	DbfGridTableBase(DbfFileReader& dbf, HighlightState* highlight_state);
+	DbfGridTableBase(DbfFileReader& dbf_sp, DbfFileReader& dbf_tm,
+					 int sp_tbl_sp_col, int tm_tbl_sp_col, int tm_tbl_tm_col,
+					 HighlightState* highlight_state);
 	DbfGridTableBase(int rows, int cols, HighlightState* highlight_state);
 	virtual ~DbfGridTableBase();
 	
+	int time_steps; // 1 for a non space-time DBF.
+	int curr_time_step; // value between 0 and time_steps-1;
+	std::vector<wxInt64> time_ids;
 	std::vector<DbfColContainer*> col_data;
 	std::vector<int> row_order;
 
@@ -186,7 +225,12 @@ public:
 	wxString GetDbfNameNoExt() { return dbf_file_name_no_ext; }
 	wxFileName dbf_file_name;
 	wxString dbf_file_name_no_ext;
+	wxFileName dbf_tm_file_name;
+	wxString dbf_tm_file_name_no_ext;
+	wxFileName GetSpaceDbfFileName() { return dbf_file_name; }
+	wxFileName GetTimeDbfFileName() { return dbf_tm_file_name; }
 	DbfFileHeader orig_header;
+	DbfFileHeader orig_header_tm;
 	bool ChangedSinceLastSave() { return changed_since_last_save; }
 	void SetChangedSinceLastSave(bool chg) { changed_since_last_save = chg; }
 	bool ColNameExists(const wxString& name);
@@ -194,10 +238,45 @@ public:
 	
 	void PrintTable();
 	bool WriteToDbf(const wxString& fname, wxString& err_msg);
+	bool WriteToSpaceTimeDbf(const wxString& space_fname,
+							 const wxString& time_fname, wxString& err_msg);
 
 	void ReorderCols(const std::vector<int>& col_order);
 	void FillColIdMap(std::vector<int>& col_map);
 	void FillNumericColIdMap(std::vector<int>& col_map);
+	void FillIntegerColIdMap(std::vector<int>& col_map);
+	
+	bool IsSpaceTimeIdField(const wxString& name);
+	wxString GetSpTblSpColName() { return sp_tbl_sp_col_name; }
+	int GetNumberColsSpace();
+	int GetNumberColsTime();
+	
+	bool IsTimeVariant() { return time_steps > 1; }
+	int GetTimeSteps() { return time_steps; }
+	wxString GetTimeString(int time);
+	
+	bool IsColTimeVariant(int col);
+	int GetColTimeSteps(int col);
+	bool IsColNumeric(int col);
+	GeoDaConst::FieldType GetColType(int col);
+	wxString GetColName(int col);
+	int GetColLength(int col);
+	int GetColDecimals(int col);
+	void GetColData(int col, d_array_type& dbl_data);
+	void GetColData(int col, int time, std::vector<double>& data);
+	void GetColUndefined(int col, b_array_type& undefined);
+	void GetColUndefined(int col, int time, std::vector<bool>& undefined);
+	void GetMinMaxVals(int col, std::vector<double>& min_vals,
+					   std::vector<double>& max_vals);
+	
+	bool ConvertToSpTime(const wxString& sp_dbf_name,
+						 const wxString& tm_dbf_name,
+						 int space_col, const wxString& tm_field_name,
+						 const std::vector<wxInt64>& new_time_ids,
+						 wxString& err_msg);
+	
+	bool IsDuplicateColNames(wxString& dup_ret_str);
+	bool CopySpColRawToTmColRaw(int sp_col, int tm_col, int time);
 	
 	// pure virtual method implementation for wxGridTableBase
 	virtual int GetNumberRows();
@@ -206,7 +285,8 @@ public:
 	virtual void SetValue(int row, int col, const wxString &value);
 	virtual bool IsEmptyCell(int row, int col) { return false; }
 	
-	virtual bool InsertCol(int pos, GeoDaConst::FieldType type,
+	virtual bool InsertCol(int pos,
+						   int time_steps, GeoDaConst::FieldType type,
 						   const wxString& name,
 						   int field_len, int decimals=0,
 						   int displayed_decimals=0,
@@ -221,9 +301,12 @@ public:
 	 update function. It is called whenever the HighlightState's state has
 	 changed.  In this case, the observable is HighlightState, which keeps
 	 track of the hightlighted/selected state for every SHP file observation. */
-	virtual void update(HighlightState* o);	
-	
+	virtual void update(HighlightState* o);
+		
 private:
+	wxString sp_tbl_sp_col_name;
+	wxString tm_tbl_sp_col_name;
+	wxString tm_tbl_tm_col_name;
 	HighlightState* highlight_state;
 	std::vector<bool>& hs; //shortcut to HighlightState::highlight read only!
 	bool changed_since_last_save;

@@ -42,6 +42,7 @@ public:
 	void OnCellEdit( wxGridEvent& ev );
 	void OnCellClickLeft( wxGridEvent& ev );
 	void OnCellEditorShown( wxGridEvent& ev );
+	void OnCellEditorHidden( wxGridEvent& ev );
 	void OnLabelLeftClickEvent( wxGridEvent& ev );
 	void ShowFieldProperties(int row);
 	
@@ -57,6 +58,9 @@ public:
 private:
 	std::map<wxString, int> fn_freq;
 	wxButton* apply_button;
+	bool reenable_apply_after_cell_editor_hidden;
+	bool cell_editor_open;
+	bool is_space_time;
 	
 	// a mapping from displayed col order to actual col ids in table
 	// Eg, in underlying table, we might have A, B, C, D, E, F,

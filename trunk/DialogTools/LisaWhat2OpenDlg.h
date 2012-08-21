@@ -20,53 +20,27 @@
 #ifndef __GEODA_CENTER_LISA_WHAT_2_OPEN_DLG_H__
 #define __GEODA_CENTER_LISA_WHAT_2_OPEN_DLG_H__
 
-////@begin control identifiers
-#define IDD_LISAWINDOWS2OPEN 10000
-
-class CLisaWhat2OpenDlg: public wxDialog
+class LisaWhat2OpenDlg: public wxDialog
 {    
-    DECLARE_CLASS( CLisaWhat2OpenDlg )
+    DECLARE_CLASS( LisaWhat2OpenDlg )
     DECLARE_EVENT_TABLE()
 
 public:
-    /// Constructors
-    CLisaWhat2OpenDlg( );
-    CLisaWhat2OpenDlg( wxWindow* parent, wxWindowID id = -1, const wxString& caption = "What windows to open?", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxSYSTEM_MENU );
-
-    /// Creation
-    bool Create( wxWindow* parent, wxWindowID id = -1, const wxString& caption = "What windows to open?", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxSYSTEM_MENU );
-
-    /// Creates the controls and sizers
+    LisaWhat2OpenDlg( wxWindow* parent, wxWindowID id = -1,
+					 const wxString& caption = "What windows to open?",
+					 const wxPoint& pos = wxDefaultPosition,
+					 const wxSize& size = wxDefaultSize,
+					 long style = wxCAPTION|wxSYSTEM_MENU );
     void CreateControls();
-
-////@begin CLisaWhat2OpenDlg event handler declarations
-
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for wxID_OK
     void OnOkClick( wxCommandEvent& event );
 
-////@end CLisaWhat2OpenDlg event handler declarations
-
-////@begin CLisaWhat2OpenDlg member function declarations
-
-////@end CLisaWhat2OpenDlg member function declarations
-
-    /// Should we show tooltips?
-    static bool ShowToolTips();
-
-////@begin CLisaWhat2OpenDlg member variables
     wxCheckBox* m_check1;
     wxCheckBox* m_check2;
     wxCheckBox* m_check3;
-    wxCheckBox* m_check4;
-////@end CLisaWhat2OpenDlg member variables
 
 	bool m_SigMap;
 	bool m_ClustMap;
-	bool m_BoxPlot;
 	bool m_Moran;
-
-
 };
 
 #endif
-    // _LISAWHAT2OPENDLG_H_

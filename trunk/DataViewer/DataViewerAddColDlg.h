@@ -20,6 +20,7 @@
 #ifndef __GEODA_CENTER_DATA_VIEWER_ADD_COL_DLG_H__
 #define __GEODA_CENTER_DATA_VIEWER_ADD_COL_DLG_H__
 
+#include <wx/radiobut.h>
 #include <wx/stattext.h>
 #include <wx/grid.h>
 #include <wx/choice.h>
@@ -31,12 +32,15 @@ class DataViewerAddColDlg: public wxDialog
 {
 public:
     DataViewerAddColDlg(DbfGridTableBase* grid_base,
-						wxWindow* parent );
+						wxWindow* parent, bool time_inv_no_as_default=true,
+						bool can_change_time_inv=true,
+						wxString default_name=wxEmptyString);
     void CreateControls();
 	void OnChoiceType( wxCommandEvent& ev );
 	void SetDefaultsByType(GeoDaConst::FieldType type);
     void OnOkClick( wxCommandEvent& ev );
 	void OnEditName( wxCommandEvent& ev );
+	void CheckName();
 	void OnEditLength( wxCommandEvent& ev );
 	void OnEditDecimals( wxCommandEvent& ev );
 	void OnEditDisplayedDecimals( wxCommandEvent& ev );
@@ -44,7 +48,10 @@ public:
 	void UpdateApplyButton();
 	
 	wxString GetColName();
+	int GetColId();
 	
+	wxRadioButton* m_time_inv_no;
+	wxRadioButton* m_time_inv_yes;
 	wxButton* m_apply_button;
 	wxTextCtrl* m_name;
 	bool m_name_valid;
@@ -69,7 +76,11 @@ public:
 	wxGrid* grid;
 	DbfGridTableBase* grid_base;
 private:
+	wxString default_name;
+	bool time_inv_no_as_default;
+	bool can_change_time_inv;
 	wxString final_col_name;
+	int final_col_id;
 	std::set<wxString> curr_col_labels;
 	DECLARE_EVENT_TABLE()
 };

@@ -17,35 +17,55 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __3D_PLOT_VIEW_H__
-#define __3D_PLOT_VIEW_H__
+#ifndef __GEODA_CENTER_3D_PLOT_VIEW_H__
+#define __GEODA_CENTER_3D_PLOT_VIEW_H__
 
 #include <wx/glcanvas.h>
+#include "../FramesManagerObserver.h"
+#include "../Generic/HighlightStateObserver.h"
+#include "../GenUtils.h"
 
-class DbfGridTableBase;
-class C3DPlotFrame;
-class C3DControlPan;
 class Arcball;
+class C3DControlPan;
+class C3DPlotFrame;
+class DbfGridTableBase;
+typedef boost::multi_array<double, 2> d_array_type;
 
-class C3DPlotCanvas: public wxGLCanvas
+class C3DPlotCanvas: public wxGLCanvas, public HighlightStateObserver
 {
 public:
-	C3DPlotCanvas(DbfGridTableBase* grid_base, wxWindow *parent,
+	C3DPlotCanvas(DbfGridTableBase* grid_base,
+				  HighlightState* highlight_state,
+				  const std::vector<GeoDaVarInfo>& var_info,
+				  const std::vector<int>& col_ids,
+				  double* x, double* y, double* z,
+				  wxWindow *parent,
 				  const wxWindowID id = -1,
 				  const wxPoint& pos = wxDefaultPosition,
 				  const wxSize& size = wxDefaultSize,
-				  long style = 0,
-				  const int x_col_id = wxNOT_FOUND,
-				  const int y_col_id = wxNOT_FOUND,
-				  const int z_col_id = wxNOT_FOUND);
+				  long style = 0);
 	virtual ~C3DPlotCanvas();
 	
-	C3DPlotFrame* pa;
-
+	virtual void AddTimeVariantOptionsToMenu(wxMenu* menu);
+	virtual void SetCheckMarks(wxMenu* menu);
+	virtual wxString GetCanvasTitle();
+	virtual wxString GetNameWithTime(int var);
+	virtual void TitleOrTimeChange();
+	void VarInfoAttributeChange();
+	void UpdateScaledData();
+	virtual void TimeSyncVariableToggle(int var_index);
+	
+	void SetCurrentTmStep(int t) { local_time_step = t; }
+	int GetCurrentTmStep() { return local_time_step; }
+	int local_time_step; // valid range always starts at 0?
+	
     void OnPaint(wxPaintEvent& event);
     void OnSize(wxSizeEvent& event);
     void OnEraseBackground(wxEraseEvent& event);
-    void OnMouse( wxMouseEvent& event );
+	void OnKeyEvent(wxKeyEvent& ev);
+    void OnMouse(wxMouseEvent& event);
+	void UpdateSelect();
+	void SelectByRect();
     void InitGL(void);
    
 	bool isInit;
@@ -61,63 +81,87 @@ public:
 	int height, width;
 	double bb_min[3], bb_max[3];
 
+	C3DPlotFrame* template_frame;
+	wxColour selectable_fill_color;
+	wxColour highlight_color;
+	wxColour canvas_background_color;
+	virtual void SetSelectableFillColor(wxColour color);
+	virtual void SetHighlightColor(wxColour color);
+	virtual void SetCanvasBackgroundColor(wxColour color);
+	
 	Arcball* ball;
-	double *world_x, *world_y, *world_z;
-	double *Raw_x, *Raw_y, *Raw_z;
-
-	double xMin, xMax, yMin, yMax, zMin, zMax;
-
 	double xs, xp, ys, yp, zs, zp;
 
-	void UpdateViewsDlg();
 	bool ShowFirst;
-	void UpdateSelect();
 	bool m_d;
 	bool m_z;
 	bool m_y;
 	bool m_x;
 	bool b_select;
 	bool m_brush;
-	void SelectByRect();
-	void NormalizeData();
 	void RenderScene();
 	void apply_camera();
 	void end_redraw();
 	void begin_redraw();
-
+	
+	/** Implementation of the HighlightStateObserver interface
+	 update function. */
+	virtual void update(HighlightState* o);
+	DbfGridTableBase* grid_base;
+	HighlightState* highlight_state;
+	int num_obs;
+	int num_vars;
+	int num_time_vals;
+	int ref_var_index;
+	std::vector<GeoDaVarInfo> var_info;
+	std::vector<d_array_type> data;
+	std::vector<d_array_type> scaled_d;
+	std::vector< std::vector<SampleStatistics> > data_stats;
+	std::vector<double> var_min; // min over time
+	std::vector<double> var_max; // max over time
+	bool is_any_time_variant;
+	bool is_any_sync_with_global_time;
+	
 	wxPoint select_start;
 	wxPoint select_end;
 	bool bSelect;
-	bool isMe;
 	C3DControlPan *m_dlg;
-	int n_obs;
 
 	DECLARE_EVENT_TABLE()
-
 };
-
 
 
 class C3DPlotFrame: public TemplateFrame
 {
 public:
-	C3DPlotCanvas *canvas;
-	C3DControlPan *control;
-
 	C3DPlotFrame(wxFrame *parent, Project* project,
+				 const std::vector<GeoDaVarInfo>& var_info,
+				 const std::vector<int>& col_ids,
 				 const wxString& title, const wxPoint& pos,
 				 const wxSize& size, const long style,
-				 const int x_col_id,
-				 const int y_col_id,
-				 const int z_col_id);
+				 double* x, const wxString& x_name,
+				 double* y, const wxString& y_name,
+				 double* z, const wxString& z_name);
 	virtual ~C3DPlotFrame();	
     
 	wxSplitterWindow* m_splitter;
+	C3DPlotCanvas *canvas;
+	C3DControlPan *control;
 
 	void OnClose(wxCloseEvent& event);
 	void OnMenuClose(wxCommandEvent& event);
 	void OnActivate(wxActivateEvent& event);
 	virtual void MapMenus();
+    virtual void UpdateOptionMenuItems();
+	virtual void OnCanvasBackgroundColor(wxCommandEvent& event);
+	virtual void OnSelectableFillColor(wxCommandEvent& event);
+	virtual void OnHighlightColor(wxCommandEvent& event);
+	virtual void OnTimeSyncVariable(int var_index);
+	
+	/** Implementation of FramesManagerObserver interface */
+	virtual void update(FramesManager* o);
+	
+	virtual void UpdateTitle();
 	
 	DECLARE_EVENT_TABLE()
 };

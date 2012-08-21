@@ -23,16 +23,16 @@
 #include "../OpenGeoDa.h"
 #include "ConditionViewDlg.h"
 
-BEGIN_EVENT_TABLE( CConditionViewDlg, wxDialog )
-    EVT_RADIOBUTTON( XRCID("IDC_RADIO1"), CConditionViewDlg::OnCRadio1Selected )
-    EVT_RADIOBUTTON( XRCID("IDC_RADIO2"), CConditionViewDlg::OnCRadio2Selected )
-    EVT_RADIOBUTTON( XRCID("IDC_RADIO3"), CConditionViewDlg::OnCRadio3Selected )
-    EVT_RADIOBUTTON( XRCID("IDC_RADIO4"), CConditionViewDlg::OnCRadio4Selected )
-    EVT_BUTTON( wxID_OK, CConditionViewDlg::OnOkClick )
-    EVT_BUTTON( wxID_CANCEL, CConditionViewDlg::OnCancelClick )
+BEGIN_EVENT_TABLE( ConditionViewDlg, wxDialog )
+    EVT_RADIOBUTTON( XRCID("IDC_RADIO1"), ConditionViewDlg::OnCRadio1Selected )
+    EVT_RADIOBUTTON( XRCID("IDC_RADIO2"), ConditionViewDlg::OnCRadio2Selected )
+    EVT_RADIOBUTTON( XRCID("IDC_RADIO3"), ConditionViewDlg::OnCRadio3Selected )
+    EVT_RADIOBUTTON( XRCID("IDC_RADIO4"), ConditionViewDlg::OnCRadio4Selected )
+    EVT_BUTTON( wxID_OK, ConditionViewDlg::OnOkClick )
+    EVT_BUTTON( wxID_CANCEL, ConditionViewDlg::OnCancelClick )
 END_EVENT_TABLE()
 
-CConditionViewDlg::CConditionViewDlg( wxWindow* parent,
+ConditionViewDlg::ConditionViewDlg( wxWindow* parent,
 									 wxWindowID id,
 									 const wxString& caption,
 									 const wxPoint& pos,
@@ -45,7 +45,7 @@ CConditionViewDlg::CConditionViewDlg( wxWindow* parent,
 }
 
 
-bool CConditionViewDlg::Create( wxWindow* parent,
+bool ConditionViewDlg::Create( wxWindow* parent,
 							   wxWindowID id,
 							   const wxString& caption,
 							   const wxPoint& pos,
@@ -60,13 +60,13 @@ bool CConditionViewDlg::Create( wxWindow* parent,
     return true;
 }
 
-void CConditionViewDlg::CreateControls()
+void ConditionViewDlg::CreateControls()
 {    
     wxXmlResource::Get()->LoadDialog(this, GetParent(),
 									 "IDD_CONDITION_VIEW_SETTING");
 }
 
-void CConditionViewDlg::OnOkClick( wxCommandEvent& event )
+void ConditionViewDlg::OnOkClick( wxCommandEvent& event )
 {
 	if(Conditionable::cViewType == 0) {
 		wxMessageBox("Select a view type!");
@@ -76,28 +76,28 @@ void CConditionViewDlg::OnOkClick( wxCommandEvent& event )
 	EndDialog(wxID_OK);
 }
 
-void CConditionViewDlg::OnCancelClick( wxCommandEvent& event )
+void ConditionViewDlg::OnCancelClick( wxCommandEvent& event )
 {
 	event.Skip(); // wxDialog::OnCancel(event);
 	EndDialog(wxID_CANCEL);
 }
 
-void CConditionViewDlg::OnCRadio1Selected( wxCommandEvent& event )
+void ConditionViewDlg::OnCRadio1Selected( wxCommandEvent& event )
 {
     Conditionable::cViewType = 1;	
 }
 
-void CConditionViewDlg::OnCRadio2Selected( wxCommandEvent& event )
+void ConditionViewDlg::OnCRadio2Selected( wxCommandEvent& event )
 {
     Conditionable::cViewType = 2;	
 }
 
-void CConditionViewDlg::OnCRadio3Selected( wxCommandEvent& event )
+void ConditionViewDlg::OnCRadio3Selected( wxCommandEvent& event )
 {
     Conditionable::cViewType = 3;	
 }
 
-void CConditionViewDlg::OnCRadio4Selected( wxCommandEvent& event )
+void ConditionViewDlg::OnCRadio4Selected( wxCommandEvent& event )
 {
     Conditionable::cViewType = 4;	
 }

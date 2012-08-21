@@ -73,7 +73,7 @@ public:
 };
 
 
-class GwtWeight : public GeodaWeight {
+class GwtWeight : public GeoDaWeight {
 public:
 	GwtWeight() : gwt(0) { weight_type = gwt_type; }
 	virtual ~GwtWeight() { if (gwt) delete [] gwt; gwt = 0; }

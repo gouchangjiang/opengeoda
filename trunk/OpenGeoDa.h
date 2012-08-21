@@ -72,14 +72,17 @@ public:
 	void EnableTool(const wxString& id_str, bool enable);
 	void EnableTool(int xrc_id, bool enable);
 	GalWeight* GetGal();
-	bool GetVariableSetting(bool IsU);
 
+	void OnKeyEvent(wxKeyEvent& event);
 	void OnToolOpenNewTable(wxCommandEvent& event);
 	void OnOpenNewTable();
 	/** Opens a new SHP file and initializes many global variables. */
-	void OnProjectOpen(wxCommandEvent& event);
+	void OnOpenShapefile(wxCommandEvent& event);
 	void OnOpenTableOnly(wxCommandEvent& event);
-	bool OnCloseMap();
+	void OnOpenSpTmShapefile(wxCommandEvent& event);
+	void OnOpenSpTmTableOnly(wxCommandEvent& event);
+	void OpenProject(bool table_only, bool space_time);
+	bool OnCloseMap(bool ignore_unsaved_changes = false);
 	void OnClose(wxCloseEvent& event);
 	void OnMenuClose(wxCommandEvent& event);
 	void OnCloseAll(wxCommandEvent& event);
@@ -106,10 +109,7 @@ public:
 	void OnSelectableOutlineVisible(wxCommandEvent& event);
 	void OnHighlightColor(wxCommandEvent& event);
 	
-	// Edit menu items
-	void OnOpenMapwindow(wxCommandEvent& event);
-	void OnNewMap(wxCommandEvent& event);
-	void OnSetDefaultVariableSettingss(wxCommandEvent& WXUNUSED(event));
+	void OnSetDefaultVariableSettings(wxCommandEvent& WXUNUSED(event));
 	void OnCopyImageToClipboard(wxCommandEvent& event);
 	void OnCopyLegendToClipboard(wxCommandEvent& event);
 	
@@ -118,6 +118,7 @@ public:
 	void OnToolsWeightsChar(wxCommandEvent& event);
 
 	void OnMapChoices(wxCommandEvent& event);
+	void OnOpenChoices(wxCommandEvent& event);
 	
 	void OnShapePointsToPolygons(wxCommandEvent& event);
 	void OnShapePolygonsToCentroids(wxCommandEvent& event);
@@ -133,6 +134,8 @@ public:
 	void OnToolsDataExportMeanCenters(wxCommandEvent& event);
 	void OnToolsDataExportCentroids(wxCommandEvent& event);
 
+	void OnShowTimeChooser(wxCommandEvent& event);
+	void OnSpaceTimeTool(wxCommandEvent& event);
 	void OnMoveSelectedToTop(wxCommandEvent& event);
 	void OnClearSelection(wxCommandEvent& event);
 	void OnRangeSelection(wxCommandEvent& event);
@@ -141,12 +144,14 @@ public:
 	void OnDeleteCol(wxCommandEvent& event);
 	void OnEditFieldProperties(wxCommandEvent& event);
 	void OnMergeTableData(wxCommandEvent& event);
-	void OnSaveCopyOfShpFile(wxCommandEvent& event);
-	void OnSaveCopyOfTable(wxCommandEvent& event);
-	void OnSaveTable(wxCommandEvent& event);
+	void OnSaveProject(wxCommandEvent& event);
+	void OnSaveAsProject(wxCommandEvent& event);
+	void OnExportToCsvFile(wxCommandEvent& event);
+	bool SaveTableSpace();
+	bool SaveTableSpaceTime();
+	void OnGeneratePointShpFile(wxCommandEvent& event);
 	
 	void OnRegressionClassic(wxCommandEvent& event);
-	//void OnSpatialRegimes(wxCommandEvent& event);
 
 	void OnShowCartogramMap(wxCommandEvent& event );
 	void OnMoreIter100(wxCommandEvent& event);
@@ -158,9 +163,11 @@ public:
 	void OnExploreHist(wxCommandEvent& event);
 	void OnExploreScatterplot(wxCommandEvent& event);
 	void OnExploreScatterNewPlot(wxCommandEvent& event);
+	void OnExploreBubbleChart(wxCommandEvent& event);
 	void OnExploreTestMap(wxCommandEvent& event);
 	void OnExploreTestTable(wxCommandEvent& event);
 	void OnExploreBox(wxCommandEvent& event);
+	void OnExploreNewBox(wxCommandEvent& event);
 	void OnExplorePCP(wxCommandEvent& event);
 	void OnExplore3DP(wxCommandEvent& event);
 	void OnExploreCC(wxCommandEvent& event);
@@ -173,30 +180,38 @@ public:
 	void OnOpenLisaEB(wxCommandEvent& event);
 	void OnOpenGetisOrd(wxCommandEvent& event);
 
+	void OnOpenThemelessMap(wxCommandEvent& event);
+	void OnThemelessMap(wxCommandEvent& event);
 	void OnOpenQuantile(wxCommandEvent& event);
 	void OnQuantile(wxCommandEvent& event);
 	void OnOpenPercentile(wxCommandEvent& event);
 	void OnPercentile(wxCommandEvent& event);
-	void OnOpenBox15(wxCommandEvent& event);
+	void OnOpenHinge15(wxCommandEvent& event);
 	void OnHinge15(wxCommandEvent& event);
-	void OnOpenBox30(wxCommandEvent& event);
+	void OnOpenHinge30(wxCommandEvent& event);
 	void OnHinge30(wxCommandEvent& event);
 	void OnOpenStddev(wxCommandEvent& event);
 	void OnStddev(wxCommandEvent& event);
-	void OnOpenNaturalBreak(wxCommandEvent& event);
-	void OnNaturalBreak(wxCommandEvent& event);
-	void OnOpenUniqueValue(wxCommandEvent& event);
-	void OnUniqueValue(wxCommandEvent& event);
-	void OnOpenEqualInterval(wxCommandEvent& event);
-	void OnEqualInterval(wxCommandEvent& event);
-
+	void OnOpenNaturalBreaks(wxCommandEvent& event);
+	void OnNaturalBreaks(wxCommandEvent& event);
+	void OnOpenEqualIntervals(wxCommandEvent& event);
+	void OnEqualIntervals(wxCommandEvent& event);
+	void OnOpenUniqueValues(wxCommandEvent& event);
+	void OnUniqueValues(wxCommandEvent& event);
+	void OnSaveCategories(wxCommandEvent& event);
+	
+	void OnOpenRawrate(wxCommandEvent& event);
 	void OnRawrate(wxCommandEvent& event);
+	void OnOpenExcessrisk(wxCommandEvent& event);
 	void OnExcessrisk(wxCommandEvent& event);
-	void OnBayes(wxCommandEvent& event);
-	void OnSmoother(wxCommandEvent& event);
+	void OnOpenEmpiricalBayes(wxCommandEvent& event);
 	void OnEmpiricalBayes(wxCommandEvent& event);
+	void OnOpenSpatialRate(wxCommandEvent& event);
+	void OnSpatialRate(wxCommandEvent& event);
+	void OnOpenSpatialEmpiricalBayes(wxCommandEvent& event);
+	void OnSpatialEmpiricalBayes(wxCommandEvent& event);
+	
 	void OnSaveResults(wxCommandEvent& event);
-	void OnReset(wxCommandEvent& event);
 	
 	void OnHistogramIntervals(wxCommandEvent& event);
 	
@@ -206,7 +221,6 @@ public:
 	void OnRan999Per(wxCommandEvent& event);
 	void OnRanOtherPer(wxCommandEvent& event);
 	
-	void OnEnvelopeSlopes(wxCommandEvent& event);
 	void OnSaveMoranI(wxCommandEvent& event);
 	
 	void OnSigFilter05(wxCommandEvent& event);
@@ -224,15 +238,47 @@ public:
 	
 	void OnAddMeanCenters(wxCommandEvent& event);
 	void OnAddCentroids(wxCommandEvent& event);
+	void OnDisplayMeanCenters(wxCommandEvent& event);
+	void OnDisplayCentroids(wxCommandEvent& event);
 	
 	// ScatterPlot and PCP specific callbacks
 	void OnViewStandardizedData(wxCommandEvent& event);
 	void OnViewOriginalData(wxCommandEvent& event);
-	// ScatterPlot, MoranGFrame and MoranScatterPlotFrame specific callbacks
+	// ScatterPlot specific callbacks
 	void OnViewRegressionSelectedExcluded(wxCommandEvent& event);
 	void OnViewRegressionSelected(wxCommandEvent& event);
 	void OnDisplayStatistics(wxCommandEvent& event);
 	void OnShowAxesThroughOrigin(wxCommandEvent& event);
+	// BoxPlot and Histogram specific callback
+	void OnShowAxes(wxCommandEvent& event);
+	
+	void OnTimeSyncVariable(int var_index);
+	void OnTimeSyncVariable1(wxCommandEvent& event);
+	void OnTimeSyncVariable2(wxCommandEvent& event);
+	void OnTimeSyncVariable3(wxCommandEvent& event);
+	void OnTimeSyncVariable4(wxCommandEvent& event);
+	
+	void OnFixedScaleVariable(int var_index);
+	void OnFixedScaleVariable1(wxCommandEvent& event);
+	void OnFixedScaleVariable2(wxCommandEvent& event);
+	void OnFixedScaleVariable3(wxCommandEvent& event);
+	void OnFixedScaleVariable4(wxCommandEvent& event);
+	
+	void OnPlotsPerView(int plots_per_view);
+	void OnPlotsPerView1(wxCommandEvent& event);
+	void OnPlotsPerView2(wxCommandEvent& event);
+	void OnPlotsPerView3(wxCommandEvent& event);
+	void OnPlotsPerView4(wxCommandEvent& event);
+	void OnPlotsPerView5(wxCommandEvent& event);
+	void OnPlotsPerView6(wxCommandEvent& event);
+	void OnPlotsPerView7(wxCommandEvent& event);
+	void OnPlotsPerView8(wxCommandEvent& event);
+	void OnPlotsPerView9(wxCommandEvent& event);
+	void OnPlotsPerView10(wxCommandEvent& event);
+	void OnPlotsPerViewOther(wxCommandEvent& event);
+	void OnPlotsPerViewAll(wxCommandEvent& event);
+	
+	void OnDisplayStatusBar(wxCommandEvent& event);
 	
 	void OnHelpAbout(wxCommandEvent& event);
 
@@ -243,19 +289,16 @@ public:
 	void SetMenusToDefault();
 
 	static Project* project_p;
-	static Project* GetProject() { return project_p; }
+	static Project* GetProject() { return projectOpen ? project_p : 0; }
 	static HiddenFrame* hidden_frame;
 		
 	// Getter/Setter methods
-	static bool IsTableOnlyProject();
-	static void SetTableOnlyProject(bool table_only_proj);
 	static bool IsProjectOpen();
 	static void SetProjectOpen(bool open);
 	static MyFrame* theFrame;
 	
 	static std::list<wxToolBar*> toolbar_list;
 private:
-	static bool table_only_proj;
 	static bool projectOpen;
 	DECLARE_EVENT_TABLE()
 };
@@ -266,12 +309,13 @@ private:
 class Conditionable
 {
 public:
-	Conditionable(bool conditional_view);
+	Conditionable(bool conditional_view, int num_obs);
 	virtual ~Conditionable();
 
 	bool isConditional;
 	int cWhere;
 	
+	int num_obs;
 	bool* conditionFlag;
 	int numCondObs; // number of observations in conditionalFlag set to true
 	

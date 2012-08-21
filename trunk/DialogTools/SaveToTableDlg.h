@@ -21,9 +21,10 @@
 #define __GEODA_CENTER_SAVE_TO_TALBE_DLG_H__
 
 #include <vector>
-#include <wx/dialog.h>
+#include <wx/button.h>
 #include <wx/checkbox.h>
-#include <wx/combobox.h>
+#include <wx/choice.h>
+#include <wx/dialog.h>
 #include "../GeoDaConst.h"
 
 class DbfGridTableBase;
@@ -52,16 +53,33 @@ public:
 				   long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER );
 
     void CreateControls();
+	void OnCheck( wxCommandEvent& event );
+	void OnAddFieldButton( wxCommandEvent& event );
+	void OnFieldChoice( wxCommandEvent& event );
+	void OnTimeChoice( wxCommandEvent& event );
     void OnOkClick( wxCommandEvent& event );
 	void OnCloseClick( wxCommandEvent& event );
-	void Init();
-
+	
+private:
+	void FillColIdMaps();
+	void InitField(int button);
+	void InitFields();
+	void InitTime();
+	void EnableTimeField(int button);
+	void UpdateFieldTms(int button);
+	void UpdateOkButton();
+	
+	bool all_init;
+	bool is_space_time;
+	wxButton* m_ok_button;
 	std::vector<wxCheckBox*> m_check;
-	std::vector<wxComboBox*> m_cb;
+	std::vector<wxButton*> m_add_button;
+	std::vector<wxChoice*> m_field;
+	std::vector<wxChoice*> m_time;
 	const std::vector<SaveToTableEntry>& data;
-		
-	void AddColumn(wxString colname, GeoDaConst::FieldType dtype);
 
+	std::vector< std::vector<int> > col_id_maps;
+	
 	DbfGridTableBase* grid_base;
 	
 	DECLARE_EVENT_TABLE()

@@ -46,8 +46,12 @@ BEGIN_EVENT_TABLE( DataViewerAddColDlg, wxDialog )
 END_EVENT_TABLE()
 
 DataViewerAddColDlg::DataViewerAddColDlg(DbfGridTableBase* grid_base_s,
-										 wxWindow* parent)
-: grid_base(grid_base_s)
+										 wxWindow* parent,
+										 bool time_inv_no_as_default_s,
+										 bool can_change_time_inv_s,
+										 wxString default_name_s)
+: grid_base(grid_base_s), time_inv_no_as_default(time_inv_no_as_default_s),
+can_change_time_inv(can_change_time_inv_s), default_name(default_name_s)
 {
 	SetParent(parent);
     CreateControls();
@@ -74,13 +78,18 @@ DataViewerAddColDlg::DataViewerAddColDlg(DbfGridTableBase* grid_base_s,
 
 
 void DataViewerAddColDlg::CreateControls()
-{    
-    wxXmlResource::Get()->LoadDialog(this, GetParent(),
-									 "ID_DATA_VIEWER_ADD_COL_DLG");
-	
+{
+	if (grid_base->IsTimeVariant()) {
+		wxXmlResource::Get()->LoadDialog(this, GetParent(),
+										 "ID_DATA_VIEWER_ADD_COL_TIME_DLG");
+	} else {
+		wxXmlResource::Get()->LoadDialog(this, GetParent(),
+										 "ID_DATA_VIEWER_ADD_COL_DLG");
+	}
 	m_apply_button = wxDynamicCast(FindWindow(XRCID("wxID_OK")), wxButton);
 	
 	m_name = wxDynamicCast(FindWindow(XRCID("ID_TEXT_NEW_NAME")), wxTextCtrl);
+	m_name->SetValue(default_name);
 	wxString name_chars="abcdefghijklmnopqrstuvwxyz"
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789";
 	wxTextValidator name_validator(wxFILTER_INCLUDE_CHAR_LIST);
@@ -88,9 +97,22 @@ void DataViewerAddColDlg::CreateControls()
 	m_name->SetValidator(name_validator);
 	m_name_valid = false;
 	
+	m_time_inv_no = 0;
+	m_time_inv_yes = 0;
+	if (FindWindow(XRCID("ID_TIME_INV_NO"))) {
+		m_time_inv_no = wxDynamicCast(FindWindow(XRCID("ID_TIME_INV_NO")),
+									  wxRadioButton);
+		m_time_inv_yes = wxDynamicCast(FindWindow(XRCID("ID_TIME_INV_YES")),
+									  wxRadioButton);
+		m_time_inv_no->SetValue(time_inv_no_as_default);
+		m_time_inv_yes->SetValue(!time_inv_no_as_default);
+		m_time_inv_no->Enable(can_change_time_inv);
+		m_time_inv_yes->Enable(can_change_time_inv);
+	}
+	
 	m_type = wxDynamicCast(FindWindow(XRCID("ID_CHOICE_TYPE")), wxChoice);
 	// add options for Float, Integer, String, or Date
-	m_type->Append("float (eg 1.03, 45.7)");
+	m_type->Append("real (eg 1.03, 45.7)");
 	m_type->Append("integer (eg -1, 0, 23)");
 	m_type->Append("string (eg New York)");
 	m_type->Append("date (eg 20110131)");
@@ -132,6 +154,7 @@ void DataViewerAddColDlg::CreateControls()
 	
 	m_type->SetSelection(0);
 	UpdateApplyButton();
+	CheckName();
 	SetDefaultsByType(GeoDaConst::double_type);
 }
 
@@ -300,15 +323,21 @@ void DataViewerAddColDlg::OnOkClick( wxCommandEvent& ev )
 		col_insert_pos = grid_base->GetNumberCols();
 	} else {
 		// One might think we want to use the col_id_map here, but it
-		// turns out that need to specify the position in the visual
+		// turns out we need to specify the position in the visual
 		// order it appears in the Table.
 		col_insert_pos = m_insert_pos->GetSelection();
 	}
+	int time_steps = 1; // non-space-time column by default	
+	if (m_time_inv_no && m_time_inv_no->GetValue()) {
+		time_steps = grid_base->time_steps;
+	}
+
 	LOG_MSG(wxString::Format("Inserting new column %s into Table",
 							 colname.Upper().c_str()));
-	grid_base->InsertCol(col_insert_pos, cur_type, colname.Upper(),
+	grid_base->InsertCol(col_insert_pos, time_steps, cur_type, colname.Upper(),
 						 m_length_val, m_decimals_val, displayed_decimals);
 	final_col_name = colname.Upper();
+	final_col_id = col_insert_pos;
 
 	ev.Skip();
 	EndDialog(wxID_OK);
@@ -316,6 +345,11 @@ void DataViewerAddColDlg::OnOkClick( wxCommandEvent& ev )
 }
 
 void DataViewerAddColDlg::OnEditName( wxCommandEvent& ev )
+{
+	CheckName();
+}
+
+void DataViewerAddColDlg::CheckName()
 {
 	wxString s = m_name->GetValue();
 	if (s.length() > 0) {
@@ -336,9 +370,10 @@ void DataViewerAddColDlg::OnEditName( wxCommandEvent& ev )
 		style.SetTextColour(*wxRED);
 		m_name->SetStyle(0, s.length(), style);
 	}
-	m_name_valid = DbfFileUtils::isValidFieldName(s);
+	m_name_valid = (DbfFileUtils::isValidFieldName(s) &&
+					!grid_base->IsSpaceTimeIdField(s));
 	
-	UpdateApplyButton();
+	UpdateApplyButton();	
 }
 
 void DataViewerAddColDlg::OnEditLength( wxCommandEvent& ev )
@@ -478,4 +513,10 @@ wxString DataViewerAddColDlg::GetColName()
 {
 	return final_col_name;
 }
+
+int DataViewerAddColDlg::GetColId()
+{
+	return final_col_id;
+}
+
 

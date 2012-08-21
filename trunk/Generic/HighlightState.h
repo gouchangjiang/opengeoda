@@ -41,7 +41,7 @@ class HighlightStateObserver;
  
  Notes on Selection: There is a single instance of the Selection class
  called gSelection and defined in OpenGeoDa.cpp.  gSelection is initialized
- by a call to Selection::Init() in MyFrame::OnProjectOpen().
+ by a call to Selection::Init() in MyFrame::OnOpenShapefile().
  
  Temporary design: Until we completely transition the the new HighlightState
  paradigm, we need to make the HighlightSate and Selection classes work
@@ -116,6 +116,7 @@ public:
 	bool IsHighlighted(int obs) { return highlight[obs]; }
 	EventType GetEventType() { return event_type; }
 	void SetEventType( EventType e ) { event_type = e; }
+	int GetTotalHighlighted() { return total_highlighted; }
 	
 	void registerObserver(HighlightStateObserver* o);
 	void removeObserver(HighlightStateObserver* o);

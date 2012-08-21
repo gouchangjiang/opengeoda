@@ -35,15 +35,15 @@
 
 using namespace ShapeFileTypes;
 
-BEGIN_EVENT_TABLE( CSHP2ASCDlg, wxDialog )
-    EVT_BUTTON( XRCID("IDOK_ADD"), CSHP2ASCDlg::OnOkAddClick )
-    EVT_BUTTON( XRCID("IDC_OPEN_OASC"), CSHP2ASCDlg::OnCOpenOascClick )
-    EVT_BUTTON( XRCID("IDOKDONE"), CSHP2ASCDlg::OnOkdoneClick )
-    EVT_RADIOBUTTON( XRCID("IDC_RADIO1"), CSHP2ASCDlg::OnCRadio1Selected )
-    EVT_RADIOBUTTON( XRCID("IDC_RADIO2"), CSHP2ASCDlg::OnCRadio2Selected )
-    EVT_RADIOBUTTON( XRCID("IDC_RADIO3"), CSHP2ASCDlg::OnCRadio3Selected )
-    EVT_RADIOBUTTON( XRCID("IDC_RADIO4"), CSHP2ASCDlg::OnCRadio4Selected )
-    EVT_BUTTON( XRCID("IDC_OPEN_ISHP"), CSHP2ASCDlg::OnCOpenIshpClick )
+BEGIN_EVENT_TABLE( SHP2ASCDlg, wxDialog )
+    EVT_BUTTON( XRCID("IDOK_ADD"), SHP2ASCDlg::OnOkAddClick )
+    EVT_BUTTON( XRCID("IDC_OPEN_OASC"), SHP2ASCDlg::OnCOpenOascClick )
+    EVT_BUTTON( XRCID("IDOKDONE"), SHP2ASCDlg::OnOkdoneClick )
+    EVT_RADIOBUTTON( XRCID("IDC_RADIO1"), SHP2ASCDlg::OnCRadio1Selected )
+    EVT_RADIOBUTTON( XRCID("IDC_RADIO2"), SHP2ASCDlg::OnCRadio2Selected )
+    EVT_RADIOBUTTON( XRCID("IDC_RADIO3"), SHP2ASCDlg::OnCRadio3Selected )
+    EVT_RADIOBUTTON( XRCID("IDC_RADIO4"), SHP2ASCDlg::OnCRadio4Selected )
+    EVT_BUTTON( XRCID("IDC_OPEN_ISHP"), SHP2ASCDlg::OnCOpenIshpClick )
 END_EVENT_TABLE()
 
 bool CreateASCBoundary(char* ishp, char* oasc, char* orasc, int field,
@@ -253,11 +253,11 @@ bool CreateASCBoundary(char* ishp, char* oasc, char* orasc, int field,
 	return true;	
 }
 
-CSHP2ASCDlg::CSHP2ASCDlg( )
+SHP2ASCDlg::SHP2ASCDlg( )
 {
 }
 
-CSHP2ASCDlg::CSHP2ASCDlg( wxWindow* parent, wxWindowID id,
+SHP2ASCDlg::SHP2ASCDlg( wxWindow* parent, wxWindowID id,
 						 const wxString& caption, const wxPoint& pos,
 						 const wxSize& size, long style )
 {
@@ -270,7 +270,7 @@ CSHP2ASCDlg::CSHP2ASCDlg( wxWindow* parent, wxWindowID id,
 	FindWindow(XRCID("IDOK_ADD"))->Enable(false);
 }
 
-bool CSHP2ASCDlg::Create( wxWindow* parent, wxWindowID id,
+bool SHP2ASCDlg::Create( wxWindow* parent, wxWindowID id,
 						 const wxString& caption, const wxPoint& pos,
 						 const wxSize& size, long style )
 {
@@ -285,7 +285,7 @@ bool CSHP2ASCDlg::Create( wxWindow* parent, wxWindowID id,
 }
 
 
-void CSHP2ASCDlg::CreateControls()
+void SHP2ASCDlg::CreateControls()
 {
     wxXmlResource::Get()->LoadDialog(this, GetParent(), "IDD_CONVERT_SHP2ASC");
     m_inputfile = XRCCTRL(*this, "IDC_FIELD_SHP", wxTextCtrl);
@@ -305,7 +305,7 @@ void CSHP2ASCDlg::CreateControls()
 	if (m_ra2a->GetValue()) type = 4;
 }
 
-void CSHP2ASCDlg::OnOkAddClick( wxCommandEvent& event )
+void SHP2ASCDlg::OnOkAddClick( wxCommandEvent& event )
 {
 	if(type == -1) {
 		wxMessageBox("Select options!");
@@ -366,7 +366,7 @@ void CSHP2ASCDlg::OnOkAddClick( wxCommandEvent& event )
 	event.Skip();
 }
 
-void CSHP2ASCDlg::OnCOpenOascClick( wxCommandEvent& event )
+void SHP2ASCDlg::OnCOpenOascClick( wxCommandEvent& event )
 {
     wxFileDialog dlg
                  (
@@ -389,34 +389,34 @@ void CSHP2ASCDlg::OnCOpenOascClick( wxCommandEvent& event )
 	}
 }
 
-void CSHP2ASCDlg::OnOkdoneClick( wxCommandEvent& event )
+void SHP2ASCDlg::OnOkdoneClick( wxCommandEvent& event )
 {
 	event.Skip(); // wxDialog::OnCancel(event);
 	EndDialog(wxID_CANCEL);
 }
 
-void CSHP2ASCDlg::OnCRadio1Selected( wxCommandEvent& event )
+void SHP2ASCDlg::OnCRadio1Selected( wxCommandEvent& event )
 {
     type = 1;
 }
 
-void CSHP2ASCDlg::OnCRadio2Selected( wxCommandEvent& event )
+void SHP2ASCDlg::OnCRadio2Selected( wxCommandEvent& event )
 {
     type = 2;
 }
 
-void CSHP2ASCDlg::OnCRadio3Selected( wxCommandEvent& event )
+void SHP2ASCDlg::OnCRadio3Selected( wxCommandEvent& event )
 {
     type = 3;
 }
 
-void CSHP2ASCDlg::OnCRadio4Selected( wxCommandEvent& event )
+void SHP2ASCDlg::OnCRadio4Selected( wxCommandEvent& event )
 {
     type = 4;
 }
 
 
-void CSHP2ASCDlg::OnCOpenIshpClick( wxCommandEvent& event )
+void SHP2ASCDlg::OnCOpenIshpClick( wxCommandEvent& event )
 {
     wxFileDialog dlg( this, "Input Shp file", "", "",
 					 "Shp files (*.shp)|*.shp" );
@@ -475,7 +475,7 @@ void CSHP2ASCDlg::OnCOpenIshpClick( wxCommandEvent& event )
 
 }
 
-bool CSHP2ASCDlg::ShowToolTips()
+bool SHP2ASCDlg::ShowToolTips()
 {
     return true;
 }

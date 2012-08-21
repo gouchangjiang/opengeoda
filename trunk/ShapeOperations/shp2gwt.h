@@ -22,7 +22,10 @@
 
 #include "GwtWeight.h"
 #include "../Thiessen/VorDataType.h"
+#include <wx/string.h>
 #include <vector>
+
+class GwtElement;
 
 bool ComputeXY(const wxString& fname, long* nPoints,
 			   std::vector<double>& x, std::vector<double>& y,
@@ -31,6 +34,25 @@ bool ComputeXY(const wxString& fname, long* nPoints,
 bool ComputeXY(const wxString& fname, long* nPoints,
 			   std::vector<double>& x, std::vector<double>& y,
 			   myBox* B, bool mean_center);
+
+double ComputeCutOffPoint(const std::vector<double>& x,
+						  const std::vector<double>& y,
+						  int method, bool mean_center);
+
+double ComputeMaxDistance(int Records, const std::vector<double>& x,
+						  const std::vector<double>& y, int method);
+
+GwtElement* DynKNN(const std::vector<double>& x, const std::vector<double>& y,
+				   int k, int method);
+
+GwtElement* shp2gwt(int Obs, std::vector<double>& x, std::vector<double>& y,
+					const double threshold, const int degree,
+					int method);
+
+bool WriteGwt(const GwtElement *g,
+			  const wxString& ifname, const wxString& ofname, 
+			  const wxString& vname, const std::vector<wxInt64>& id_vec,
+			  const int degree, bool gl);
 
 
 

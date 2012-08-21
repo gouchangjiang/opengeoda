@@ -29,12 +29,12 @@
 
 /*
  oShapeFileTriplet
- This corresponds to a concept of shapefile (SHP,SHX,DBF files
+ This corresponds to a concept of Shapefile (SHP,SHX,DBF files
  with the same names), which is being created.
- This is the best way to create a shapefile (to make sure that all its
+ This is the best way to create a Shapefile (to make sure that all its
  all of its components correspond to each other).
  On the opening the "empty" headers are created, then add shapes
- to the shapefile using << (as many as needed)
+ to the Shapefile using << (as many as needed)
  and on the closing, the headers are updated according to
  actual number of shapes placed in the files, actual sizes of the
  files, their bounding boxes and so on.

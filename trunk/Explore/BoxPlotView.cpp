@@ -39,9 +39,6 @@
 
 extern Selection gSelection;
 extern GeoDaEventType gEvent;
-extern int gObservation;
-extern wxString m_gVar1;
-extern double* m_gX;
 extern MyFrame* frame;
 
 BEGIN_EVENT_TABLE(BoxPlotFrame, wxFrame)
@@ -63,10 +60,11 @@ END_EVENT_TABLE()
 // BoxPlot Frame
 // ---------------------------------------------------------------------------
 
-BoxPlotFrame::BoxPlotFrame(wxFrame *parent, Project* project,
-    const wxString& title,
-    const wxPoint& pos, const wxSize& size,
-    const long style)
+BoxPlotFrame::BoxPlotFrame(wxFrame *parent,
+						   double* v1, int num_obs, const wxString& v1_name,
+						   Project* project, const wxString& title,
+						   const wxPoint& pos, const wxSize& size,
+						   const long style)
 : TemplateFrame(parent, project, title, pos, size, style)
 {
     old_style = true;
@@ -74,11 +72,12 @@ BoxPlotFrame::BoxPlotFrame(wxFrame *parent, Project* project,
     SetSizeHints(100, 100);
     int width, height;
     GetClientSize(&width, &height);
-    canvas = new BoxPlotCanvas(this, wxPoint(0, 0), wxSize(width, height));
+    canvas = new BoxPlotCanvas(this, v1, num_obs, v1_name,
+							   wxPoint(0, 0), wxSize(width, height));
     template_canvas = canvas;
     template_canvas->template_frame = this;
 
-    m_bpvarnm = m_gVar1;
+    m_bpvarnm = v1_name;
     Show(true);
 }
 
@@ -154,7 +153,7 @@ void BoxPlotFrame::MapMenus()
 void BoxPlotFrame::OnHinge15(wxCommandEvent& event)
 {
     LOG_MSG("In BoxPlotFrame::OnHinge15");
-    SetTitle("Box Plot (Hinge = 1.5) - " + m_bpvarnm);
+    SetTitle("Box Plot (Hinge=1.5) - " + m_bpvarnm);
     canvas->OnOptionsHinge15();
     UpdateMenuBarCheckMarks(frame->GetMenuBar());
 }
@@ -162,7 +161,7 @@ void BoxPlotFrame::OnHinge15(wxCommandEvent& event)
 void BoxPlotFrame::OnHinge30(wxCommandEvent& event)
 {
     LOG_MSG("In BoxPlotFrame::OnHinge30");
-    SetTitle("Box Plot (Hinge = 3.0) - " + m_bpvarnm);
+    SetTitle("Box Plot (Hinge=3.0) - " + m_bpvarnm);
     canvas->OnOptionsHinge30();
     UpdateMenuBarCheckMarks(frame->GetMenuBar());
 }
@@ -171,24 +170,27 @@ void BoxPlotFrame::OnHinge30(wxCommandEvent& event)
 // BoxPlot Canvas
 // ---------------------------------------------------------------------------
 
-BoxPlotCanvas::BoxPlotCanvas(wxWindow *parent, const wxPoint& pos,
+BoxPlotCanvas::BoxPlotCanvas(wxWindow *parent,
+							 double* v1, int num_obs_s, const wxString& v1_name,
+							 const wxPoint& pos,
 							 const wxSize& size, bool conditional_view)
-: TemplateCanvas(parent, pos, size), Conditionable(conditional_view)
+: TemplateCanvas(parent, pos, size), Conditionable(conditional_view, num_obs_s),
+num_obs(num_obs_s)
 {
     LOG_MSG("Entering BoxPlotCanvas::BoxPlotCanvas");
 
-    mapper = new int[gObservation];
-    RawData = new double [ gObservation ];
-    RRawData = new double [ gObservation ];
-    Index = new int [ gObservation ];
-    Invert = new int [ gObservation ];
+    mapper = new int[num_obs];
+    RawData = new double [ num_obs ];
+    RRawData = new double [ num_obs ];
+    Index = new int [ num_obs ];
+    Invert = new int [ num_obs ];
 	hinge3 = false;
 
-    for (int i=0; i<gObservation; i++) {
+    for (int i=0; i<num_obs; i++) {
 		Index[i] = i;
-		RRawData[i] = m_gX[i];
+		RRawData[i] = v1[i];
 	}
-    FieldName = m_gVar1;
+    FieldName = v1_name;
 	
     Init();
     SetBackgroundColour(wxColour("WHITE"));
@@ -210,11 +212,11 @@ bool BoxPlotCanvas::Init()
 {
     gcObs = 0;
     if (!mapper || !RRawData || !RawData || !Index || !Invert) {
-        gObservation = 0;
+        num_obs = 0;
         return false;
     }
 
-    for (int i = 0; i < gObservation; i++) {
+    for (int i = 0; i < num_obs; i++) {
         if (!conditionFlag[i]) continue;
         mapper[i] = gcObs;
 		RawData[gcObs] = RRawData[i];
@@ -291,7 +293,7 @@ void BoxPlotCanvas::Selection(wxDC* pDC)
         case NEW_SELECTION:
             LOG_MSG("gEvent == NEW_SELECTION");
 			DrawBox(pDC);
-			for (int i=0; i<gObservation; i++) {
+			for (int i=0; i<num_obs; i++) {
 				if (conditionFlag[i]) DrawPoint(pDC, i);
 			}
             break;
@@ -378,10 +380,10 @@ void BoxPlotCanvas::Draw(wxDC* dc)
         Top + Height + Bottom / 8 + 1);
 
 	DrawBox(dc);
-	for (int i=0; i<gObservation; i++) if (conditionFlag[i]) DrawPoint(dc, i);
+	for (int i=0; i<num_obs; i++) if (conditionFlag[i]) DrawPoint(dc, i);
     DrawMedian(dc);
 	
-    if (gcObs < gObservation && gcObs >= 3) {
+    if (gcObs < num_obs && gcObs >= 3) {
         wxFont m_font(*wxNORMAL_FONT);
         m_font.SetPointSize(max(10, (fs*9)/10));
         dc->SetFont(m_font);
@@ -536,7 +538,7 @@ void BoxPlotCanvas::CheckSize()
 	if (Height <= 0) Height = GenUtils::max<int>(height, 1);
 	
     circRadius = (int) (log10((double) Width + (double) Height) -
-        log10((double) gObservation) + (double) Height / 128);
+        log10((double) num_obs) + (double) Height / 128);
     if (circRadius < 0) circRadius = 1;
     else if (circRadius > 4) circRadius = 4;
 	
@@ -629,7 +631,7 @@ void BoxPlotCanvas::SelectByPoint(wxMouseEvent& event)
 int BoxPlotCanvas::SelectByRect(wxMouseEvent& event)
 {
 	int curr_sel_cnt = 0;
-	for (int i=0; i<gObservation; i++) {
+	for (int i=0; i<num_obs; i++) {
 		if (gSelection.selected(i)) curr_sel_cnt++;
 	}
 	
@@ -669,7 +671,7 @@ int BoxPlotCanvas::SelectByRect(wxMouseEvent& event)
 
     if (RawData[b2] < v2) {
         tx = Invert[ b2 ];
-        if (tx < gObservation - 1) b2 = Index[ tx + 1 ];
+        if (tx < num_obs - 1) b2 = Index[ tx + 1 ];
     }
 
     gEvent = (event.ShiftDown()) ? ADD_SELECTION : NEW_SELECTION;

@@ -35,45 +35,52 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/Thiessen/Thiessen.o \
 	${OBJECTDIR}/Explore/3DPlotView.o \
+	${OBJECTDIR}/DialogTools/FieldNewCalcLagDlg.o \
+	${OBJECTDIR}/DialogTools/ExportCsvDlg.o \
 	${OBJECTDIR}/Regression/DenseMatrix.o \
 	${OBJECTDIR}/DialogTools/MapQuantileDlg.o \
-	${OBJECTDIR}/DialogTools/FieldNewCalcLagDlg.o \
-	${OBJECTDIR}/rc/MyAppResources.o \
+	${OBJECTDIR}/DialogTools/CreateSpTmProjectDlg.o \
 	${OBJECTDIR}/Explore/LisaCoordinator.o \
 	${OBJECTDIR}/Regression/DiagnosticReport.o \
 	${OBJECTDIR}/DialogTools/3DControlPan.o \
-	${OBJECTDIR}/DataViewer/DataViewerResizeColDlg.o \
+	${OBJECTDIR}/Explore/LisaScatterPlotView.o \
 	${OBJECTDIR}/ShapeOperations/shp2gwt.o \
 	${OBJECTDIR}/Explore/Geom3D.o \
+	${OBJECTDIR}/rc/MyAppResources.o \
+	${OBJECTDIR}/DataViewer/DataViewerResizeColDlg.o \
 	${OBJECTDIR}/ShapeOperations/RateSmoothing.o \
 	${OBJECTDIR}/ShapeOperations/GeodaWeight.o \
 	${OBJECTDIR}/DialogTools/LisaWhat2OpenDlg.o \
 	${OBJECTDIR}/DialogTools/PCPDlg.o \
 	${OBJECTDIR}/logger.o \
+	${OBJECTDIR}/DialogTools/ImportCsvDlg.o \
 	${OBJECTDIR}/ShapeOperations/GwtWeight.o \
+	${OBJECTDIR}/Explore/MapNewView.o \
 	${OBJECTDIR}/ShapeOperations/ShpFile.o \
 	${OBJECTDIR}/DialogTools/WeightCharacterDlg.o \
 	${OBJECTDIR}/ShapeOperations/ShapeFileTriplet.o \
 	${OBJECTDIR}/Regression/PowerLag.o \
-	${OBJECTDIR}/Explore/PCPView.o \
 	${OBJECTDIR}/GeneralWxUtils.o \
 	${OBJECTDIR}/Regression/PowerSymLag.o \
 	${OBJECTDIR}/Explore/CartogramView.o \
+	${OBJECTDIR}/DialogTools/OpenSpaceTimeDlg.o \
 	${OBJECTDIR}/Explore/ConditionalView.o \
 	${OBJECTDIR}/DialogTools/ASC2SHPDlg.o \
 	${OBJECTDIR}/Regression/SparseVector.o \
 	${OBJECTDIR}/Generic/HighlightState.o \
+	${OBJECTDIR}/DialogTools/TimeVariantImportDlg.o \
+	${OBJECTDIR}/Explore/GetisOrdMapNewView.o \
 	${OBJECTDIR}/DialogTools/RandomizationDlg.o \
 	${OBJECTDIR}/DialogTools/VariableSettingsDlg.o \
 	${OBJECTDIR}/DialogTools/SelectWeightDlg.o \
 	${OBJECTDIR}/DataViewer/DataViewerDeleteColDlg.o \
 	${OBJECTDIR}/DialogTools/FieldNewCalcUniDlg.o \
-	${OBJECTDIR}/Explore/MoranGView.o \
+	${OBJECTDIR}/Explore/PCPNewView.o \
 	${OBJECTDIR}/ShapeOperations/ShapeFileHdr.o \
 	${OBJECTDIR}/DataViewer/MergeTableDlg.o \
-	${OBJECTDIR}/DialogTools/RateSmootherDlg.o \
 	${OBJECTDIR}/ShapeOperations/WeightsManager.o \
 	${OBJECTDIR}/GeoDaConst.o \
+	${OBJECTDIR}/Explore/HistogramView.o \
 	${OBJECTDIR}/Regression/smile2.o \
 	${OBJECTDIR}/DataViewer/DbfGridTableBase.o \
 	${OBJECTDIR}/DialogTools/GetisOrdChoiceDlg.o \
@@ -81,8 +88,6 @@ OBJECTFILES= \
 	${OBJECTDIR}/Thiessen/VorUtility.o \
 	${OBJECTDIR}/ShapeOperations/Gauss.o \
 	${OBJECTDIR}/DialogTools/CreateGridDlg.o \
-	${OBJECTDIR}/Explore/LisaBoxView.o \
-	${OBJECTDIR}/DialogTools/CCVariableDlg.o \
 	${OBJECTDIR}/ShapeOperations/ShapeFile.o \
 	${OBJECTDIR}/DialogTools/HistIntervalDlg.o \
 	${OBJECTDIR}/DialogTools/PermutationCounterDlg.o \
@@ -95,26 +100,26 @@ OBJECTFILES= \
 	${OBJECTDIR}/DialogTools/MovieControlPan.o \
 	${OBJECTDIR}/Explore/ScatterNewPlotView.o \
 	${OBJECTDIR}/kNN/kd_search.o \
-	${OBJECTDIR}/Explore/MoranScatterPlotView.o \
 	${OBJECTDIR}/DialogTools/AddIdVariable.o \
 	${OBJECTDIR}/DialogTools/AddCentroidsDlg.o \
 	${OBJECTDIR}/TemplateFrame.o \
 	${OBJECTDIR}/DialogTools/UserConfigDlg.o \
-	${OBJECTDIR}/Regression/SparseRow.o \
 	${OBJECTDIR}/DialogTools/RegressionReportDlg.o \
 	${OBJECTDIR}/kNN/kd_split.o \
 	${OBJECTDIR}/ShapeOperations/shp.o \
+	${OBJECTDIR}/Regression/SparseRow.o \
+	${OBJECTDIR}/ShapeOperations/CsvFileUtils.o \
 	${OBJECTDIR}/mapview.o \
 	${OBJECTDIR}/DialogTools/ConditionViewDlg.o \
 	${OBJECTDIR}/DialogTools/FieldNewCalcSheetDlg.o \
 	${OBJECTDIR}/Explore/GStatCoordinator.o \
 	${OBJECTDIR}/Regression/ML_im.o \
-	${OBJECTDIR}/DialogTools/ScatterPlotVarsDlg.o \
+	${OBJECTDIR}/Explore/BoxNewPlotView.o \
 	${OBJECTDIR}/Regression/SparseMatrix.o \
 	${OBJECTDIR}/OpenGeoDa.o \
+	${OBJECTDIR}/Explore/ThemeUtilities.o \
 	${OBJECTDIR}/DialogTools/ProgressDlg.o \
 	${OBJECTDIR}/kNN/ANN.o \
-	${OBJECTDIR}/DialogTools/3DDlg.o \
 	${OBJECTDIR}/ShapeOperations/shp2cnt.o \
 	${OBJECTDIR}/DialogTools/RegressionDlg.o \
 	${OBJECTDIR}/DialogTools/ThiessenPolygonDlg.o \
@@ -126,15 +131,17 @@ OBJECTFILES= \
 	${OBJECTDIR}/DataViewer/DataViewerEditFieldPropertiesDlg.o \
 	${OBJECTDIR}/Explore/ScatterPlotView.o \
 	${OBJECTDIR}/kNN/kd_util.o \
+	${OBJECTDIR}/DialogTools/TimeChooserDlg.o \
 	${OBJECTDIR}/DialogTools/FieldNewCalcSpecialDlg.o \
+	${OBJECTDIR}/ShapeOperations/ShapeUtils.o \
 	${OBJECTDIR}/ShapeOperations/Randik.o \
 	${OBJECTDIR}/DialogTools/FieldNewCalcRateDlg.o \
 	${OBJECTDIR}/DialogTools/Statistics.o \
-	${OBJECTDIR}/Explore/GetisOrdMapView.o \
 	${OBJECTDIR}/NewTableViewer.o \
 	${OBJECTDIR}/DialogTools/SaveToTableDlg.o \
 	${OBJECTDIR}/TemplateLegend.o \
 	${OBJECTDIR}/FramesManager.o \
+	${OBJECTDIR}/Explore/LisaMapNewView.o \
 	${OBJECTDIR}/DialogTools/FieldNewCalcBinDlg.o \
 	${OBJECTDIR}/ShapeOperations/Box.o \
 	${OBJECTDIR}/Regression/Weights.o \
@@ -142,7 +149,6 @@ OBJECTFILES= \
 	${OBJECTDIR}/DialogTools/SHP2ASCDlg.o \
 	${OBJECTDIR}/DialogTools/Bnd2ShpDlg.o \
 	${OBJECTDIR}/kNN/kNN.o \
-	${OBJECTDIR}/Explore/LisaMapView.o \
 	${OBJECTDIR}/Regression/DenseVector.o \
 	${OBJECTDIR}/TemplateCanvas.o \
 	${OBJECTDIR}/ShapeOperations/DBF.o \
@@ -216,6 +222,16 @@ ${OBJECTDIR}/Explore/3DPlotView.o: Explore/3DPlotView.cpp
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/3DPlotView.o Explore/3DPlotView.cpp
 
+${OBJECTDIR}/DialogTools/FieldNewCalcLagDlg.o: DialogTools/FieldNewCalcLagDlg.cpp 
+	${MKDIR} -p ${OBJECTDIR}/DialogTools
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/FieldNewCalcLagDlg.o DialogTools/FieldNewCalcLagDlg.cpp
+
+${OBJECTDIR}/DialogTools/ExportCsvDlg.o: DialogTools/ExportCsvDlg.cpp 
+	${MKDIR} -p ${OBJECTDIR}/DialogTools
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/ExportCsvDlg.o DialogTools/ExportCsvDlg.cpp
+
 ${OBJECTDIR}/Regression/DenseMatrix.o: Regression/DenseMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Regression
 	${RM} $@.d
@@ -226,15 +242,10 @@ ${OBJECTDIR}/DialogTools/MapQuantileDlg.o: DialogTools/MapQuantileDlg.cpp
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/MapQuantileDlg.o DialogTools/MapQuantileDlg.cpp
 
-${OBJECTDIR}/DialogTools/FieldNewCalcLagDlg.o: DialogTools/FieldNewCalcLagDlg.cpp 
+${OBJECTDIR}/DialogTools/CreateSpTmProjectDlg.o: DialogTools/CreateSpTmProjectDlg.cpp 
 	${MKDIR} -p ${OBJECTDIR}/DialogTools
 	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/FieldNewCalcLagDlg.o DialogTools/FieldNewCalcLagDlg.cpp
-
-${OBJECTDIR}/rc/MyAppResources.o: rc/MyAppResources.cpp 
-	${MKDIR} -p ${OBJECTDIR}/rc
-	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/rc/MyAppResources.o rc/MyAppResources.cpp
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/CreateSpTmProjectDlg.o DialogTools/CreateSpTmProjectDlg.cpp
 
 ${OBJECTDIR}/Explore/LisaCoordinator.o: Explore/LisaCoordinator.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Explore
@@ -251,10 +262,10 @@ ${OBJECTDIR}/DialogTools/3DControlPan.o: DialogTools/3DControlPan.cpp
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/3DControlPan.o DialogTools/3DControlPan.cpp
 
-${OBJECTDIR}/DataViewer/DataViewerResizeColDlg.o: DataViewer/DataViewerResizeColDlg.cpp 
-	${MKDIR} -p ${OBJECTDIR}/DataViewer
+${OBJECTDIR}/Explore/LisaScatterPlotView.o: Explore/LisaScatterPlotView.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Explore
 	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DataViewer/DataViewerResizeColDlg.o DataViewer/DataViewerResizeColDlg.cpp
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/LisaScatterPlotView.o Explore/LisaScatterPlotView.cpp
 
 ${OBJECTDIR}/ShapeOperations/shp2gwt.o: ShapeOperations/shp2gwt.cpp 
 	${MKDIR} -p ${OBJECTDIR}/ShapeOperations
@@ -265,6 +276,16 @@ ${OBJECTDIR}/Explore/Geom3D.o: Explore/Geom3D.cpp
 	${MKDIR} -p ${OBJECTDIR}/Explore
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/Geom3D.o Explore/Geom3D.cpp
+
+${OBJECTDIR}/rc/MyAppResources.o: rc/MyAppResources.cpp 
+	${MKDIR} -p ${OBJECTDIR}/rc
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/rc/MyAppResources.o rc/MyAppResources.cpp
+
+${OBJECTDIR}/DataViewer/DataViewerResizeColDlg.o: DataViewer/DataViewerResizeColDlg.cpp 
+	${MKDIR} -p ${OBJECTDIR}/DataViewer
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DataViewer/DataViewerResizeColDlg.o DataViewer/DataViewerResizeColDlg.cpp
 
 ${OBJECTDIR}/ShapeOperations/RateSmoothing.o: ShapeOperations/RateSmoothing.cpp 
 	${MKDIR} -p ${OBJECTDIR}/ShapeOperations
@@ -291,10 +312,20 @@ ${OBJECTDIR}/logger.o: logger.cpp
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/logger.o logger.cpp
 
+${OBJECTDIR}/DialogTools/ImportCsvDlg.o: DialogTools/ImportCsvDlg.cpp 
+	${MKDIR} -p ${OBJECTDIR}/DialogTools
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/ImportCsvDlg.o DialogTools/ImportCsvDlg.cpp
+
 ${OBJECTDIR}/ShapeOperations/GwtWeight.o: ShapeOperations/GwtWeight.cpp 
 	${MKDIR} -p ${OBJECTDIR}/ShapeOperations
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/ShapeOperations/GwtWeight.o ShapeOperations/GwtWeight.cpp
+
+${OBJECTDIR}/Explore/MapNewView.o: Explore/MapNewView.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Explore
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/MapNewView.o Explore/MapNewView.cpp
 
 ${OBJECTDIR}/ShapeOperations/ShpFile.o: ShapeOperations/ShpFile.cpp 
 	${MKDIR} -p ${OBJECTDIR}/ShapeOperations
@@ -316,11 +347,6 @@ ${OBJECTDIR}/Regression/PowerLag.o: Regression/PowerLag.cpp
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Regression/PowerLag.o Regression/PowerLag.cpp
 
-${OBJECTDIR}/Explore/PCPView.o: Explore/PCPView.cpp 
-	${MKDIR} -p ${OBJECTDIR}/Explore
-	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/PCPView.o Explore/PCPView.cpp
-
 ${OBJECTDIR}/GeneralWxUtils.o: GeneralWxUtils.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
@@ -335,6 +361,11 @@ ${OBJECTDIR}/Explore/CartogramView.o: Explore/CartogramView.cpp
 	${MKDIR} -p ${OBJECTDIR}/Explore
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/CartogramView.o Explore/CartogramView.cpp
+
+${OBJECTDIR}/DialogTools/OpenSpaceTimeDlg.o: DialogTools/OpenSpaceTimeDlg.cpp 
+	${MKDIR} -p ${OBJECTDIR}/DialogTools
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/OpenSpaceTimeDlg.o DialogTools/OpenSpaceTimeDlg.cpp
 
 ${OBJECTDIR}/Explore/ConditionalView.o: Explore/ConditionalView.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Explore
@@ -355,6 +386,16 @@ ${OBJECTDIR}/Generic/HighlightState.o: Generic/HighlightState.cpp
 	${MKDIR} -p ${OBJECTDIR}/Generic
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Generic/HighlightState.o Generic/HighlightState.cpp
+
+${OBJECTDIR}/DialogTools/TimeVariantImportDlg.o: DialogTools/TimeVariantImportDlg.cpp 
+	${MKDIR} -p ${OBJECTDIR}/DialogTools
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/TimeVariantImportDlg.o DialogTools/TimeVariantImportDlg.cpp
+
+${OBJECTDIR}/Explore/GetisOrdMapNewView.o: Explore/GetisOrdMapNewView.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Explore
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/GetisOrdMapNewView.o Explore/GetisOrdMapNewView.cpp
 
 ${OBJECTDIR}/DialogTools/RandomizationDlg.o: DialogTools/RandomizationDlg.cpp 
 	${MKDIR} -p ${OBJECTDIR}/DialogTools
@@ -381,10 +422,10 @@ ${OBJECTDIR}/DialogTools/FieldNewCalcUniDlg.o: DialogTools/FieldNewCalcUniDlg.cp
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/FieldNewCalcUniDlg.o DialogTools/FieldNewCalcUniDlg.cpp
 
-${OBJECTDIR}/Explore/MoranGView.o: Explore/MoranGView.cpp 
+${OBJECTDIR}/Explore/PCPNewView.o: Explore/PCPNewView.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Explore
 	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/MoranGView.o Explore/MoranGView.cpp
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/PCPNewView.o Explore/PCPNewView.cpp
 
 ${OBJECTDIR}/ShapeOperations/ShapeFileHdr.o: ShapeOperations/ShapeFileHdr.cpp 
 	${MKDIR} -p ${OBJECTDIR}/ShapeOperations
@@ -396,11 +437,6 @@ ${OBJECTDIR}/DataViewer/MergeTableDlg.o: DataViewer/MergeTableDlg.cpp
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DataViewer/MergeTableDlg.o DataViewer/MergeTableDlg.cpp
 
-${OBJECTDIR}/DialogTools/RateSmootherDlg.o: DialogTools/RateSmootherDlg.cpp 
-	${MKDIR} -p ${OBJECTDIR}/DialogTools
-	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/RateSmootherDlg.o DialogTools/RateSmootherDlg.cpp
-
 ${OBJECTDIR}/ShapeOperations/WeightsManager.o: ShapeOperations/WeightsManager.cpp 
 	${MKDIR} -p ${OBJECTDIR}/ShapeOperations
 	${RM} $@.d
@@ -410,6 +446,11 @@ ${OBJECTDIR}/GeoDaConst.o: GeoDaConst.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/GeoDaConst.o GeoDaConst.cpp
+
+${OBJECTDIR}/Explore/HistogramView.o: Explore/HistogramView.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Explore
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/HistogramView.o Explore/HistogramView.cpp
 
 ${OBJECTDIR}/Regression/smile2.o: Regression/smile2.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Regression
@@ -445,16 +486,6 @@ ${OBJECTDIR}/DialogTools/CreateGridDlg.o: DialogTools/CreateGridDlg.cpp
 	${MKDIR} -p ${OBJECTDIR}/DialogTools
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/CreateGridDlg.o DialogTools/CreateGridDlg.cpp
-
-${OBJECTDIR}/Explore/LisaBoxView.o: Explore/LisaBoxView.cpp 
-	${MKDIR} -p ${OBJECTDIR}/Explore
-	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/LisaBoxView.o Explore/LisaBoxView.cpp
-
-${OBJECTDIR}/DialogTools/CCVariableDlg.o: DialogTools/CCVariableDlg.cpp 
-	${MKDIR} -p ${OBJECTDIR}/DialogTools
-	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/CCVariableDlg.o DialogTools/CCVariableDlg.cpp
 
 ${OBJECTDIR}/ShapeOperations/ShapeFile.o: ShapeOperations/ShapeFile.cpp 
 	${MKDIR} -p ${OBJECTDIR}/ShapeOperations
@@ -516,11 +547,6 @@ ${OBJECTDIR}/kNN/kd_search.o: kNN/kd_search.cpp
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/kNN/kd_search.o kNN/kd_search.cpp
 
-${OBJECTDIR}/Explore/MoranScatterPlotView.o: Explore/MoranScatterPlotView.cpp 
-	${MKDIR} -p ${OBJECTDIR}/Explore
-	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/MoranScatterPlotView.o Explore/MoranScatterPlotView.cpp
-
 ${OBJECTDIR}/DialogTools/AddIdVariable.o: DialogTools/AddIdVariable.cpp 
 	${MKDIR} -p ${OBJECTDIR}/DialogTools
 	${RM} $@.d
@@ -541,11 +567,6 @@ ${OBJECTDIR}/DialogTools/UserConfigDlg.o: DialogTools/UserConfigDlg.cpp
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/UserConfigDlg.o DialogTools/UserConfigDlg.cpp
 
-${OBJECTDIR}/Regression/SparseRow.o: Regression/SparseRow.cpp 
-	${MKDIR} -p ${OBJECTDIR}/Regression
-	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Regression/SparseRow.o Regression/SparseRow.cpp
-
 ${OBJECTDIR}/DialogTools/RegressionReportDlg.o: DialogTools/RegressionReportDlg.cpp 
 	${MKDIR} -p ${OBJECTDIR}/DialogTools
 	${RM} $@.d
@@ -560,6 +581,16 @@ ${OBJECTDIR}/ShapeOperations/shp.o: ShapeOperations/shp.cpp
 	${MKDIR} -p ${OBJECTDIR}/ShapeOperations
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/ShapeOperations/shp.o ShapeOperations/shp.cpp
+
+${OBJECTDIR}/Regression/SparseRow.o: Regression/SparseRow.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Regression
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Regression/SparseRow.o Regression/SparseRow.cpp
+
+${OBJECTDIR}/ShapeOperations/CsvFileUtils.o: ShapeOperations/CsvFileUtils.cpp 
+	${MKDIR} -p ${OBJECTDIR}/ShapeOperations
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/ShapeOperations/CsvFileUtils.o ShapeOperations/CsvFileUtils.cpp
 
 ${OBJECTDIR}/mapview.o: mapview.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -586,10 +617,10 @@ ${OBJECTDIR}/Regression/ML_im.o: Regression/ML_im.cpp
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Regression/ML_im.o Regression/ML_im.cpp
 
-${OBJECTDIR}/DialogTools/ScatterPlotVarsDlg.o: DialogTools/ScatterPlotVarsDlg.cpp 
-	${MKDIR} -p ${OBJECTDIR}/DialogTools
+${OBJECTDIR}/Explore/BoxNewPlotView.o: Explore/BoxNewPlotView.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Explore
 	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/ScatterPlotVarsDlg.o DialogTools/ScatterPlotVarsDlg.cpp
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/BoxNewPlotView.o Explore/BoxNewPlotView.cpp
 
 ${OBJECTDIR}/Regression/SparseMatrix.o: Regression/SparseMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Regression
@@ -601,6 +632,11 @@ ${OBJECTDIR}/OpenGeoDa.o: OpenGeoDa.cpp
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/OpenGeoDa.o OpenGeoDa.cpp
 
+${OBJECTDIR}/Explore/ThemeUtilities.o: Explore/ThemeUtilities.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Explore
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/ThemeUtilities.o Explore/ThemeUtilities.cpp
+
 ${OBJECTDIR}/DialogTools/ProgressDlg.o: DialogTools/ProgressDlg.cpp 
 	${MKDIR} -p ${OBJECTDIR}/DialogTools
 	${RM} $@.d
@@ -610,11 +646,6 @@ ${OBJECTDIR}/kNN/ANN.o: kNN/ANN.cpp
 	${MKDIR} -p ${OBJECTDIR}/kNN
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/kNN/ANN.o kNN/ANN.cpp
-
-${OBJECTDIR}/DialogTools/3DDlg.o: DialogTools/3DDlg.cpp 
-	${MKDIR} -p ${OBJECTDIR}/DialogTools
-	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/3DDlg.o DialogTools/3DDlg.cpp
 
 ${OBJECTDIR}/ShapeOperations/shp2cnt.o: ShapeOperations/shp2cnt.cpp 
 	${MKDIR} -p ${OBJECTDIR}/ShapeOperations
@@ -671,10 +702,20 @@ ${OBJECTDIR}/kNN/kd_util.o: kNN/kd_util.cpp
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/kNN/kd_util.o kNN/kd_util.cpp
 
+${OBJECTDIR}/DialogTools/TimeChooserDlg.o: DialogTools/TimeChooserDlg.cpp 
+	${MKDIR} -p ${OBJECTDIR}/DialogTools
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/TimeChooserDlg.o DialogTools/TimeChooserDlg.cpp
+
 ${OBJECTDIR}/DialogTools/FieldNewCalcSpecialDlg.o: DialogTools/FieldNewCalcSpecialDlg.cpp 
 	${MKDIR} -p ${OBJECTDIR}/DialogTools
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/FieldNewCalcSpecialDlg.o DialogTools/FieldNewCalcSpecialDlg.cpp
+
+${OBJECTDIR}/ShapeOperations/ShapeUtils.o: ShapeOperations/ShapeUtils.cpp 
+	${MKDIR} -p ${OBJECTDIR}/ShapeOperations
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/ShapeOperations/ShapeUtils.o ShapeOperations/ShapeUtils.cpp
 
 ${OBJECTDIR}/ShapeOperations/Randik.o: ShapeOperations/Randik.cpp 
 	${MKDIR} -p ${OBJECTDIR}/ShapeOperations
@@ -690,11 +731,6 @@ ${OBJECTDIR}/DialogTools/Statistics.o: DialogTools/Statistics.cpp
 	${MKDIR} -p ${OBJECTDIR}/DialogTools
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/DialogTools/Statistics.o DialogTools/Statistics.cpp
-
-${OBJECTDIR}/Explore/GetisOrdMapView.o: Explore/GetisOrdMapView.cpp 
-	${MKDIR} -p ${OBJECTDIR}/Explore
-	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/GetisOrdMapView.o Explore/GetisOrdMapView.cpp
 
 ${OBJECTDIR}/NewTableViewer.o: NewTableViewer.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -715,6 +751,11 @@ ${OBJECTDIR}/FramesManager.o: FramesManager.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/FramesManager.o FramesManager.cpp
+
+${OBJECTDIR}/Explore/LisaMapNewView.o: Explore/LisaMapNewView.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Explore
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/LisaMapNewView.o Explore/LisaMapNewView.cpp
 
 ${OBJECTDIR}/DialogTools/FieldNewCalcBinDlg.o: DialogTools/FieldNewCalcBinDlg.cpp 
 	${MKDIR} -p ${OBJECTDIR}/DialogTools
@@ -750,11 +791,6 @@ ${OBJECTDIR}/kNN/kNN.o: kNN/kNN.cpp
 	${MKDIR} -p ${OBJECTDIR}/kNN
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/kNN/kNN.o kNN/kNN.cpp
-
-${OBJECTDIR}/Explore/LisaMapView.o: Explore/LisaMapView.cpp 
-	${MKDIR} -p ${OBJECTDIR}/Explore
-	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -D__WXDEBUG__ -DDEBUG -I/usr/local/lib/wx/include/gtk2-unicode-static-2.9 -I/usr/local/include/wx-2.9 -I/usr/local/include/boost -MMD -MP -MF $@.d -o ${OBJECTDIR}/Explore/LisaMapView.o Explore/LisaMapView.cpp
 
 ${OBJECTDIR}/Regression/DenseVector.o: Regression/DenseVector.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Regression

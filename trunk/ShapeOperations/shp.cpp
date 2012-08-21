@@ -42,74 +42,6 @@ bool CopyFile(char* nfl, char* ofl, bool flag)
 	return true;
 }
 
-void InsertAreaPerimeter_dbf(char* ifl, char* ofl, double *Area, double* Peri)
-{
-	iDBF tb(ifl);
-
-	int m_row = tb.GetNumOfRecord();
-	int m_col = tb.GetNumOfField();
-		
-	int row = 0, col = 0;
-	DBF_descr *dbfdesc;
-	dbfdesc			= new DBF_descr [m_col+2];
-	dbfdesc[0]	= new DBF_field("AREA_", 'N',16,6);
-	dbfdesc[1]	= new DBF_field("PERIMETER_", 'N',16,6);
-	char *i_ty	= new char[m_col+2];
-		
-	for (col = 0; col < m_col; col++) {
-		char* m_ColNm	= tb.GetFieldName(col);
-		const char	ty				= tb.GetFieldType(col);
-		const int		width			= tb.GetFieldSize(col);
-		const int		prec			= tb.GetFieldPrecision(col);
-		dbfdesc[col+2] = new DBF_field(m_ColNm, ty,width,prec);
-		i_ty[col] = ty;
-	}
-		
-	if (DeleteFile(ofl)) wxMessageBox("Can't Delete");
-	oDBF odbf(wxString(ofl), dbfdesc, m_row,m_col+2);
-	if(odbf.fail) {
-		wxMessageBox("Can't open output file!");
-		return;
-	}
-	
-    for(row=0; row < m_row ; row++) {
-		odbf.Write(Area[row]);
-		odbf.Write(Peri[row]);
-		for(col=0; col < m_col; col++) {
-			if (i_ty[col] == 'N' || i_ty[col] == 'F') {
-				if(tb.GetFieldPrecision(col) > 0) {
-					//double dt;
-					//tb.Read(dt);
-					//odbf.Write(dt);
-				} else {
-					long dt;
-					tb.Read(dt);
-					odbf.Write(dt);
-				}
-			} else if (i_ty[col] == 'C' || i_ty[col] == 'D') {
-				int len = tb.GetFieldSize(col);
-				char* m_dt = new char[len+1];
-				tb.Read(m_dt, len);
-				odbf.Write(m_dt);
-			} else {
-				int len = tb.GetFieldSize(col);
-				char* m_dt = new char[len+1];
-				tb.Read(m_dt, len);
-				odbf.Write(m_dt);
-			}
-		}
-	}
-	odbf.close();
-	if (dbfdesc) delete [] dbfdesc;
-	dbfdesc = NULL;
-}
-
-/*
- */
-
-
-/*
- */
 long ReadBig(ifstream &input)
 {
 	long tmp;
@@ -120,8 +52,6 @@ long ReadBig(ifstream &input)
 	return GenUtils::Reverse(tmp);
 #endif
 }
-
-
 
 /*
         MultiPoint::ComputeBox
@@ -266,7 +196,7 @@ Box Shape::SetData(int nParts, int* Part, int nPoints,
 }
 
 /*
-Input Shape from shapefile.
+Input Shape from Shapefile.
  */
 iShapeFile& Shape::ReadShape(iShapeFile &s)  {
 
@@ -348,7 +278,7 @@ iShapeFile& Shape::ReadShape(iShapeFile &s)  {
 }
 
 /*
-Output Shape in a shapefile.
+Output Shape in a Shapefile.
  */
 oShapeFile& Shape::WriteShape(oShapeFile &s) const {
   long int cp;

@@ -37,49 +37,47 @@
 #include "../Thiessen/VorDataType.h"
 
 #include "../DialogTools/Statistics.h"
-#include "../DialogTools/MapQuantileDlg.h"
 #include "../Thiessen/Thiessen.h"
-#include "../mapview.h"
 #include "../GenUtils.h"
 
 #include "ThiessenPolygonDlg.h"
 
 /*!
- * CThiessenPolygonDlg type definition
+ * ThiessenPolygonDlg type definition
  */
 
-IMPLEMENT_CLASS( CThiessenPolygonDlg, wxDialog )
+IMPLEMENT_CLASS( ThiessenPolygonDlg, wxDialog )
 
 /*!
- * CThiessenPolygonDlg event table definition
+ * ThiessenPolygonDlg event table definition
  */
 
-BEGIN_EVENT_TABLE( CThiessenPolygonDlg, wxDialog )
+BEGIN_EVENT_TABLE( ThiessenPolygonDlg, wxDialog )
 
-////@begin CThiessenPolygonDlg event table entries
-    EVT_BUTTON( XRCID("IDC_BROWSE_IFILE"), CThiessenPolygonDlg::OnCBrowseIfileClick )
+////@begin ThiessenPolygonDlg event table entries
+    EVT_BUTTON( XRCID("IDC_BROWSE_IFILE"), ThiessenPolygonDlg::OnCBrowseIfileClick )
 
-    EVT_BUTTON( XRCID("IDC_BROWSE_OFILE"), CThiessenPolygonDlg::OnCBrowseOfileClick )
+    EVT_BUTTON( XRCID("IDC_BROWSE_OFILE"), ThiessenPolygonDlg::OnCBrowseOfileClick )
 
-    EVT_CHECKBOX( XRCID("IDC_REFERENCEFILE_CHK"), CThiessenPolygonDlg::OnCReferencefileChkClick )
+    EVT_CHECKBOX( XRCID("IDC_REFERENCEFILE_CHK"), ThiessenPolygonDlg::OnCReferencefileChkClick )
 
-    EVT_BUTTON( XRCID("IDC_REFERENCEFILE"), CThiessenPolygonDlg::OnCReferencefileClick )
+    EVT_BUTTON( XRCID("IDC_REFERENCEFILE"), ThiessenPolygonDlg::OnCReferencefileClick )
 
-    EVT_BUTTON( XRCID("IDCREATE"), CThiessenPolygonDlg::OnCreateClick )
+    EVT_BUTTON( XRCID("IDCREATE"), ThiessenPolygonDlg::OnCreateClick )
 
-    EVT_BUTTON( XRCID("IDC_VOR_RESET"), CThiessenPolygonDlg::OnCVorResetClick )
+    EVT_BUTTON( XRCID("IDC_VOR_RESET"), ThiessenPolygonDlg::OnCVorResetClick )
 
-    EVT_BUTTON( XRCID("IDCANCEL"), CThiessenPolygonDlg::OnCancelClick )
+    EVT_BUTTON( XRCID("IDCANCEL"), ThiessenPolygonDlg::OnCancelClick )
 
-////@end CThiessenPolygonDlg event table entries
+////@end ThiessenPolygonDlg event table entries
 
 END_EVENT_TABLE()
   
 /*!
- * CThiessenPolygonDlg constructors
+ * ThiessenPolygonDlg constructors
  */
 
-CThiessenPolygonDlg::CThiessenPolygonDlg( )
+ThiessenPolygonDlg::ThiessenPolygonDlg( )
 {
 	myP = NULL;
 	TT = NULL;
@@ -88,7 +86,7 @@ CThiessenPolygonDlg::CThiessenPolygonDlg( )
 //	m_map4 = NULL;
 }
 
-CThiessenPolygonDlg::CThiessenPolygonDlg( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+ThiessenPolygonDlg::ThiessenPolygonDlg( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
 	myP = NULL;
 	TT = NULL;
@@ -99,7 +97,7 @@ CThiessenPolygonDlg::CThiessenPolygonDlg( wxWindow* parent, wxWindowID id, const
 	Create(parent, id, caption, pos, size, style);
 }
 
-CThiessenPolygonDlg::CThiessenPolygonDlg(bool mean_center, bool fltype, wxWindow* pParent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style)
+ThiessenPolygonDlg::ThiessenPolygonDlg(bool mean_center, bool fltype, wxWindow* pParent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style)
 {
 
 //	Ismap3 = false;
@@ -131,31 +129,31 @@ CThiessenPolygonDlg::CThiessenPolygonDlg(bool mean_center, bool fltype, wxWindow
 }
 
 /*!
- * CThiessenPolygonDlg creator
+ * ThiessenPolygonDlg creator
  */
 
-bool CThiessenPolygonDlg::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool ThiessenPolygonDlg::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
-////@begin CThiessenPolygonDlg member initialisation
-////@end CThiessenPolygonDlg member initialisation
+////@begin ThiessenPolygonDlg member initialisation
+////@end ThiessenPolygonDlg member initialisation
 
-////@begin CThiessenPolygonDlg creation
+////@begin ThiessenPolygonDlg creation
     SetParent(parent);
     CreateControls();
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
     Centre();
-////@end CThiessenPolygonDlg creation
+////@end ThiessenPolygonDlg creation
     return true;
 }
 
 /*!
- * Control creation for CThiessenPolygonDlg
+ * Control creation for ThiessenPolygonDlg
  */
 
-void CThiessenPolygonDlg::CreateControls()
+void ThiessenPolygonDlg::CreateControls()
 {    
-////@begin CThiessenPolygonDlg content construction
+////@begin ThiessenPolygonDlg content construction
 
     wxXmlResource::Get()->LoadDialog(this, GetParent(), "IDD_VORONOI");
     m_inputfile = XRCCTRL(*this, "IDC_VORONOI_INFILE", wxTextCtrl);
@@ -165,20 +163,20 @@ void CThiessenPolygonDlg::CreateControls()
     m_check = XRCCTRL(*this, "IDC_REFERENCEFILE_CHK", wxCheckBox);
     m_boundingfile = XRCCTRL(*this, "IDC_VORONOI_REFFILE", wxTextCtrl);
 	m_boundingfile->SetMaxLength(0);
-////@end CThiessenPolygonDlg content construction
+////@end ThiessenPolygonDlg content construction
 
     // Create custom windows not generated automatically here.
   
-////@begin CThiessenPolygonDlg content initialisation
+////@begin ThiessenPolygonDlg content initialisation
 
-////@end CThiessenPolygonDlg content initialisation
+////@end ThiessenPolygonDlg content initialisation
 }
 
 /*!
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTON
  */
 
-void CThiessenPolygonDlg::OnCBrowseOfileClick( wxCommandEvent& event )
+void ThiessenPolygonDlg::OnCBrowseOfileClick( wxCommandEvent& event )
 {
     // Insert custom code here
  
@@ -189,7 +187,7 @@ void CThiessenPolygonDlg::OnCBrowseOfileClick( wxCommandEvent& event )
     wxFileDialog dlg
                  (
                     this,
-                    "Output Shape file",
+                    "Output Shapefile",
                     wxEmptyString,
                     fn + ".shp",
                     "Shp files (*.shp)|*.shp",
@@ -210,7 +208,7 @@ void CThiessenPolygonDlg::OnCBrowseOfileClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDCREATE
  */
 
-void CThiessenPolygonDlg::OnCreateClick( wxCommandEvent& event )
+void ThiessenPolygonDlg::OnCreateClick( wxCommandEvent& event )
 {
     // Insert custom code here
 
@@ -345,7 +343,7 @@ void CThiessenPolygonDlg::OnCreateClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDC_VOR_RESET
  */
 
-void CThiessenPolygonDlg::OnCVorResetClick( wxCommandEvent& event )
+void ThiessenPolygonDlg::OnCVorResetClick( wxCommandEvent& event )
 {
 
 //	if (Ismap4) 
@@ -379,7 +377,7 @@ void CThiessenPolygonDlg::OnCVorResetClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDCANCEL
  */
 
-void CThiessenPolygonDlg::OnCancelClick( wxCommandEvent& event )
+void ThiessenPolygonDlg::OnCancelClick( wxCommandEvent& event )
 {
     // Insert custom code here
 	if (m_nCount == 0) {      // prior to Start button
@@ -397,7 +395,7 @@ void CThiessenPolygonDlg::OnCancelClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDC_REFERENCEFILE
  */
 
-void CThiessenPolygonDlg::OnCReferencefileClick( wxCommandEvent& event )
+void ThiessenPolygonDlg::OnCReferencefileClick( wxCommandEvent& event )
 {
     // Insert custom code here
 
@@ -426,13 +424,13 @@ void CThiessenPolygonDlg::OnCReferencefileClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDC_BROWSE_IFILE
  */
 
-void CThiessenPolygonDlg::OnCBrowseIfileClick( wxCommandEvent& event )
+void ThiessenPolygonDlg::OnCBrowseIfileClick( wxCommandEvent& event )
 {
     // Insert custom code here
 
 
-	wxString msg1="This file is not a point shape file";
-	wxString msg2="This file is not a polygon shape file";
+	wxString msg1="This file is not a point Shapefile";
+	wxString msg2="This file is not a polygon Shapefile";
 
 
     wxFileDialog dlg
@@ -496,7 +494,7 @@ void CThiessenPolygonDlg::OnCBrowseIfileClick( wxCommandEvent& event )
  * Should we show tooltips?
  */
 
-bool CThiessenPolygonDlg::ShowToolTips()
+bool ThiessenPolygonDlg::ShowToolTips()
 {
     return true;
 }
@@ -504,7 +502,7 @@ bool CThiessenPolygonDlg::ShowToolTips()
  * wxEVT_COMMAND_CHECKBOX_CLICKED event handler for IDC_REFERENCEFILE_CHK
  */
 
-void CThiessenPolygonDlg::OnCReferencefileChkClick( wxCommandEvent& event )
+void ThiessenPolygonDlg::OnCReferencefileChkClick( wxCommandEvent& event )
 {
     // Insert custom code here
 	m_boundingfile->SetValue(wxEmptyString);
@@ -515,12 +513,12 @@ void CThiessenPolygonDlg::OnCReferencefileChkClick( wxCommandEvent& event )
 
 
 
-void CThiessenPolygonDlg::InsertAreaField_dbf(wxString otfl, double* Area)
+void ThiessenPolygonDlg::InsertAreaField_dbf(wxString otfl, double* Area)
 {
 
 }
 
-void CThiessenPolygonDlg::RedoTheProcess()
+void ThiessenPolygonDlg::RedoTheProcess()
 {
 	FindWindow(XRCID("IDCREATE"))->Enable(false);
 	FindWindow(XRCID("IDC_BROWSE_OFILE"))->Enable(true);
@@ -528,7 +526,7 @@ void CThiessenPolygonDlg::RedoTheProcess()
 	FindWindow(XRCID("IDCANCEL"))->Enable(true);
 }
 
-int CThiessenPolygonDlg::CheckDuplicate(myPoint *pt, long nP)
+int ThiessenPolygonDlg::CheckDuplicate(myPoint *pt, long nP)
 {
 	int k=0;
 	double dx = (pt[nP-1].x - pt[0].x) / 1E32;

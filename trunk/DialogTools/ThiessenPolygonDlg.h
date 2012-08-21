@@ -63,19 +63,19 @@ extern int XYSort(const void* , const void*);
 #endif
 
 /*!
- * CThiessenPolygonDlg class declaration
+ * ThiessenPolygonDlg class declaration
  */
 
-class CThiessenPolygonDlg: public wxDialog
+class ThiessenPolygonDlg: public wxDialog
 {    
-    DECLARE_CLASS( CThiessenPolygonDlg )
+    DECLARE_CLASS( ThiessenPolygonDlg )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
-    CThiessenPolygonDlg( );
-    CThiessenPolygonDlg( wxWindow* parent, wxWindowID id = -1, const wxString& caption = "SHAPE CONVERSION", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxSYSTEM_MENU );
-	CThiessenPolygonDlg(bool mean_center, bool fltype, wxWindow* pParent, wxWindowID id = -1, const wxString& caption = "SHAPE CONVERSION", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxSYSTEM_MENU);
+    ThiessenPolygonDlg( );
+    ThiessenPolygonDlg( wxWindow* parent, wxWindowID id = -1, const wxString& caption = "SHAPE CONVERSION", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxSYSTEM_MENU );
+	ThiessenPolygonDlg(bool mean_center, bool fltype, wxWindow* pParent, wxWindowID id = -1, const wxString& caption = "SHAPE CONVERSION", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxSYSTEM_MENU);
 
     /// Creation
     bool Create( wxWindow* parent, wxWindowID id = -1, const wxString& caption = "SHAPE CONVERSION", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxSYSTEM_MENU );
@@ -83,7 +83,7 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-////@begin CThiessenPolygonDlg event handler declarations
+////@begin ThiessenPolygonDlg event handler declarations
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for IDC_BROWSE_IFILE
     void OnCBrowseIfileClick( wxCommandEvent& event );
@@ -106,21 +106,21 @@ public:
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for IDCANCEL
     void OnCancelClick( wxCommandEvent& event );
 
-////@end CThiessenPolygonDlg event handler declarations
+////@end ThiessenPolygonDlg event handler declarations
 
-////@begin CThiessenPolygonDlg member function declarations
+////@begin ThiessenPolygonDlg member function declarations
 
-////@end CThiessenPolygonDlg member function declarations
+////@end ThiessenPolygonDlg member function declarations
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
-////@begin CThiessenPolygonDlg member variables
+////@begin ThiessenPolygonDlg member variables
     wxTextCtrl* m_inputfile;
     wxTextCtrl* m_outputfile;
     wxCheckBox* m_check;
     wxTextCtrl* m_boundingfile;
-////@end CThiessenPolygonDlg member variables
+////@end ThiessenPolygonDlg member variables
 
 //	bool		Ismap3;
 //	bool		Ismap4;

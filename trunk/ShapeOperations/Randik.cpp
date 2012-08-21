@@ -142,6 +142,33 @@ int* Randik::Perm(const int size)
 	return thePermutation;
 }
 
+//***  Generate a random permutation of 1...size
+//***
+bool Randik::Perm(const int size, int* thePermutation, long* theRands)
+{
+	if (!thePermutation || !theRands) return false;
+	bool permOk = true;
+	do  {
+		int cnt;
+		for (cnt= 0; cnt < size; ++cnt)   // original permutation -- 0 permuts
+			thePermutation[ cnt ] = cnt;
+		for (cnt= 0; cnt < size; ++cnt)   // generate size random numbers
+			theRands[ cnt ] = lValue();
+		IndexSort(theRands, thePermutation, 0, size-1);
+		int     thePrevious= thePermutation[0];
+		for (cnt = 1; cnt < size; ++cnt)  {  // ascending order is IMPORTANT
+			const int theNext = thePermutation[cnt];
+			if (thePrevious == theNext)  {
+				permOk = false;       // bad, bad permutation
+				break;
+			}
+			thePrevious= theNext;
+		}
+	}
+	while (!permOk);  // loop while the permutation is not good
+	return true;
+}
+
 void Randik::PermG(const int size, int* thePermutation)  
 {
 	long * theRands = new long [ size ];

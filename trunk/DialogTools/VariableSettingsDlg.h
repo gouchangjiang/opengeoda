@@ -21,50 +21,127 @@
 #define __GEODA_CENTER_VARIABLE_SETTINGS_DLG_H___
 
 #include <vector>
-#include <wx/listbox.h>
+#include <wx/choice.h>
 #include <wx/checkbox.h>
 #include <wx/dialog.h>
+#include <wx/listbox.h>
+#include "../GenUtils.h"
 
 class DbfGridTableBase;
+class GalElement;
+class Project;
 
 class VariableSettingsDlg: public wxDialog
-{    
-    DECLARE_EVENT_TABLE()
-
+{
 public:
-	VariableSettingsDlg( bool IsUnivariate, wxString shapefl, long gObs, 
-						 wxString v1, wxString v2, double* d1, double* d2,
-						 bool m_VarDef, DbfGridTableBase* grid_base);
-    void CreateControls();
+	enum VarType {
+		univariate, bivariate, trivariate, quadvariate, rate_smoothed
+	};
 
-    void OnListVariable1DoubleClicked( wxCommandEvent& event );
-    void OnListVariable2DoubleClicked( wxCommandEvent& event );
-    void OnCheckboxClick( wxCommandEvent& event );
+	VariableSettingsDlg(Project* project, short smoother, GalElement* gal,
+						const wxString& title="Rates Variable Settings",
+						const wxString& var1_title="Event Variable",
+						const wxString& var2_title="Base Variable",
+						const wxString& var3_title="Thrid Variable",
+						const wxString& var4_title="Fourth Variable");
+	VariableSettingsDlg( Project* project, VarType v_type,
+						bool fill_result_vectors,
+						const wxString& title="Variable Settings",
+						const wxString& var1_title="First Variable (X)",
+						const wxString& var2_title="Second Variable (Y)",
+						const wxString& var3_title="Thrid Variable (Z)",
+						const wxString& var4_title="Fourth Variable");
+	virtual ~VariableSettingsDlg();
+    void CreateControls();
+	void Init(VarType var_type);
+	
+    void OnListVariableDoubleClicked( wxCommandEvent& event );
+	void OnVarChange( wxCommandEvent& event );
+	void OnTime( wxCommandEvent& event );
     void OnOkClick( wxCommandEvent& event );
     void OnCancelClick( wxCommandEvent& event );
 
-    wxListBox* pLB1;
-    wxListBox* pLB2;
-    wxCheckBox* pCheck;
+	bool fill_result_vectors; // when true, only var_info and col_ids are filled
+	bool fill_smoothed_results; // only true when first constructor is called
+	double* smoothed_results; // for rate_smoothed
+	std::vector<bool> m_undef_r; // for rate_smoothed
+	int m_theme; // for rate_smoothed
+	
+	double*	v1_single_time;
+	double* v2_single_time;
+	double* v3_single_time;
+	double* v4_single_time;
+	wxString v1_name_with_time;
+	wxString v2_name_with_time;
+	wxString v3_name_with_time;
+	wxString v4_name_with_time;
+	
+	wxString v1_name;
+	wxString v2_name;
+	wxString v3_name;
+	wxString v4_name;
+	int v1_time;
+	int v2_time;
+	int v3_time;
+	int v4_time;
+	int v1_col_id;
+	int v2_col_id;
+	int v3_col_id;
+	int v4_col_id;
+	
+	std::vector<int> col_ids;
+	std::vector<GeoDaVarInfo> var_info;
+	
+	int time_ref_var; // which var_info item has is_ref_variable == true, if any
 
-	bool m_all_init;
-    bool m_CheckDefault;
-	wxString m_Var1;
-	wxString m_Var2;
-	double*	m_data1;
-	double* m_data2;
-	wxString varFile;
-	bool IsU;
+protected:
+	VarType v_type;
+	wxListBox* lb1;
+    wxListBox* lb2;
+	wxListBox* lb3;
+	wxListBox* lb4;
+	int lb1_cur_sel;
+	int lb2_cur_sel;
+	int lb3_cur_sel;
+	int lb4_cur_sel;
+	wxChoice* time_lb1;
+	wxChoice* time_lb2;
+	wxChoice* time_lb3;
+	wxChoice* time_lb4;
+	
+	wxString title;
+	wxString var1_title;
+	wxString var2_title;
+	wxString var3_title;
+	wxString var4_title;
+	
+	wxChoice* map_theme_lb; // for rate_smoothed
+	short m_smoother; // for rate_smoothed
+	
+	bool all_init;
+	
+	int num_var; // 1, 2, 3, or 4
+	bool is_time;
+	int time_steps;
 
+	long num_obs; // for rate_smoothed
+	double*	E; // for rate_smoothed
+	double* P; // for rate_smoothed
+	GalElement* m_gal; // for rate_smoothed
+	
+	Project* project;
 	DbfGridTableBase* grid_base;
 	// col_id_map[i] is a map from the i'th numeric item in the
 	// fields drop-down to the actual col_id_map.  Items
 	// in the fields dropdown are in the order displayed in wxGrid
-	std::vector<int> col_id_map;	
+	std::vector<int> col_id_map;
 
-protected:
+	void InitTimeChoices();
 	void InitFieldChoices();
-	void InitData();
+	void FillData();
+	bool FillSmoothedResults();
+	
+	DECLARE_EVENT_TABLE()
 };
 
 #endif

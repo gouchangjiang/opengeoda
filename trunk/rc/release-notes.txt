@@ -1,10 +1,117 @@
-OpenGeoDa 1.0.1 Release Notes
+OpenGeoDa 1.2.0 Release Notes
+
+Changes since 1.0.1:
+
+Release 1.2.0 of OpenGeoDa includes the most significant changes
+to the program since it was first released publicly. There are
+too many small improvements to list, but some highlights include:
+
+- Space-Time exploratory data analysis is available in almost
+  every data visualization window.
+- Space-Time data is fully linked across all views in real-time.
+- Most visualizations have been rewritten to support space-time.
+- Very easy to convert simple table data into space-time data by
+  opening a regular shapefile/dbf/csv file and choosing
+  "Convert to Space-Time Project" from the Table menu.
+- General graphics and features have been greatly improved everywhere.
+
+Maps:
+- Supports space-time data
+- Added Natural Breaks and Unique Values themes
+- Can now select all observations in a category by clicking a color
+  box in the legend
+- Can optionally show polygon centers on the map
+
+Bubble Chart:
+- Supports space-time data
+- Bubble Charts are entirely new to OpenGeoDa.  Very similar to
+  Scatter Plot, but four variables can be visualized by varying
+  the size and color of plot points.
+
+Scatter Plot:
+- Supports space-time data
+- Completely rewritten graphics for a cleaner look
+- Can optionally choose "Display Statistics" to see parameters
+  describing all three regression lines when "Regression of Selected"
+  and "Regression of Excluded" are active.
+- Chow test automatically shown to determine if two regressions
+  are significantly different.
+
+Parallel Coordinate Plot:
+- Supports space-time data
+- Completely rewritten graphics for a cleaner look
+- Can optionally choose "Display Statistics" to see more detailed data.
+- Legend added to left side to support new color classification
+  feature.
+
+Histogram:
+- Supports space-time data
+- Completely rewritten graphics for a cleaner look
+- Can optionally choose "Display Statistics"
+
+Box Plot:
+- Supports space-time data
+- Completely rewritten graphics for a cleaner look
+- Can optionally choose "Display Statistics"
+- Can view multiple Box Plots together in a time series for space-time
+  data.
+- Added an optional vertical axis scale
+- Selection works across all box plots when viewing space-time data
+
+3D Plot:
+- Supports space-time data
+- Fixed a number of bugs related to linking and brushing
+
+
+Changes since 1.1.0 beta 43:
+- Fixed a problem with wrong in Time Chooser dialog
+- Move Centroids / Mean-centers into common submenu and
+  added ability to show both centroids and mean-centers on
+  any map window.
+- Renamed Space menu options.
+- Removed three Tools menu options related to import and export
+  of point data.
+- Moved Save and Save As into File menu.
+
+Changes since 1.1.0 beta 42:
+- Fixed a crash in the Scatterplot Chow Test that could occur in
+  certain edge cases.
+- Improved algorithms for toolbar sizing, and statistics table
+  placement and sizing for Scatterplot, Histogram, and Boxplot.
+  This solves an issue that comes up on Windows XP/Vista/7 when
+  larger font sizes were selected in system Display settings.
+
+Changes since 1.1.0 beta 41:
+- Added calculation for z-value to Moran's I Randomization Dialog
+  z-value(I) = (I - mean)/sd
+- Fixed a bug where the user could manually edit the dependent
+  variable field in Regression.  To change the variable, the user
+  must select a new variable and the previous variable will be
+  restored to the end of the variable list.
+- For all views with legends, when colors for a category are changed
+  in one time period, it is also changed for in all other time periods
+  with the same number of categories.
+- Fixed a problem where toolbar could be partially hidden in Win 7 or
+  Vista when a magnification level greater than 100% is selected under
+  system Display options.
+
+Changes since 1.1.0 beta 1 through 40:
+- The 1.1.0 beta releases were internal development releases that were
+  not made publicly available.  The changes were so numerous that
+  we were not listing them in these release notes until recently. The
+  release notes for 1.2.0 above summarizes some of the major changes
+  to the program.
+
+Changes since 1.0.1:
+- Most variable dialogs are now resizable.
+- Fixed a bug in Save Selection and Selection Dialogs where saved
+  values could get written to the wrong field.
 
 Changes since 1.0:
 - Fixed a bug in Scatter Plot where plot points were difficult to see.
 
 Changes since 0.9.9.15:
-- Bug in Arc Distance option for Theshold Distances fixed.
+- Bug in Arc Distance option for Threshold Distances fixed.
 
 Changes since 0.9.9.14:
 - Major speedup to LISA and Getis-Ord Gi-Statistics.  When a
@@ -16,11 +123,11 @@ Changes since 0.9.9.14:
 - Table code totally rewritten with many new features.
 - Table: can drag columns to reorder and new column order remembered
   after saving Table
-- Table: Edit Field Properties dialog added.  Can rename fields and
+- Table: Edit Variable Properties dialog added.  Can rename fields and
   change all field properties such as field width and number of
   displayed decimals
-- Table: Field Calculation: Can generate Gaussian Normal distribution
-- Table: Field Calculation: Can randomly shuffle order of any
+- Table: Variable Calculation: Can generate Gaussian Normal distribution
+- Table: Variable Calculation: Can randomly shuffle order of any
   numerical field
 - Table: Replaced Range dialog with new more powerful Selection Dialog
 - Table: undefined / invalid numbers appear as blank entries.  For
@@ -34,7 +141,7 @@ Changes since 0.9.9.14:
 - Many small bug fixes and stability improvements.
 
 Changes since 0.9.9.13:
-- Added ability to enter in constants directly in Field Calculations
+- Added ability to enter in constants directly in Variable Calculations
 
 Changes since 0.9.9.11:
 - Getis & Ord local G statistics added.  A new toolbar icon
@@ -70,7 +177,7 @@ Changes since 0.9.9.8:
   from Moran's I calculations and from LISA box plot.
 
 Changes since 0.9.9.7:
-- The loading time for point-data shapefiles significantly reduced.
+- The loading time for point-data Shapefiles significantly reduced.
 - it is now possible to open a weights file that was created from a
   different shp file than the shp file that is currently opened: only
   the number of observations and the id variable in current dbf file
@@ -87,7 +194,7 @@ Changes since 0.9.9.6:
   automatically.
 - Weights can now be easily selected and created everywhere that
   they are needed.
-- New fields can be added to the table from within the Field Calculation
+- New fields can be added to the table from within the Variable Calculation
   dialog.
 
 Changes since 0.9.9.5:
@@ -204,13 +311,13 @@ Changes since 0.9.8.13:
   directly if needed.  It is no longer possible to create a weights
   file without specifying an ID Variable.
 - Weights File Creation dialog now opens the current project
-  shape file by default.
+  Shapefile by default.
 - Select Weightss dialog now opens up to the same directory
-  as the currently open shape file.
+  as the currently open Shapefile.
 
 Changes since 0.9.8.12:
 - Re-enabled the ability to choose a character field from the DBF
-  file as a key variable upon opening a shape file.  At the moment,
+  file as a key variable upon opening a Shapefile.  At the moment,
   character fields are not offered as an option in the weights
   creation dialog.  Use <Record ID> as a workaround if needed.
 
@@ -237,12 +344,12 @@ Changes since 0.9.8.10:
 Changes since 0.9.8.9:
 - Solved an issue where Bivariate Map Movie would sometimes crash.
 - Bivariate Equal Interval Map no longer crashes.
-- Shape file to Boundary conversion crash on Windows is fixed.
-- Shape File from ASCII import fixed.
-- Table "Save to Shape File as ..." menu item working again.
+- Shapefile to Boundary conversion crash on Windows is fixed.
+- Shapefile from ASCII import fixed.
+- Table "Save to Shapefile as ..." menu item working again.
 - Data Export: Centroids/Mean Centers no longer results in an
    occasional crash.
-- Shape File Creation: polygons from boundary now works.
+- Shapefile Creation: polygons from boundary now works.
 
 Changes since 0.9.8.8:
 - Hinge = 3.0 theme now works for various map smoothing options
@@ -261,9 +368,9 @@ Changes since 0.9.8.8:
   the program to crash previously.
 - Weight-create toolbar item is always enabled.
 - Restored Tools > Weights > Open and Properties menu options.
-- A problem where shape files generated by OpenGeoDa could
+- A problem where Shapefiles generated by OpenGeoDa could
   not be read by other GIS programs has been resolved.
-- When opening a shape file, only columns of type integer are
+- When opening a Shapefile, only columns of type integer are
   presented to the user as possible unique polygon identifiers.
 
 Changes since 0.9.8.7:

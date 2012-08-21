@@ -33,11 +33,11 @@ bool IsPointShapeFile(const wxString& fname);
 bool IsLineShapeFile(const wxString& fname);
 bool IsPolygonShapeFile(const wxString& fname);
 long GetShpFileSize(const wxString& fname);
-bool ExistsShpShxDbf(const wxFileName& fname, bool* shp_found=0,
-					 bool* shx_found=0, bool* dbf_found=0);
+GalElement* HOContiguity(const int p, long obs, GalElement *W, bool Lag);
 GalElement* shp2gal(const wxString& fname, int criteria, bool save= true);
 bool SaveGal(const GalElement *full, const wxString& ifname, 
-			 const wxString& ofname, const wxString& vname, const long Obs);
+			 const wxString& ofname, const wxString& vname,
+			 const std::vector<wxInt64>& id_vec);
 
 /**
  This is the core of the existing highlight/linking/brushing mechanism in
@@ -120,7 +120,7 @@ public:
 
 };
 
-/** Enum type for global variable ::gEvent which is declared shp2cnt.cpp and
+/** Enum type for global variable ::gEvent which is declared OpenGeoDa.cpp and
  is used by Selection class and all classes using Selection to communicate
  what type of update is being done to the Selection bitmap array that
  records the current highlight state of all SHP observations. */

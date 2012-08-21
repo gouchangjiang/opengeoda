@@ -29,15 +29,15 @@ extern int XYSort(const void* , const void*);
 #define IDD_CREATE_GRID 10000
 #define ID_CREATE 10025
 
-class CCreateGridDlg: public wxDialog
+class CreateGridDlg: public wxDialog
 {    
-    DECLARE_CLASS( CCreateGridDlg )
+    DECLARE_CLASS( CreateGridDlg )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
-    CCreateGridDlg( );
-    CCreateGridDlg( wxWindow* parent, wxWindowID id = -1,
+    CreateGridDlg( );
+    CreateGridDlg( wxWindow* parent, wxWindowID id = -1,
 				   const wxString& caption = "Creating Grid",
 				   const wxPoint& pos = wxDefaultPosition,
 				   const wxSize& size = wxDefaultSize,
@@ -53,7 +53,7 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-////@begin CCreateGridDlg event handler declarations
+////@begin CreateGridDlg event handler declarations
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for IDCANCEL
     void OnCancelClick( wxCommandEvent& event );
@@ -91,16 +91,16 @@ public:
     /// wxEVT_COMMAND_RADIOBUTTON_SELECTED event handler for IDC_RADIO3
     void OnCRadio3Selected( wxCommandEvent& event );
 
-////@end CCreateGridDlg event handler declarations
+////@end CreateGridDlg event handler declarations
 
-////@begin CCreateGridDlg member function declarations
+////@begin CreateGridDlg member function declarations
 
-////@end CCreateGridDlg member function declarations
+////@end CreateGridDlg member function declarations
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
-////@begin CCreateGridDlg member variables
+////@begin CreateGridDlg member variables
     wxTextCtrl* m_outputfile;
     wxTextCtrl* m_inputfile_ascii;
     wxTextCtrl* m_lower_x;
@@ -110,7 +110,7 @@ public:
     wxTextCtrl* m_inputfileshp;
     wxTextCtrl* m_rows;
     wxTextCtrl* m_cols;
-////@end CCreateGridDlg member variables
+////@end CreateGridDlg member variables
 
 	void EnableItems();
 	bool CheckBBox();

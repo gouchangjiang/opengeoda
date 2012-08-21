@@ -28,6 +28,9 @@ class ScatterPlotCanvas : public TemplateCanvas, public Conditionable
 {
 public:
     ScatterPlotCanvas(wxWindow *parent,
+					  double* v1, double* v2, int num_obs,
+					  const wxString& v1_name,
+					  const wxString& v2_name,
 					  const wxPoint& pos,
 					  const wxSize& size,
 					  bool conditional_view = false);
@@ -48,7 +51,8 @@ public:
 
 	vector<BasePoint> location;
 
-	int gcObs; // might be less than gObservation if isCondionable==ture
+	int num_obs;
+	int gcObs; // might be less than num_obs if isCondionable==ture
 	int	starSize;
 	bool symmetricflag;
 	double meanX, meanY, sdevX, sdevY;
@@ -114,7 +118,11 @@ public:
 class ScatterPlotFrame: public TemplateFrame
 {
 public:
-    ScatterPlotFrame(wxFrame *parent, Project* project, const wxString& title,
+    ScatterPlotFrame(wxFrame *parent,
+					 double* v1, double* v2, int num_obs,
+					 const wxString& v1_name,
+					 const wxString& v2_name,
+					 Project* project, const wxString& title,
 					 const wxPoint& pos, const wxSize& size, const long style);
     virtual ~ScatterPlotFrame();
 

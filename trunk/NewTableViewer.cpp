@@ -80,7 +80,7 @@ NewTableViewerFrame::NewTableViewerFrame(wxFrame *parent, Project* project,
 		if (col_data[i]->type == GeoDaConst::long64_type) {
 			grid->SetColFormatNumber(i);
 		} else if (col_data[i]->type == GeoDaConst::double_type) {
-			grid->SetColFormatFloat(i, -1, col_data[i]->decimals);
+			grid->SetColFormatFloat(i, -1, col_data[i]->displayed_decimals);
 		} else if (col_data[i]->type == GeoDaConst::date_type) {
 			// leave as a string
 		}
@@ -156,8 +156,13 @@ void NewTableViewerFrame::OnRightClickEvent( wxGridEvent& ev)
 {
 	wxMenu* optMenu = wxXmlResource::Get()->
 		LoadMenu("ID_NEW_TABLE_VIEW_MENU_CONTEXT");
-	GeneralWxUtils::EnableMenuItem(optMenu, XRCID("ID_NEW_TABLE_SAVE"),
-							project->GetGridBase()->ChangedSinceLastSave());
+	GeneralWxUtils::EnableMenuItem(optMenu, XRCID("ID_SAVE_PROJECT"),
+							project->GetGridBase()->ChangedSinceLastSave() &&
+								   project->IsAllowEnableSave());
+	optMenu->SetLabel(XRCID("ID_SPACE_TIME_TOOL"),
+					  (project->GetGridBase()->IsTimeVariant() ?
+					   "Space-Time Variable Creation Tool" :
+					   "Convert to Space-Time Project"));
 	PopupMenu(optMenu, ev.GetPosition());
 }
 
@@ -213,8 +218,16 @@ void NewTableViewerFrame::OnLabelLeftDClickEvent( wxGridEvent& ev)
 void NewTableViewerFrame::OnCellChanged( wxGridEvent& ev )
 {
 	GeneralWxUtils::EnableMenuItem(MyFrame::theFrame->GetMenuBar(),
-								   XRCID("ID_NEW_TABLE_SAVE"),
-							project->GetGridBase()->ChangedSinceLastSave());
+								   XRCID("ID_SAVE_PROJECT"),
+							project->GetGridBase()->ChangedSinceLastSave() &&
+								   project->IsAllowEnableSave());
 	ev.Skip();
 }
+
+void NewTableViewerFrame::update(FramesManager* o)
+{
+	// A possible title change or time step change.
+	Refresh();
+}
+
 

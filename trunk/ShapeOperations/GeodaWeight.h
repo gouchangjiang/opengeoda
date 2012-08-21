@@ -22,10 +22,10 @@
 
 #include <wx/string.h>
 
-class GeodaWeight {
+class GeoDaWeight {
 public:
-	GeodaWeight() : symmetry_checked(false), num_obs(0) {}
-	virtual ~GeodaWeight() {}
+	GeoDaWeight() : symmetry_checked(false), num_obs(0) {}
+	virtual ~GeoDaWeight() {}
 	enum WeightType { gal_type, gwt_type };
 	WeightType weight_type;
 	wxString wflnm; // filename

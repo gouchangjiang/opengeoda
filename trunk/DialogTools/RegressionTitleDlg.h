@@ -24,14 +24,14 @@
 #define ID_BROWSE 10002
 
 /*!
- * CRegressionTitleDlg class declaration
+ * RegressionTitleDlg class declaration
  */
 
-class CRegressionTitleDlg: public wxDialog
+class RegressionTitleDlg: public wxDialog
 {
 public:
-    CRegressionTitleDlg( );
-    CRegressionTitleDlg( wxWindow* parent, wxString fname, wxWindowID id = -1,
+    RegressionTitleDlg( );
+    RegressionTitleDlg( wxWindow* parent, wxString fname, wxWindowID id = -1,
 						const wxString& caption = "Regression Title & Output",
 						const wxPoint& pos = wxDefaultPosition,
 						const wxSize& size = wxDefaultSize,

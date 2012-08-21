@@ -20,22 +20,24 @@
 #ifndef __GEODA_CENTER_WEIGHT_CHARACTER_DLG_H__
 #define __GEODA_CENTER_WEIGHT_CHARACTER_DLG_H__
 
-class CWeightCharacterDlg: public wxDialog
+class DbfGridTableBase;
+
+class WeightCharacterDlg: public wxDialog
 {    
     DECLARE_EVENT_TABLE()
 
 public:
-    /// Constructors
-    CWeightCharacterDlg( );
-    CWeightCharacterDlg( wxWindow* parent, wxWindowID id = -1,
-						const wxString& caption = "WEIGHT CHARACTERISTICS",
+    WeightCharacterDlg( wxWindow* parent,
+						DbfGridTableBase* grid_base,
+						wxWindowID id = -1,
+						const wxString& caption = "Weights Neighbors Histogram",
 						const wxPoint& pos = wxDefaultPosition,
 						const wxSize& size = wxDefaultSize,
 						long style = wxCAPTION|wxSYSTEM_MENU );
 
     /// Creation
     bool Create( wxWindow* parent, wxWindowID id = -1,
-				const wxString& caption = "WEIGHT CHARACTERISTICS",
+				const wxString& caption = "Weights Neighbors Histogram",
 				const wxPoint& pos = wxDefaultPosition,
 				const wxSize& size = wxDefaultSize,
 				long style = wxCAPTION|wxSYSTEM_MENU );
@@ -46,14 +48,10 @@ public:
     void OnCOpenFileweightClick( wxCommandEvent& event );
 	void OnOkClick( wxCommandEvent& event );
 
-    static bool ShowToolTips();
-
+	DbfGridTableBase* grid_base;
     wxTextCtrl* m_name;
-	long	m_obs;
-	GalElement* m_gal;
-	GwtElement* m_gwt;
-	wxString	m_WeightFile;
-	long	*m_freq;
+	wxString m_WeightFile;
+	long* m_freq;
 };
 
 #endif

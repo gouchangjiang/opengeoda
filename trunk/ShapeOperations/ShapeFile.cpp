@@ -23,7 +23,7 @@
 iShapeFile::iShapeFile(const wxString& fname, const wxString& ext)
 	: std::ifstream(), record(0)
 {
-	open(GenUtils::swapExtension(fname, ext).wx_str(),
+	open(GenUtils::swapExtension(fname, ext).mb_str(),
 		std::ios::binary | std::ios::in);
 }
 
@@ -53,7 +53,7 @@ long int iShapeFile::Recl(const long& shape)
 oShapeFile::oShapeFile(const wxString& fname, const wxString& ext)
 	: std::ofstream()  
 {
-    open(GenUtils::swapExtension(fname, ext).wx_str(),
+    open(GenUtils::swapExtension(fname, ext).mb_str(),
 		std::ios::binary | std::ios::out);
 	if (fail()) {
 	}

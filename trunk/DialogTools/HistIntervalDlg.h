@@ -20,47 +20,34 @@
 #ifndef __GEODA_CENTER_HIST_INTERVAL_DLG_H__
 #define __GEODA_CENTER_HIST_INTERVAL_DLG_H__
 
-#define IDD_INTERVALS 10000
+#include <wx/dialog.h>
+#include <wx/textctrl.h>
 
-class CHistIntervalDlg: public wxDialog
+class HistIntervalDlg: public wxDialog
 {    
-    DECLARE_CLASS( CHistIntervalDlg )
+    DECLARE_CLASS( HistIntervalDlg )
     DECLARE_EVENT_TABLE()
 
 public:
-    /// Constructors
-    CHistIntervalDlg( );
-    CHistIntervalDlg( wxWindow* parent, wxWindowID id = -1, const wxString& caption = "Intervals in the Histogram", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxSYSTEM_MENU );
+    HistIntervalDlg( int min_intervals,
+					int default_num_intervals,
+					int max_intervals,
+					wxWindow* parent, wxWindowID id = -1,
+					const wxString& caption = "Intervals in the Histogram",
+					const wxPoint& pos = wxDefaultPosition,
+					const wxSize& size = wxDefaultSize,
+					long style = wxCAPTION|wxSYSTEM_MENU );
 
-    /// Creation
-    bool Create( wxWindow* parent, wxWindowID id = -1, const wxString& caption = "Intervals in the Histogram", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxSYSTEM_MENU );
-
-    /// Creates the controls and sizers
     void CreateControls();
-
-////@begin CHistIntervalDlg event handler declarations
-
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for wxID_OK
     void OnOkClick( wxCommandEvent& event );
-
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for wxID_CANCEL
     void OnCancelClick( wxCommandEvent& event );
 
-////@end CHistIntervalDlg event handler declarations
-
-////@begin CHistIntervalDlg member function declarations
-
-////@end CHistIntervalDlg member function declarations
-
-    /// Should we show tooltips?
-    static bool ShowToolTips();
-
-////@begin CHistIntervalDlg member variables
     wxTextCtrl* m_intervals;
-////@end CHistIntervalDlg member variables
-
 	wxString s_int;
+	int min_intervals;
+	int default_num_intervals;
+	int max_intervals;
+	int num_intervals;
 };
 
 #endif
-    // _HISTINTERVALDLG_H_

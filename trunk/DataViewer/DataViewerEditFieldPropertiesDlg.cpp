@@ -34,6 +34,8 @@ BEGIN_EVENT_TABLE( DataViewerEditFieldPropertiesDlg, wxDialog )
 		DataViewerEditFieldPropertiesDlg::OnCellClickLeft )
 	EVT_GRID_EDITOR_SHOWN(
 		DataViewerEditFieldPropertiesDlg::OnCellEditorShown )
+	EVT_GRID_EDITOR_HIDDEN(
+		DataViewerEditFieldPropertiesDlg::OnCellEditorHidden )
     EVT_BUTTON( wxID_APPLY,
 			   DataViewerEditFieldPropertiesDlg::OnApplyButton )
 	EVT_BUTTON( wxID_CLOSE,
@@ -47,16 +49,21 @@ const int COL_T = 1; // type
 const int COL_L = 2; // length
 const int COL_D = 3; // decimals
 const int COL_DD = 4; // displayed decimals
-const int NUM_COLS = 5;
+const int COL_T_INV = 5; // time invariant 
+int NUM_COLS = 5;
 
 DataViewerEditFieldPropertiesDlg::DataViewerEditFieldPropertiesDlg(
 				DbfGridTableBase* grid_base_s,
 				const wxPoint &pos, const wxSize &size )
-: wxDialog(0, wxID_ANY, "Field Properties", pos, size),
-grid_base(grid_base_s)
+: wxDialog(0, wxID_ANY, "Variable Properties", pos, size,
+		   wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+grid_base(grid_base_s), is_space_time(grid_base_s->time_steps > 1),
+cell_editor_open(false),
+reenable_apply_after_cell_editor_hidden(false)
 {
+	if (is_space_time) NUM_COLS = 6;
     CreateControls();
-	SetTitle("Field Properties - " + grid_base->GetDbfNameNoExt());
+	SetTitle("Variable Properties - " + grid_base->GetDbfNameNoExt());
     Centre();
 }
 
@@ -76,6 +83,8 @@ void DataViewerEditFieldPropertiesDlg::CreateControls()
 	field_grid->SetColLabelValue(COL_L, "length");
 	field_grid->SetColLabelValue(COL_D, "decimals");
 	field_grid->SetColLabelValue(COL_DD, "displayed\ndecimals");
+	if (is_space_time) field_grid->SetColLabelValue(COL_T_INV,
+													"time\ninvariant");
 
 	field_grid->HideRowLabels();
 	
@@ -99,7 +108,7 @@ void DataViewerEditFieldPropertiesDlg::CreateControls()
 		field_grid->SetColFormatNumber(COL_D);
 		field_grid->SetColFormatNumber(COL_DD);
 		if (cd.type == GeoDaConst::double_type) {
-			field_grid->SetCellValue(i, COL_T, "float");
+			field_grid->SetCellValue(i, COL_T, "real");
 			field_grid->SetCellValue(i, COL_D,
 							wxString::Format("%d", cd.decimals));
 			field_grid->SetCellValue(i, COL_DD, 
@@ -120,6 +129,32 @@ void DataViewerEditFieldPropertiesDlg::CreateControls()
 		}
 		field_grid->SetCellValue(i, COL_L,
 								 wxString::Format("%d", cd.field_len));
+		if (is_space_time) {
+			wxString val(cd.time_steps > 1 ? "no" : "yes");
+			field_grid->SetCellValue(i, COL_T_INV, val);
+			field_grid->SetCellAlignment(i, COL_T_INV, wxALIGN_CENTRE,
+										 wxALIGN_CENTRE);
+			field_grid->SetCellTextColour(i, COL_T_INV,
+										  GeoDaConst::table_no_edit_color);
+			field_grid->SetReadOnly(i, COL_T_INV, true);
+		}
+		if (grid_base->IsSpaceTimeIdField(cd.name)) {
+			field_grid->SetCellTextColour(i, COL_N,
+										  GeoDaConst::table_no_edit_color);
+			field_grid->SetReadOnly(i, COL_N, true);
+			field_grid->SetCellTextColour(i, COL_T,
+										  GeoDaConst::table_no_edit_color);
+			field_grid->SetReadOnly(i, COL_T, true);
+			field_grid->SetCellTextColour(i, COL_L,
+										  GeoDaConst::table_no_edit_color);
+			field_grid->SetReadOnly(i, COL_L, true);
+			field_grid->SetCellTextColour(i, COL_D,
+										  GeoDaConst::table_no_edit_color);
+			field_grid->SetReadOnly(i, COL_D, true);
+			field_grid->SetCellTextColour(i, COL_DD,
+										  GeoDaConst::table_no_edit_color);
+			field_grid->SetReadOnly(i, COL_DD, true);
+		}
 	}
 	for (int i=0, iend=grid_base->GetNumberCols(); i<iend; i++) {
 		DbfColContainer& cd = *(grid_base->col_data[col_id_map[i]]);
@@ -127,6 +162,11 @@ void DataViewerEditFieldPropertiesDlg::CreateControls()
 			field_grid->SetCellTextColour(i, COL_N, *wxRED);
 		} else {
 			field_grid->SetCellTextColour(i, COL_N, *wxBLACK);
+			if (grid_base->IsSpaceTimeIdField(cd.name)) {
+				field_grid->SetCellTextColour(i, COL_N,
+											  GeoDaConst::table_no_edit_color);
+				field_grid->SetReadOnly(i, COL_N, true);
+			}
 		}
 	}
 	field_grid->EndBatch();
@@ -263,7 +303,7 @@ void DataViewerEditFieldPropertiesDlg::OnApplyButton( wxCommandEvent& ev )
 			bool r = cd.ChangeProperties(new_name, new_len, new_dec, new_ddec);
 			if (!r) {
 				wxString msg;
-				msg << "Field Properties update for field ";
+				msg << "Variable Properties update for field ";
 				msg << cd.name << " failed. Keeping original values for ";
 				msg << "this field.";
 				wxMessageDialog dlg(this, msg, "Error", wxOK|wxICON_ERROR);
@@ -305,6 +345,7 @@ void DataViewerEditFieldPropertiesDlg::OnCloseButton( wxCommandEvent& ev )
 void DataViewerEditFieldPropertiesDlg::OnClose( wxCloseEvent& ev )
 {
 	LOG_MSG("Entering DataViewerEditFieldPropertiesDlg::OnClose");
+	if (cell_editor_open) return;
 	if (apply_button->IsEnabled()) {
 		wxString msg("Ok to close dialog without applying changes?");
 		wxMessageDialog dlg(this, msg, "Unsaved Changes",
@@ -555,12 +596,30 @@ void DataViewerEditFieldPropertiesDlg::OnCellClickLeft( wxGridEvent& ev )
 void DataViewerEditFieldPropertiesDlg::OnCellEditorShown( wxGridEvent& ev )
 {
 	LOG_MSG("Entering DataViewerEditFieldPropertiesDlg::OnCellEditorShown");
+	cell_editor_open = true;
+	if (apply_button->IsEnabled()) {
+		reenable_apply_after_cell_editor_hidden = true;
+		apply_button->Enable(false);
+	} else {
+		reenable_apply_after_cell_editor_hidden = false;
+	}
 	int row = ev.GetRow();
 	int col = ev.GetCol();
 	LOG(row);
 	LOG(col);
 	ShowFieldProperties(row);
 	LOG_MSG("Exiting DataViewerEditFieldPropertiesDlg::OnCellEditorShown");
+	ev.Skip();
+}
+
+void DataViewerEditFieldPropertiesDlg::OnCellEditorHidden( wxGridEvent& ev )
+{
+	LOG_MSG("In DataViewerEditFieldPropertiesDlg::OnCellEditorHidden");
+	if (reenable_apply_after_cell_editor_hidden) {
+		apply_button->Enable(true);
+		reenable_apply_after_cell_editor_hidden = false;
+	}
+	cell_editor_open = false;
 	ev.Skip();
 }
 

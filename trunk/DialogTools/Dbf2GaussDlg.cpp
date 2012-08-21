@@ -28,30 +28,30 @@
 #include "../ShapeOperations/shp2cnt.h"
 #include "Dbf2GaussDlg.h"
 
-BEGIN_EVENT_TABLE( CDbf2GaussDlg, wxDialog )
+BEGIN_EVENT_TABLE( Dbf2GaussDlg, wxDialog )
     EVT_LISTBOX_DCLICK( XRCID("IDC_LIST_VARIN"),
-					   CDbf2GaussDlg::OnCListVarinDoubleClicked )
+					   Dbf2GaussDlg::OnCListVarinDoubleClicked )
     EVT_LISTBOX_DCLICK( XRCID("IDC_LIST_VAROUT"),
-					   CDbf2GaussDlg::OnCListVaroutDoubleClicked )
-    EVT_BUTTON( XRCID("IDC_MOVEOUT_ALL"), CDbf2GaussDlg::OnCMoveoutAllClick )
-    EVT_BUTTON( XRCID("IDC_MOVEOUT_ONE"), CDbf2GaussDlg::OnCMoveoutOneClick )
-    EVT_BUTTON( XRCID("IDC_MOVEIN_ONE"), CDbf2GaussDlg::OnCMoveinOneClick )
-    EVT_BUTTON( XRCID("IDC_MOVEIN_ALL"), CDbf2GaussDlg::OnCMoveinAllClick )
-    EVT_BUTTON( XRCID("IDOK_EXPORT"), CDbf2GaussDlg::OnOkExportClick )
-    EVT_BUTTON( XRCID("IDOK_RESET"), CDbf2GaussDlg::OnOkResetClick )
-    EVT_BUTTON( XRCID("IDC_INPUTFILE"), CDbf2GaussDlg::OnCInputfileClick )
-    EVT_BUTTON( XRCID("IDC_OUTPUTFILE"), CDbf2GaussDlg::OnCOutputfileClick )
+					   Dbf2GaussDlg::OnCListVaroutDoubleClicked )
+    EVT_BUTTON( XRCID("IDC_MOVEOUT_ALL"), Dbf2GaussDlg::OnCMoveoutAllClick )
+    EVT_BUTTON( XRCID("IDC_MOVEOUT_ONE"), Dbf2GaussDlg::OnCMoveoutOneClick )
+    EVT_BUTTON( XRCID("IDC_MOVEIN_ONE"), Dbf2GaussDlg::OnCMoveinOneClick )
+    EVT_BUTTON( XRCID("IDC_MOVEIN_ALL"), Dbf2GaussDlg::OnCMoveinAllClick )
+    EVT_BUTTON( XRCID("IDOK_EXPORT"), Dbf2GaussDlg::OnOkExportClick )
+    EVT_BUTTON( XRCID("IDOK_RESET"), Dbf2GaussDlg::OnOkResetClick )
+    EVT_BUTTON( XRCID("IDC_INPUTFILE"), Dbf2GaussDlg::OnCInputfileClick )
+    EVT_BUTTON( XRCID("IDC_OUTPUTFILE"), Dbf2GaussDlg::OnCOutputfileClick )
 END_EVENT_TABLE()
 
 extern void GaussExIm(char* fnme, char* otfl, char * list, int cnt,
 					  int outOption);
 
-CDbf2GaussDlg::CDbf2GaussDlg( )
+Dbf2GaussDlg::Dbf2GaussDlg( )
 {
 	lists = NULL;
 }
 
-CDbf2GaussDlg::CDbf2GaussDlg( int  option, wxWindow* parent, wxWindowID id,
+Dbf2GaussDlg::Dbf2GaussDlg( int  option, wxWindow* parent, wxWindowID id,
 							 const wxString& caption, const wxPoint& pos,
 							 const wxSize& size, long style )
 {
@@ -71,14 +71,14 @@ CDbf2GaussDlg::CDbf2GaussDlg( int  option, wxWindow* parent, wxWindowID id,
 
 }
 
-CDbf2GaussDlg::CDbf2GaussDlg( wxWindow* parent, wxWindowID id,
+Dbf2GaussDlg::Dbf2GaussDlg( wxWindow* parent, wxWindowID id,
 							 const wxString& caption, const wxPoint& pos,
 							 const wxSize& size, long style )
 {
     Create(parent, id, caption, pos, size, style);
 }
 
-bool CDbf2GaussDlg::Create( wxWindow* parent, wxWindowID id,
+bool Dbf2GaussDlg::Create( wxWindow* parent, wxWindowID id,
 						   const wxString& caption, const wxPoint& pos,
 						   const wxSize& size, long style )
 {
@@ -89,7 +89,7 @@ bool CDbf2GaussDlg::Create( wxWindow* parent, wxWindowID id,
 }
 
 
-void CDbf2GaussDlg::CreateControls()
+void Dbf2GaussDlg::CreateControls()
 {    
     wxXmlResource::Get()->LoadDialog(this, GetParent(), "IDD_GAUSS_EXIM");
     m_inputfield = XRCCTRL(*this, "IDC_LIST_VARIN", wxListBox);
@@ -101,7 +101,7 @@ void CDbf2GaussDlg::CreateControls()
 }
 
 
-void CDbf2GaussDlg::OnCListVarinDoubleClicked( wxCommandEvent& event )
+void Dbf2GaussDlg::OnCListVarinDoubleClicked( wxCommandEvent& event )
 {
 	m_outputfield->Append(
 					m_inputfield->GetString(m_inputfield->GetSelection()));
@@ -110,7 +110,7 @@ void CDbf2GaussDlg::OnCListVarinDoubleClicked( wxCommandEvent& event )
 }
 
 
-void CDbf2GaussDlg::OnCListVaroutDoubleClicked( wxCommandEvent& event )
+void Dbf2GaussDlg::OnCListVaroutDoubleClicked( wxCommandEvent& event )
 {
 	m_inputfield->Append(
 					m_outputfield->GetString(m_outputfield->GetSelection()));
@@ -118,7 +118,7 @@ void CDbf2GaussDlg::OnCListVaroutDoubleClicked( wxCommandEvent& event )
     event.Skip();
 }
 
-void CDbf2GaussDlg::OnCMoveoutAllClick( wxCommandEvent& event )
+void Dbf2GaussDlg::OnCMoveoutAllClick( wxCommandEvent& event )
 {
 	for(unsigned int i=0; i<m_inputfield->GetCount(); i++) {
 		m_outputfield->Append(m_inputfield->GetString(i));
@@ -128,7 +128,7 @@ void CDbf2GaussDlg::OnCMoveoutAllClick( wxCommandEvent& event )
     event.Skip();
 }
 
-void CDbf2GaussDlg::OnCMoveoutOneClick( wxCommandEvent& event )
+void Dbf2GaussDlg::OnCMoveoutOneClick( wxCommandEvent& event )
 {
 	if(m_inputfield->GetSelection() >= 0) {
 		m_outputfield->Append(
@@ -138,7 +138,7 @@ void CDbf2GaussDlg::OnCMoveoutOneClick( wxCommandEvent& event )
     event.Skip();
 }
 
-void CDbf2GaussDlg::OnCMoveinOneClick( wxCommandEvent& event )
+void Dbf2GaussDlg::OnCMoveinOneClick( wxCommandEvent& event )
 {
  	if(m_outputfield->GetSelection() >= 0) {
 		m_inputfield->Append(
@@ -149,7 +149,7 @@ void CDbf2GaussDlg::OnCMoveinOneClick( wxCommandEvent& event )
 }
 
 
-void CDbf2GaussDlg::OnCMoveinAllClick( wxCommandEvent& event )
+void Dbf2GaussDlg::OnCMoveinAllClick( wxCommandEvent& event )
 {
 	int i = 0;
 	for(unsigned i=0; i<m_outputfield->GetCount(); i++) {
@@ -161,7 +161,7 @@ void CDbf2GaussDlg::OnCMoveinAllClick( wxCommandEvent& event )
 }
 
 
-void CDbf2GaussDlg::OnOkExportClick( wxCommandEvent& event )
+void Dbf2GaussDlg::OnOkExportClick( wxCommandEvent& event )
 {
 	wxString m_dbf = m_inputfile->GetValue();
 	wxString m_dat = m_outputfile->GetValue();
@@ -193,16 +193,16 @@ void CDbf2GaussDlg::OnOkExportClick( wxCommandEvent& event )
 }
 
 
-void CDbf2GaussDlg::OnOkResetClick( wxCommandEvent& event )
+void Dbf2GaussDlg::OnOkResetClick( wxCommandEvent& event )
 {
 	event.Skip(); // wxDialog::OnCancel(event);
 	EndDialog(wxID_CANCEL);
 }
 
 
-void CDbf2GaussDlg::OnCInputfileClick( wxCommandEvent& event )
+void Dbf2GaussDlg::OnCInputfileClick( wxCommandEvent& event )
 {
-	LOG_MSG("Entering CDbf2GaussDlg::OnCInputfileClick"); 
+	LOG_MSG("Entering Dbf2GaussDlg::OnCInputfileClick"); 
     wxFileDialog dlg(this, "Input DBF file", "", "",
 					 "DBF files (*.dbf)|*.dbf");
 
@@ -257,11 +257,11 @@ void CDbf2GaussDlg::OnCInputfileClick( wxCommandEvent& event )
 		FindWindow(XRCID("IDC_EDIT_DAT"))->Enable(true);
 	}
 
-	LOG_MSG("Exiting CDbf2GaussDlg::OnCInputfileClick");
+	LOG_MSG("Exiting Dbf2GaussDlg::OnCInputfileClick");
 }
 
 
-void CDbf2GaussDlg::OnCOutputfileClick( wxCommandEvent& event )
+void Dbf2GaussDlg::OnCOutputfileClick( wxCommandEvent& event )
 {
 	wxString t1,t2,t3;
 
@@ -292,7 +292,7 @@ void CDbf2GaussDlg::OnCOutputfileClick( wxCommandEvent& event )
 }
 
 
-bool CDbf2GaussDlg::ShowToolTips()
+bool Dbf2GaussDlg::ShowToolTips()
 {
     return true;
 }

@@ -37,7 +37,8 @@ class SelectWeightDlg: public wxDialog
 
 public:
 	SelectWeightDlg(Project* project,
-					wxWindow* parent, wxWindowID id = -1,
+					wxWindow* parent,
+					wxWindowID id = -1,
 					const wxString& caption = "Select Weights",
 					const wxPoint& pos = wxDefaultPosition,
 					const wxSize& size = wxDefaultSize,
@@ -60,7 +61,7 @@ public:
     wxBitmap GetBitmapResource( const wxString& name );
     wxIcon GetIconResource( const wxString& name );
 	void PumpingWeight();
-	
+
     wxRadioButton* m_radio1;
 	wxChoice* m_weights;
 	wxRadioButton* m_radio2;

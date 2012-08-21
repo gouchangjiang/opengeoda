@@ -24,16 +24,16 @@
 #include <wx/xrc/xmlres.h>
 #include "RegressionTitleDlg.h"
 
-BEGIN_EVENT_TABLE( CRegressionTitleDlg, wxDialog )
-    EVT_BUTTON( wxID_OK, CRegressionTitleDlg::OnOkClick )
-    EVT_BUTTON( XRCID("ID_BROWSE"), CRegressionTitleDlg::OnBrowseClick )
+BEGIN_EVENT_TABLE( RegressionTitleDlg, wxDialog )
+    EVT_BUTTON( wxID_OK, RegressionTitleDlg::OnOkClick )
+    EVT_BUTTON( XRCID("ID_BROWSE"), RegressionTitleDlg::OnBrowseClick )
 END_EVENT_TABLE()
 
-CRegressionTitleDlg::CRegressionTitleDlg( )
+RegressionTitleDlg::RegressionTitleDlg( )
 {
 }
 
-CRegressionTitleDlg::CRegressionTitleDlg( wxWindow* parent, wxString fname,
+RegressionTitleDlg::RegressionTitleDlg( wxWindow* parent, wxString fname,
 										 wxWindowID id, 
 										 const wxString& caption,
 										 const wxPoint& pos,
@@ -47,7 +47,7 @@ CRegressionTitleDlg::CRegressionTitleDlg( wxWindow* parent, wxString fname,
 	FindWindow(XRCID("wxID_OK"))->Enable(true);
 }
 
-bool CRegressionTitleDlg::Create( wxWindow* parent, wxWindowID id,
+bool RegressionTitleDlg::Create( wxWindow* parent, wxWindowID id,
 								 const wxString& caption, const wxPoint& pos,
 								 const wxSize& size, long style )
 {
@@ -57,7 +57,7 @@ bool CRegressionTitleDlg::Create( wxWindow* parent, wxWindowID id,
     return true;
 }
 
-void CRegressionTitleDlg::CreateControls()
+void RegressionTitleDlg::CreateControls()
 {
     wxXmlResource::Get()->LoadDialog(this, GetParent(), "IDD_REGRESSION_SAVE");
     m_title = XRCCTRL(*this, "IDC_EDIT1", wxTextCtrl);
@@ -68,18 +68,18 @@ void CRegressionTitleDlg::CreateControls()
     m_check3 = XRCCTRL(*this, "IDC_CHECK3", wxCheckBox);
 }
 
-void CRegressionTitleDlg::OnOkClick( wxCommandEvent& event )
+void RegressionTitleDlg::OnOkClick( wxCommandEvent& event )
 {
 	event.Skip();
 	EndDialog(wxID_OK);
 }
 
-bool CRegressionTitleDlg::ShowToolTips()
+bool RegressionTitleDlg::ShowToolTips()
 {
     return true;
 }
 
-void CRegressionTitleDlg::OnBrowseClick( wxCommandEvent& event )
+void RegressionTitleDlg::OnBrowseClick( wxCommandEvent& event )
 {
     wxFileDialog dlg(this,
                     "Output file",

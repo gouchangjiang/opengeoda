@@ -34,20 +34,20 @@
 #include "DBF2SHPDlg.h"
 
 
-IMPLEMENT_CLASS( CDBF2SHPDlg, wxDialog )
+IMPLEMENT_CLASS( DBF2SHPDlg, wxDialog )
 
 
-BEGIN_EVENT_TABLE( CDBF2SHPDlg, wxDialog )
+BEGIN_EVENT_TABLE( DBF2SHPDlg, wxDialog )
 
-    EVT_BUTTON( XRCID("IDOK_ADD"), CDBF2SHPDlg::OnOkAddClick )
-    EVT_BUTTON( XRCID("IDC_OPEN_OSHP"), CDBF2SHPDlg::OnCOpenOshpClick )
-    EVT_BUTTON( XRCID("IDOKDONE"), CDBF2SHPDlg::OnOkdoneClick )
-    EVT_BUTTON( XRCID("IDC_OPEN_IDBF"), CDBF2SHPDlg::OnCOpenIdbfClick )
+    EVT_BUTTON( XRCID("IDOK_ADD"), DBF2SHPDlg::OnOkAddClick )
+    EVT_BUTTON( XRCID("IDC_OPEN_OSHP"), DBF2SHPDlg::OnCOpenOshpClick )
+    EVT_BUTTON( XRCID("IDOKDONE"), DBF2SHPDlg::OnOkdoneClick )
+    EVT_BUTTON( XRCID("IDC_OPEN_IDBF"), DBF2SHPDlg::OnCOpenIdbfClick )
 
 END_EVENT_TABLE()
 
 /*!
- * CDBF2SHPDlg constructors
+ * DBF2SHPDlg constructors
  */
 
 
@@ -98,7 +98,7 @@ bool CreatePointShapeFile(
 	
 	// Declare the triplet (the .shp, .shx, .dbf) as oShapeFileTriplet class object
 	oShapeFileTriplet Triple(otfl,xoBox, "POLY", ShapeFileTypes::SPOINT);
-	// Allocate a pointer of AbstractShape to manage the point shape file
+	// Allocate a pointer of AbstractShape to manage the point Shapefile
 	AbstractShape* shape = new Ppoint;
 	
 	// store the point dataset into the triplet and
@@ -140,11 +140,11 @@ bool CreatePointShapeFile(
 }
 
 
-CDBF2SHPDlg::CDBF2SHPDlg( )
+DBF2SHPDlg::DBF2SHPDlg( )
 {
 }
 
-CDBF2SHPDlg::CDBF2SHPDlg( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+DBF2SHPDlg::DBF2SHPDlg( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
     Create(parent, id, caption, pos, size, style);
 
@@ -159,29 +159,29 @@ CDBF2SHPDlg::CDBF2SHPDlg( wxWindow* parent, wxWindowID id, const wxString& capti
 }
 
 /*!
- * CDBF2SHPDlg creator
+ * DBF2SHPDlg creator
  */
 
-bool CDBF2SHPDlg::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool DBF2SHPDlg::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
-////@begin CDBF2SHPDlg member initialisation
-////@end CDBF2SHPDlg member initialisation
+////@begin DBF2SHPDlg member initialisation
+////@end DBF2SHPDlg member initialisation
 
-////@begin CDBF2SHPDlg creation
+////@begin DBF2SHPDlg creation
     SetParent(parent);
     CreateControls();
     Centre();
-////@end CDBF2SHPDlg creation
+////@end DBF2SHPDlg creation
     return true;
 }
 
 /*!
- * Control creation for CDBF2SHPDlg
+ * Control creation for DBF2SHPDlg
  */
 
-void CDBF2SHPDlg::CreateControls()
+void DBF2SHPDlg::CreateControls()
 {    
-////@begin CDBF2SHPDlg content construction
+////@begin DBF2SHPDlg content construction
 
     wxXmlResource::Get()->LoadDialog(this, GetParent(), "IDD_CONVERT_DBF2SHP");
     m_inputfile = XRCCTRL(*this, "IDC_FIELD_DBF", wxTextCtrl);
@@ -190,20 +190,20 @@ void CDBF2SHPDlg::CreateControls()
 	m_outputfile->SetMaxLength(0);
     m_X = XRCCTRL(*this, "IDC_KEYVAR", wxChoice);
     m_Y = XRCCTRL(*this, "IDC_KEYVAR2", wxChoice);
-////@end CDBF2SHPDlg content construction
+////@end DBF2SHPDlg content construction
 
     // Create custom windows not generated automatically here.
 
-////@begin CDBF2SHPDlg content initialisation
+////@begin DBF2SHPDlg content initialisation
 
-////@end CDBF2SHPDlg content initialisation
+////@end DBF2SHPDlg content initialisation
 }
 
 /*!
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDOK_ADD
  */
 
-void CDBF2SHPDlg::OnOkAddClick( wxCommandEvent& event )
+void DBF2SHPDlg::OnOkAddClick( wxCommandEvent& event )
 {
     // Insert custom code here
 
@@ -302,7 +302,7 @@ void CDBF2SHPDlg::OnOkAddClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDC_OPEN_OSHP
  */
 
-void CDBF2SHPDlg::OnCOpenOshpClick( wxCommandEvent& event )
+void DBF2SHPDlg::OnCOpenOshpClick( wxCommandEvent& event )
 {
     // Insert custom code here
     wxFileDialog dlg
@@ -335,7 +335,7 @@ void CDBF2SHPDlg::OnCOpenOshpClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDOKDONE
  */
 
-void CDBF2SHPDlg::OnOkdoneClick( wxCommandEvent& event )
+void DBF2SHPDlg::OnOkdoneClick( wxCommandEvent& event )
 {
     // Insert custom code here
 	event.Skip(); // wxDialog::OnCancel(event);
@@ -347,7 +347,7 @@ void CDBF2SHPDlg::OnOkdoneClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDC_OPEN_IDBF
  */
 
-void CDBF2SHPDlg::OnCOpenIdbfClick( wxCommandEvent& event )
+void DBF2SHPDlg::OnCOpenIdbfClick( wxCommandEvent& event )
 {
     // Insert custom code here
     wxFileDialog dlg
@@ -415,7 +415,7 @@ void CDBF2SHPDlg::OnCOpenIdbfClick( wxCommandEvent& event )
  * Should we show tooltips?
  */
 
-bool CDBF2SHPDlg::ShowToolTips()
+bool DBF2SHPDlg::ShowToolTips()
 {
     return true;
 }

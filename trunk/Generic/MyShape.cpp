@@ -21,6 +21,7 @@
 #include <cmath> // for math abs and floor function
 #include <cfloat>
 #include <cfloat>
+#include <wx/graphics.h>
 #include "../logger.h"
 #include "../GeoDaConst.h"
 #include "../GenUtils.h"
@@ -54,22 +55,21 @@ void MyScaleTrans::calcAffineParams(double x_min, double y_min,
 									double* image_width_p,
 									double* image_height_p)
 {
-	LOG_MSG("Entering MyScaleTrans::calcAffineParams");
+	//LOG_MSG("Entering MyScaleTrans::calcAffineParams");
 	double drawing_area_width = screen_width-(left_marg+right_marg);
 	double drawing_area_height = screen_height-(top_marg+bottom_marg);
 	
-	LOG(drawing_area_width);
-	LOG(target_width);
-	LOG(drawing_area_height);
-	LOG(target_height);
-	
+	//LOG(drawing_area_width);
+	//LOG(target_width);
+	//LOG(drawing_area_height);
+	//LOG(target_height);
 	
 	if ( target_width > 0 && target_height > 0 &&
 		target_width-1 <= drawing_area_width &&
 		target_height-1 <= drawing_area_height ) {
 		
 		if (!fit_to_window && !fixed_aspect_ratio) {
-			LOG_MSG("margins and drawing area adjusted");
+			//LOG_MSG("margins and drawing area adjusted");
 		}
 		
 		// increase the margins so that the working area is	equal
@@ -84,7 +84,7 @@ void MyScaleTrans::calcAffineParams(double x_min, double y_min,
 		drawing_area_height -= (2 * vert_delta);
 	} else {
 		if (!fit_to_window && !fixed_aspect_ratio) {
-			LOG_MSG("margins not adjusted");
+			//LOG_MSG("margins not adjusted");
 		}		
 	}
 	
@@ -137,7 +137,7 @@ void MyScaleTrans::calcAffineParams(double x_min, double y_min,
 		*image_width_p = abs(new_x_min - new_x_max);
 		*image_height_p = abs(new_y_min - new_y_max);
 	}
-	LOG_MSG("Exiting MyScaleTrans::calcAffineParams");
+	//LOG_MSG("Exiting MyScaleTrans::calcAffineParams");
 }
 
 wxString MyScaleTrans::GetString()
@@ -180,41 +180,139 @@ void MyScaleTrans::transform(const Shapefile::Point& src, wxPoint* result) const
 	result->y = (int) (src.y * scale_y + trans_y);
 }
 
-
-MyShape::MyShape() :
-	//z(0),
-	centroid(0,0), centroid_o(0.0,0.0),
-	mean_center(0,0), mean_center_o(0.0,0.0),
-    pen(*wxBLACK_PEN), brush(*wxTRANSPARENT_BRUSH)
+MyShapeAttribs::MyShapeAttribs(const MyShapeAttribs& s)
+: brush(s.brush), pen(s.pen), x_nudge(s.x_nudge), y_nudge(s.y_nudge)
 {
 }
 
-MyShape::MyShape(const MyShape& s) :
-	brush(s.brush), pen(s.pen), //z(s.z)
-	centroid(s.centroid), centroid_o(s.centroid_o),
-	mean_center(s.mean_center), mean_center_o(s.mean_center_o)
+MyShapeAttribs::MyShapeAttribs(const MyShapeAttribs* s)
+: brush(*GeoDaConst::default_myshape_brush),
+pen(*GeoDaConst::default_myshape_pen), x_nudge(0), y_nudge(0)
 {
+	if (!s) return;
+	brush = s->brush;
+	pen = s->pen;
+	x_nudge = s->x_nudge;
+	y_nudge = s->y_nudge; 
+}
+
+MyShapeAttribs& MyShapeAttribs::operator=(const MyShapeAttribs& s) {
+	brush = s.brush;
+	pen = s.pen;
+	x_nudge = s.x_nudge;
+	y_nudge = s.y_nudge;
+	return *this;
+}
+
+MyShape::MyShape() :
+	center(0,0), center_o(0.0,0.0), category(0), attribs(0)
+{
+}
+
+MyShape::~MyShape()
+{
+	if (attribs) delete attribs;
+}
+
+MyShape::MyShape(const MyShape& s) :
+	center(s.center), center_o(s.center_o), attribs(0)
+{
+	if (s.attribs) attribs = new MyShapeAttribs(s.attribs);
 }
 
 MyShape& MyShape::operator=(const MyShape& s)
 {
-	brush = s.brush;
-	pen = s.pen;
-	//z = s.z;
-	centroid = s.centroid;
-	centroid_o = s.centroid_o;
-	mean_center = s.mean_center;
-	mean_center_o = s.mean_center_o;
+	center = s.center;
+	center_o = s.center_o;
+	/** allocate optional attributes if not already allocated.  Attributes
+	 will be deleted by destructor */
+	if (s.attribs) {
+		if (!attribs) attribs = new MyShapeAttribs;
+		attribs->operator=(*s.attribs);
+	}
 	return *this;
 }
 
 void MyShape::applyScaleTrans(const MyScaleTrans& A)
 {
-	A.transform(centroid_o, &centroid);
-	A.transform(mean_center_o, &mean_center);
+	A.transform(center_o, &center);
 }
 
-wxRealPoint MyShape::calculateMeanCenter(int n, wxRealPoint* pts)
+void MyShape::setNudge(int x_nudge, int y_nudge)
+{
+	if (!attribs) attribs = new MyShapeAttribs;
+	attribs->x_nudge = x_nudge;
+	attribs->y_nudge = y_nudge;
+}
+
+void MyShape::setPen(wxPen pen)
+{
+	if (!attribs) attribs = new MyShapeAttribs;
+	attribs->pen = pen;
+}
+
+void MyShape::setBrush(wxBrush brush)
+{
+	if (!attribs) attribs = new MyShapeAttribs;
+	attribs->brush = brush;
+}
+
+const wxPen& MyShape::getPen()
+{
+	if (!attribs) return *GeoDaConst::default_myshape_pen;
+	return attribs->pen;
+}
+
+const wxBrush& MyShape::getBrush()
+{
+	if (!attribs) return *GeoDaConst::default_myshape_brush;
+	return attribs->brush;
+}
+
+int MyShape::getXNudge()
+{
+	if (!attribs) return 0;
+	return attribs->x_nudge;
+}
+
+int MyShape::getYNudge()
+{
+	if (!attribs) return 0;
+	return attribs->y_nudge;
+}
+
+void MyShapeAlgs::partsToCount(const std::vector<wxInt32>& parts,
+							   int total_points, int* count)
+{
+	//LOG_MSG("Entering MyShape::partsToCount");
+	int last_ind = parts.size()-1;
+	for (int i=0; i<last_ind; i++) {
+		count[i] = parts[i+1]-parts[i];
+		//LOG(count[i]);
+		//LOG(parts[i]);
+		//LOG(parts[i+1]);
+	}
+	//int prev = last_ind > 0 ? parts[last_ind-1] : 0;
+	count[last_ind] = total_points - parts[last_ind];
+	//LOG(total_points);
+	//LOG(parts.size());
+	//LOG(parts[last_ind]);
+	//LOG(last_ind);
+	//LOG(count[last_ind]);
+	//LOG_MSG("Exiting MyShape::partsToCount");
+}
+
+wxRealPoint MyShapeAlgs::calculateMeanCenter(MyPolygon* poly)
+{
+	if (poly->n_count < 1) return wxRealPoint(0,0);
+	if (poly->points_o) {
+		return calculateMeanCenter(poly->n, poly->points_o);
+	} else {
+		return calculateMeanCenter(poly->pc->points);
+	}
+}
+
+wxRealPoint MyShapeAlgs::calculateMeanCenter(int n, wxRealPoint* pts)
 {
 	wxRealPoint c(0.0, 0.0);
 	if (pts) {
@@ -228,7 +326,7 @@ wxRealPoint MyShape::calculateMeanCenter(int n, wxRealPoint* pts)
 	return c;
 }
 
-wxRealPoint MyShape::calculateMeanCenter(
+wxRealPoint MyShapeAlgs::calculateMeanCenter(
 	const std::vector<Shapefile::Point>& pts)
 {
 	wxRealPoint c(0.0, 0.0);
@@ -239,9 +337,86 @@ wxRealPoint MyShape::calculateMeanCenter(
 	}
 	c.x /= (double) n;
 	c.y /= (double) n;
-
 	return c;
 }
+
+
+// The only calculates the centroid for the first polygon in the
+// description and does not take into acount holes in the polygon.
+// also, polygons are assumed to be simple.
+wxRealPoint MyShapeAlgs::calculateCentroid(MyPolygon* poly)
+{
+	if (poly->n_count < 1) return wxRealPoint(0,0);
+	if (poly->points_o) {
+		return calculateCentroid(poly->n, poly->points_o);
+	} else {
+		return calculateCentroid(poly->count[0], poly->pc->points);
+	}
+}
+
+wxRealPoint MyShapeAlgs::calculateCentroid(int n, wxRealPoint* pts)
+{
+	double area = MyShapeAlgs::calculateArea(n, pts);
+	if (area == 0) return wxRealPoint(pts[0].x, pts[0].y);
+	// polygon is a p-gon. Handle case when polygon is not closed
+	int p = (pts[0].x==pts[n-1].x && pts[0].y==pts[n-1].y) ? n-1 : n;
+	double cx=0, cy=0, d;
+	for (int i=0, j=1, k=0; k<p; i=(i+1)%p, j=(j+1)%p, k++) {
+		d = (pts[i].x * pts[j].y) - (pts[j].x * pts[i].y);
+		cx += (pts[i].x + pts[j].x)*d;
+		cy += (pts[i].y + pts[j].y)*d;
+	}
+	cx /= area*6.0f;
+	cy /= area*6.0f;
+	return wxRealPoint(cx, cy);
+}
+
+wxRealPoint MyShapeAlgs::calculateCentroid(int n,
+	const std::vector<Shapefile::Point>& pts)
+{
+	double area = MyShapeAlgs::calculateArea(n, pts);
+	if (area == 0) return wxRealPoint(pts[0].x, pts[0].y);
+	// polygon is a p-gon. Handle case when polygon is not closed
+	int p = (pts[0].x==pts[n-1].x && pts[0].y==pts[n-1].y) ? n-1 : n;
+	double cx=0, cy=0, d;
+	for (int i=0, j=1, k=0; k<p; i=(i+1)%p, j=(j+1)%p, k++) {
+		d = (pts[i].x * pts[j].y) - (pts[j].x * pts[i].y);
+		cx += (pts[i].x + pts[j].x)*d;
+		cy += (pts[i].y + pts[j].y)*d;
+	}
+	cx /= area*6.0f;
+	cy /= area*6.0f;
+	return wxRealPoint(cx, cy);
+}
+
+/** Note: if area is returned as negative, then this indicates that the
+ polygon coordinates were given in reverse. When this is applied
+ to by the calculateCentroid function, the negative area will
+ automatically correct for reversed coordinates in the returned
+ centroid point. */
+double MyShapeAlgs::calculateArea(int n, wxRealPoint* pts)
+{
+	if (n <= 2) return 0;
+	double a = 0;
+	int p = (pts[0].x==pts[n-1].x && pts[0].y==pts[n-1].y) ? n-1 : n;
+	for (int i=0, j=1, k=0; k<p; i=(i+1)%p, j=(j+1)%p, k++) {
+		a += (pts[i].x * pts[j].y - pts[j].x * pts[i].y);
+	}
+	return a/2.0f;
+}
+
+double MyShapeAlgs::calculateArea(int n,
+								  const std::vector<Shapefile::Point>& pts)
+{
+	if (n <= 2) return 0;
+	double a = 0;
+	int p = (pts[0].x==pts[n-1].x && pts[0].y==pts[n-1].y) ? n-1 : n;
+	for (int i=0, j=1, k=0; k<p; i=(i+1)%p, j=(j+1)%p, k++) {
+		a += (pts[i].x * pts[j].y - pts[j].x * pts[i].y);
+	}
+	return a/2.0f;
+}
+
 
 /** num_points is an optional parameter.  If num_points < 4, then a reasonable
  number of points to specify the circle is given depending on the radius.
@@ -249,16 +424,16 @@ wxRealPoint MyShape::calculateMeanCenter(
  is null, or will write to pnts_array if not null.  Note, the size of
  pnts_array needs to be sufficiently large.
  */
-wxRegion MyShape::createCircleRegion(const wxPoint& center, double radius,
-									 int num_points,
-									 wxPoint* pnts_array,
-									 int* pnts_array_size)
+wxRegion MyShapeAlgs::createCircleRegion(const wxPoint& center, double radius,
+										 int num_points,
+										 wxPoint* pnts_array,
+										 int* pnts_array_size)
 {
 	static const int max_pts = 100;
 	static wxPoint scratch_pts[max_pts];
 	wxPoint* p = pnts_array ? pnts_array : scratch_pts;
 	
-	radius = abs(radius); // ensure radius is non-zero
+	radius = fabs(radius); // ensure radius is non-zero
 	if (radius < 1) radius = 1; // ensure radius is greater than 0
 	if (radius > 5000) radius = 5000; // ensure radius is at most 5000
 	if (num_points > max_pts) num_points = max_pts;
@@ -285,9 +460,42 @@ wxRegion MyShape::createCircleRegion(const wxPoint& center, double radius,
 	return wxRegion(num_points, p);
 }
 
+void MyShapeAlgs::createCirclePolygon(const wxPoint& center, double radius,
+									  int num_points, wxPoint* pnts_array,
+									  int* pnts_array_size)
+{
+	static const int max_pts = 100;
+	static wxPoint scratch_pts[max_pts];
+	wxPoint* p = pnts_array ? pnts_array : scratch_pts;
+	
+	radius = fabs(radius); // ensure radius is non-zero
+	if (radius < 1) radius = 1; // ensure radius is greater than 0
+	if (radius > 5000) radius = 5000; // ensure radius is at most 5000
+	if (num_points > max_pts) num_points = max_pts;
+	if (num_points < 4) {
+		if (radius <= 10) {
+			num_points = 10;
+		} else if (radius > 10 && radius <= 100) {
+			num_points = 20;
+		} else {  // radius > 100
+			num_points = 40;
+		}
+	}
+	double slice = ((double) 6.28318)/((double) num_points); // 2*pi/num_pts
+	double theta = 0;
+	for (int i=0; i<num_points; i++) {
+		theta = i * slice;
+		p[i].x = radius * cos(theta);
+		p[i].y = radius * sin(theta);
+		p[i] += center;
+	}
+	
+	if (pnts_array_size) *pnts_array_size = num_points;
+}
+
 /** wxRegions need to have a non-zero area.  This function takes a line
  specifiation and converts it to a 3-pixels across parallelogram. */
-wxRegion MyShape::createLineRegion(wxPoint a, wxPoint b)
+wxRegion MyShapeAlgs::createLineRegion(wxPoint a, wxPoint b)
 {
 	static wxPoint scratch_pts[4];
 	if (a == b) {
@@ -311,83 +519,75 @@ wxRegion MyShape::createLineRegion(wxPoint a, wxPoint b)
 	return wxRegion(4, scratch_pts);
 }
 
-void MyShape::partsToCount(const std::vector<wxInt32>& parts, int total_points,
-						   int* count)
+bool MyShapeAlgs::pointInPolygon(const wxPoint& pt, int n, const wxPoint* pts)
 {
-	LOG_MSG("Entering MyShape::partsToCount");
-	int last_ind = parts.size()-1;
-	for (int i=0; i<last_ind; i++) {
-		count[i] = parts[i+1]-parts[i];
-		LOG(count[i]);
-		LOG(parts[i]);
-		LOG(parts[i+1]);
+	bool within = false;
+	for (int i=0, j=n-1; i<n; j=i++) {
+		if (((pts[i].y > pt.y) != (pts[j].y > pt.y)) &&
+			(pt.x < (pts[j].x-pts[i].x) * (pt.y-pts[i].y) /
+			 (pts[j].y-pts[i].y) + pts[i].x))
+		{
+			within = !within;
+		}
 	}
-	int prev = last_ind > 0 ? parts[last_ind-1] : 0;
-	count[last_ind] = total_points - parts[last_ind];
-	LOG(total_points);
-	LOG(parts.size());
-	LOG(parts[last_ind]);
-	LOG(last_ind);
-	LOG(count[last_ind]);
-	LOG_MSG("Exiting MyShape::partsToCount");
+	return within;
 }
 
-
 MyPoint::MyPoint(const MyPoint& s)
-	: MyShape(s), point(s.point), point_o(s.point_o)
+	: MyShape(s)
 {
 }
 
 MyPoint::MyPoint(wxRealPoint point_o_s)
-	: point_o(point_o_s),
-	  point(wxPoint((int) point_o_s.x, (int) point_o_s.y))
 {
-	centroid = point;
-	centroid_o = point_o;
-	mean_center = point;
-	mean_center_o = point_o;
+	center = wxPoint((int) point_o_s.x, (int) point_o_s.y); 
+	center_o = point_o_s;
+}
+
+MyPoint::MyPoint(double x_orig, double y_orig)
+{
+	center = wxPoint((int) x_orig, (int) y_orig); 
+	center_o = wxRealPoint(x_orig, y_orig);
 }
 
 bool MyPoint::pointWithin(const wxPoint& pt)
 {
-	return ( abs(point.x - pt.x) <= GeoDaConst::my_point_click_radius &&
-			abs(point.y - pt.y) <= GeoDaConst::my_point_click_radius );
+	return ( fabs((double) (center.x - pt.x))
+			<= GeoDaConst::my_point_click_radius &&
+			fabs((double) (center.y - pt.y))
+			<= GeoDaConst::my_point_click_radius );
 }
 
 bool MyPoint::regionIntersect(const wxRegion& r)
 {
-	return r.Contains(point.x-1, point.y-1, 3, 3) != wxOutRegion;
+	return r.Contains(center.x-1, center.y-1, 3, 3) != wxOutRegion;
 }
 
-void MyPoint::applyScaleTrans(const MyScaleTrans& A)
-{
-	MyShape::applyScaleTrans(A); // apply affine transform to base class
-	A.transform(point_o, &point);
-}
+//void MyPoint::applyScaleTrans(const MyScaleTrans& A)
+//{
+//	MyShape::applyScaleTrans(A); // apply affine transform to base class
+//	A.transform(center_o, &center);
+//}
 
 void MyPoint::paintSelf(wxDC& dc)
 {
-	dc.SetPen(pen);
-	dc.SetBrush(brush);
-	dc.DrawCircle(point, GeoDaConst::my_point_click_radius);
+	dc.SetPen(getPen());
+	dc.SetBrush(getBrush());
+	wxPoint n_center(center.x+getXNudge(), center.y+getYNudge()); 
+	dc.DrawCircle(n_center, GeoDaConst::my_point_click_radius);
 }
 
 
 MyCircle::MyCircle(const MyCircle& s)
-	: MyShape(s), center(s.center), radius(s.radius),
-	center_o(s.center_o), radius_o(s.radius_o)
+	: MyShape(s), radius(s.radius), radius_o(s.radius_o)
 {
 }
 
 MyCircle::MyCircle(wxRealPoint center_o_s, double radius_o_s )
-	: center_o(center_o_s), radius_o(radius_o_s),
-	center(wxPoint((int) center_o_s.x, (int) center_o_s.y)),
-	radius(radius_o_s)
+	: radius_o(radius_o_s), radius(radius_o_s)
 {
-	centroid = center;
-	centroid_o = center_o;
-	mean_center = center;
-	mean_center_o = center_o;	
+	center = wxPoint((int) center_o_s.x, (int) center_o_s.y);
+	center_o = center_o_s;
 }
 
 bool MyCircle::pointWithin(const wxPoint& pt)
@@ -397,15 +597,16 @@ bool MyCircle::pointWithin(const wxPoint& pt)
 
 bool MyCircle::regionIntersect(const wxRegion& r)
 {
-	long diam = (long) (2*radius);
-	if (r.Contains(center.x - radius, center.y - radius,
-				   diam, diam) == wxOutRegion) {
-		return false;
-	} else {
-		wxRegion circ_reg = createCircleRegion(center, radius);
-		circ_reg.Intersect(r);
-		return !circ_reg.IsEmpty();
-	}
+	//long diam = (long) (2*radius);
+	//if (r.Contains(center.x - radius, center.y - radius,
+	//			   diam, diam) == wxOutRegion) {
+	//	return false;
+	//} else {
+	//	wxRegion circ_reg = MyShapeAlgs::createCircleRegion(center, radius);
+	//	circ_reg.Intersect(r);
+	//	return !circ_reg.IsEmpty();
+	//}
+	return false;
 }
 
 void MyCircle::applyScaleTrans(const MyScaleTrans& A)
@@ -416,13 +617,59 @@ void MyCircle::applyScaleTrans(const MyScaleTrans& A)
 
 void MyCircle::paintSelf(wxDC& dc)
 {
-	dc.SetPen(pen);
-	dc.SetBrush(brush);
-	dc.DrawCircle(center, radius);
+	dc.SetPen(getPen());
+	dc.SetBrush(getBrush());
+	wxPoint n_center(center.x+getXNudge(), center.y+getYNudge()); 
+	dc.DrawCircle(n_center, radius);
 }
 
+
+MyRectangle::MyRectangle(const MyRectangle& s)
+: MyShape(s), lower_left(s.lower_left), lower_left_o(s.lower_left_o),
+upper_right_o(s.upper_right_o), upper_right(s.upper_right_o)
+{
+}
+
+MyRectangle::MyRectangle(wxRealPoint lower_left_o_s,
+						 wxRealPoint upper_right_o_s)
+: lower_left_o(lower_left_o_s), upper_right_o(upper_right_o_s)
+{
+	center_o.x = (lower_left_o.x + upper_right_o.x)/2.0;
+	center_o.y = (lower_left_o.y + upper_right_o.y)/2.0;
+	center = wxPoint((int) center_o.x, (int) center_o.y);
+}
+
+bool MyRectangle::pointWithin(const wxPoint& pt)
+{
+	return (pt.x >= lower_left.x && pt.x <= upper_right.x &&
+			pt.y <= lower_left.y && pt.y >= upper_right.y);
+}
+
+bool MyRectangle::regionIntersect(const wxRegion& r)
+{
+	return false;
+}
+
+void MyRectangle::applyScaleTrans(const MyScaleTrans& A)
+{
+	MyShape::applyScaleTrans(A); // apply affine transform to base class
+	A.transform(lower_left_o, &lower_left);
+	A.transform(upper_right_o, &upper_right);
+}
+
+void MyRectangle::paintSelf(wxDC& dc)
+{
+	dc.SetPen(getPen());
+	dc.SetBrush(getBrush());
+	dc.DrawRectangle(lower_left.x+getXNudge(), lower_left.y+getYNudge(),
+					 upper_right.x - lower_left.x,
+					 upper_right.y - lower_left.y);
+}
+
+
 MyPolygon::MyPolygon(const MyPolygon& s)
-	: MyShape(s), region(s.region), n(s.n), pc(s.pc), points_o(s.points_o),
+	: MyShape(s), //region(s.region),
+	n(s.n), pc(s.pc), points_o(s.points_o),
 	n_count(s.n_count)
 {
 	points = new wxPoint[n];
@@ -463,14 +710,11 @@ MyPolygon::MyPolygon(int n_s, wxRealPoint* points_o_s)
 		points[i].y = (int) points_o_s[i].y;
 	}
 	
-	centroid_o = CalculateCentroid(n, points_o);
-	centroid.x = (int) centroid_o.x;
-	centroid.y = (int) centroid_o.y;
-	mean_center_o = calculateMeanCenter(n, points_o);
-	mean_center.x = (int) mean_center_o.x;
-	mean_center.y = (int) mean_center_o.y;
-	
-	region = wxRegion(n, points);
+	center_o = MyShapeAlgs::calculateMeanCenter(n, points_o);
+	center.x = (int) center_o.x;
+	center.y = (int) center_o.y;
+		
+	//region = wxRegion(n, points);
 }
 
 /** This constructs a potentially multi-part polygon where each polygon
@@ -481,23 +725,21 @@ MyPolygon::MyPolygon(Shapefile::PolygonContents* pc_s)
 {
 	assert(pc);
 	count = new int[pc->num_parts];
-	partsToCount(pc->parts, pc->num_points, count); // initialize count array
-	//n_count = pc->num_parts; // will use when we support multiple parts
-	n_count = 1;
-	// n = pc->num_points;  // will use when we support multiple parts
-	n = count[0];
+	// initialize count array
+	MyShapeAlgs::partsToCount(pc->parts, pc->num_points, count);
+	n_count = pc->num_parts;
+	n = pc->num_points;
 	points = new wxPoint[n];
 	for (int i=0; i<n; i++) {
 		points[i].x = (int) pc->points[i].x;
 		points[i].y = (int) pc->points[i].y;
 	}
 	
-	region = wxRegion(n, points);
+	//region = wxRegion(n, points);
 
-	mean_center_o = calculateMeanCenter(pc->points);
-	mean_center.x = (int) mean_center_o.x;
-	mean_center.y = (int) mean_center_o.y;
-	// MMM: Still need centroid calculation.
+	center_o = MyShapeAlgs::calculateMeanCenter(pc->points);
+	center.x = (int) center_o.x;
+	center.y = (int) center_o.y;
 }
 
 
@@ -519,14 +761,16 @@ MyPolygon::~MyPolygon()
 
 bool MyPolygon::pointWithin(const wxPoint& pt)
 {
-	return region.Contains(pt) != wxOutRegion;
+	return MyShapeAlgs::pointInPolygon(pt, n, points);
+	//return region.Contains(pt) != wxOutRegion;
 }
 
 bool MyPolygon::regionIntersect(const wxRegion& r)
 {
-	wxRegion reg(region);
-	reg.Intersect(r);
-	return !reg.IsEmpty();
+	//wxRegion reg(region);
+	//reg.Intersect(r);
+	//return !reg.IsEmpty();
+	return false;
 }
 
 void MyPolygon::applyScaleTrans(const MyScaleTrans& A)
@@ -536,12 +780,12 @@ void MyPolygon::applyScaleTrans(const MyScaleTrans& A)
 		for (int i=0; i<n; i++) {
 			A.transform(points_o[i], &(points[i]));
 		}
-		region = wxRegion(n, points);
+		//region = wxRegion(n, points);
 	} else {
 		for (int i=0; i<n; i++) {
 			A.transform(pc->points[i], &(points[i]));
 		}
-		region = wxRegion(n, points);  // MMM: needs to support multi-part
+		//region = wxRegion(n, points);  // MMM: needs to support multi-part
 	}
 }
 
@@ -562,7 +806,8 @@ wxRealPoint MyPolygon::CalculateCentroid(int n, wxRealPoint* pts)
 
 
 MyPolyLine::MyPolyLine(const MyPolyLine& s)
-	: MyShape(s), region(s.region), n(s.n), pc(s.pc), points_o(s.points_o),
+	: MyShape(s), //region(s.region),
+	n(s.n), pc(s.pc), points_o(s.points_o),
 	n_count(s.n_count)
 {
 	points = new wxPoint[n];
@@ -586,17 +831,16 @@ MyPolyLine::MyPolyLine(const MyPolyLine& s)
 /** This constructs a single polyline rather than (possibly) several disjoint
  polylines like the PolyLineContents data structure allows for. The
  memory for the original set of points is also maintained internally and
- will be deleted when the constructor is called. */
+ will be deleted when the destructor is called. */
 MyPolyLine::MyPolyLine(int n_s, wxRealPoint* points_o_s)
 	: n(n_s), pc(0), n_count(1)
 {
 	count = new int[1];
-	count[0] = n_s;
-	points = new wxPoint[n_s];
-	points_o = new wxRealPoint[n_s];
-	n = points && points_o_s ? n_s : 0;
+	count[0] = n;
+	points = new wxPoint[n];
+	points_o = new wxRealPoint[n];
 	for (int i=0; i<n; i++) {
-		points_o[i].x = points_o_s[i].y;
+		points_o[i].x = points_o_s[i].x;
 		points_o[i].y = points_o_s[i].y;
 	}	
 	for (int i=0; i<n; i++) {
@@ -604,19 +848,16 @@ MyPolyLine::MyPolyLine(int n_s, wxRealPoint* points_o_s)
 		points[i].y = (int) points_o_s[i].y;
 	}
 	
-	centroid_o = CalculateCentroid(n, points_o);
-	centroid.x = (int) centroid_o.x;
-	centroid.y = (int) centroid_o.y;
-	mean_center_o = calculateMeanCenter(n, points_o);
-	mean_center.x = (int) mean_center_o.x;
-	mean_center.y = (int) mean_center_o.y;
+	center_o = MyShapeAlgs::calculateMeanCenter(n, points_o);
+	center.x = (int) center_o.x;
+	center.y = (int) center_o.y;
 	
-	if (n>1) {
-		region = createLineRegion(points[0], points[1]);
-		for (int i=1; i<n-1; i++) {
-			region.Union(createLineRegion(points[i], points[i+1]));
-		}
-	}
+	//if (n>1) {
+	//	region = MyShapeAlgs::createLineRegion(points[0], points[1]);
+	//	for (int i=1; i<n-1; i++) {
+	//		region.Union(MyShapeAlgs::createLineRegion(points[i], points[i+1]));
+	//	}
+	//}
 }
 
 MyPolyLine::MyPolyLine(double x1, double y1, double x2, double y2)
@@ -635,17 +876,14 @@ MyPolyLine::MyPolyLine(double x1, double y1, double x2, double y2)
 	points[1].x = (int) x2;
 	points[1].y = (int) y2;
 
-	centroid_o = CalculateCentroid(n, points_o);
-	centroid.x = (int) centroid_o.x;
-	centroid.y = (int) centroid_o.y;
-	mean_center_o = calculateMeanCenter(n, points_o);
-	mean_center.x = (int) mean_center_o.x;
-	mean_center.y = (int) mean_center_o.y;
+	center_o = MyShapeAlgs::calculateMeanCenter(n, points_o);
+	center.x = (int) center_o.x;
+	center.y = (int) center_o.y;
 	
-	region = createLineRegion(points[0], points[1]);
-	for (int i=1; i<n-1; i++) {
-		region.Union(createLineRegion(points[i], points[i+1]));
-	}
+	//region = MyShapeAlgs::createLineRegion(points[0], points[1]);
+	//for (int i=1; i<n-1; i++) {
+	//	region.Union(MyShapeAlgs::createLineRegion(points[i], points[i+1]));
+	//}
 }
 
 /** This constructs a potentially multi-part polyline. Only a pointer to the
@@ -655,7 +893,8 @@ MyPolyLine::MyPolyLine(Shapefile::PolyLineContents* pc_s)
 {
 	assert(pc);
 	count = new int[pc->num_parts];
-	partsToCount(pc->parts, pc->num_points, count); // initialize count array
+	// initialize count array
+	MyShapeAlgs::partsToCount(pc->parts, pc->num_points, count);
 	n_count = pc->num_parts;
 	n = pc->num_points;
 
@@ -665,23 +904,22 @@ MyPolyLine::MyPolyLine(Shapefile::PolyLineContents* pc_s)
 		points[i].y = (int) pc->points[i].y;
 	}
 	
-	int chunk_index = 0;  // will have the initial index of each part
-	for (int h=0; h<n_count; h++) {
-		if (count[h] > 1) {  // ensure this is a valid part
-			region.Union(createLineRegion(points[chunk_index],
-										  points[chunk_index+1]));
-			for (int i=1; i<n-1; i++) {
-				region.Union(createLineRegion(points[chunk_index+i],
-											  points[chunk_index+i+1]));
-			}
-		}
-		chunk_index += count[h]; // increment to next part
-	}
+	//int chunk_index = 0;  // will have the initial index of each part
+	//for (int h=0; h<n_count; h++) {
+	//	if (count[h] > 1) {  // ensure this is a valid part
+	//		region.Union(MyShapeAlgs::createLineRegion(points[chunk_index],
+	//												   points[chunk_index+1]));
+	//		for (int i=1; i<n-1; i++) {
+	//			region.Union(MyShapeAlgs::createLineRegion(points[chunk_index+i],
+	//													   points[chunk_index+i+1]));
+	//		}
+	//	}
+	//	chunk_index += count[h]; // increment to next part
+	//}
 	
-	mean_center_o = calculateMeanCenter(pc->points);
-	mean_center.x = (int) mean_center_o.x;
-	mean_center.y = (int) mean_center_o.y;
-	// MMM: Still need centroid calculation.
+	center_o = MyShapeAlgs::calculateMeanCenter(pc->points);
+	center.x = (int) center_o.x;
+	center.y = (int) center_o.y;
 }
 
 MyPolyLine::~MyPolyLine()
@@ -693,7 +931,7 @@ MyPolyLine::~MyPolyLine()
 
 MyPolyLine& MyPolyLine::operator=(const MyPolyLine& s)
 {
-	LOG_MSG("Entering MyPolyLine::operator=");
+	//LOG_MSG("Entering MyPolyLine::operator=");
 	MyShape::operator=(s);
 	if (points) delete [] points; points = 0;
 	if (points_o) delete [] points_o; points_o = 0;
@@ -718,23 +956,34 @@ MyPolyLine& MyPolyLine::operator=(const MyPolyLine& s)
 	}
 	n = s.n;
 	n_count = s.n_count;
-	simple = s.simple;
 	pc = s.pc;
-	region = s.region;
+	//region = s.region;
 	return *this;
-	LOG_MSG("Exiting MyPolyLine::operator=");
+	//LOG_MSG("Exiting MyPolyLine::operator=");
 }
 
 bool MyPolyLine::pointWithin(const wxPoint& pt)
 {
-	return region.Contains(pt) != wxOutRegion;
+	const double r = 3.0; // point radius
+	wxRealPoint hp;
+	double hp_rad;
+	for (int j=0, its=n-1; j<its; j++) {
+		hp.x = (points[j].x + points[j+1].x)/2.0;
+		hp.y = (points[j].y + points[j+1].y)/2.0;
+		hp_rad = GenUtils::distance(points[j],
+									points[j+1])/2.0;
+		if ((GenUtils::pointToLineDist(pt, points[j], points[j+1]) <= r) &&
+			(GenUtils::distance(hp, pt) <= hp_rad + r)) return true;
+	}
+	return false;
 }
 
 bool MyPolyLine::regionIntersect(const wxRegion& r)
 {
-	wxRegion reg(region);
-	reg.Intersect(r);
-	return !reg.IsEmpty();
+	//wxRegion reg(region);
+	//reg.Intersect(r);
+	//return !reg.IsEmpty();
+	return false;
 }
 
 void MyPolyLine::applyScaleTrans(const MyScaleTrans& A)
@@ -744,43 +993,112 @@ void MyPolyLine::applyScaleTrans(const MyScaleTrans& A)
 		for (int i=0; i<n; i++) {
 			A.transform(points_o[i], &(points[i]));
 		}
-		if (n>1) {
-			region = createLineRegion(points[0], points[1]);
-			for (int i=1; i<n-1; i++) {
-				region.Union(createLineRegion(points[i], points[i+1]));
-			}
-		}
+		//if (n>1) {
+		//	region = MyShapeAlgs::createLineRegion(points[0], points[1]);
+		//	for (int i=1; i<n-1; i++) {
+		//		region.Union(MyShapeAlgs::createLineRegion(points[i], points[i+1]));
+		//	}
+		//}
 	} else {
 		for (int i=0; i<n; i++) {
 			A.transform(pc->points[i], &(points[i]));
 		}
-		region = wxRegion(); // create an empty initial region
-		int chunk_index = 0;  // will have the initial index of each part
-		for (int h=0; h<n_count; h++) {
-			if (count[h] > 1) {  // ensure this is a valid part
-				region.Union(createLineRegion(points[chunk_index],
-											  points[chunk_index+1]));
-				for (int i=1; i<n-1; i++) {
-					region.Union(createLineRegion(points[chunk_index+i],
-												  points[chunk_index+i+1]));
-				}
-			}
-			chunk_index += count[h]; // increment to next part
-		}
+		//region = wxRegion(); // create an empty initial region
+		//int chunk_index = 0;  // will have the initial index of each part
+		//for (int h=0; h<n_count; h++) {
+		//	if (count[h] > 1) {  // ensure this is a valid part
+		//		region.Union(MyShapeAlgs::createLineRegion(points[chunk_index],
+		//												   points[chunk_index+1]));
+		//		for (int i=1; i<n-1; i++) {
+		//			region.Union(MyShapeAlgs::createLineRegion(points[chunk_index+i],
+		//													   points[chunk_index+i+1]));
+		//		}
+		//	}
+		//	chunk_index += count[h]; // increment to next part
+		//}
 	}
 	
-	region = wxRegion(n, points);
+	//region = wxRegion(n, points);
 }
 
 void MyPolyLine::paintSelf(wxDC& dc)
 {
-	dc.SetPen(pen);
-	dc.SetBrush(brush);
-	// MMM See note in documentation regarding the painting of the last
-	// point in the line.  According to documentation, this last point
-	// is not painted.
-	dc.DrawLine(points[0].x, points[0].y, points[1].x, points[1].y);
+	dc.SetPen(getPen());
+	dc.SetBrush(getBrush());
+	int nx = getXNudge();
+	int ny = getYNudge();
+	if (n > 1) {
+		for (int i=0, its=n-1; i<its; i++) {
+			//LOG(i);
+			//LOG(points[i].x);
+			//LOG(points[i].y);
+			//LOG(points[i+1].x);
+			//LOG(points[i+1].y);
+			//dc.DrawLine(45, 50, 200, 16);
+			//dc.DrawLine(200, 16, 200, 70);
+			//dc.DrawLine(25, 235, 250, 130);
+			//dc.DrawLine(250, 130, 475, 25);
+			dc.DrawLine(points[i].x+nx, points[i].y+ny,
+						points[i+1].x+nx, points[i+1].y+ny);
+		}
+	} else {
+		dc.DrawPoint(points[0].x+nx, points[0].y+ny);
+	}
 }
+
+
+MyRay::MyRay(const MyRay& s)
+	: MyShape(s), degs_rot_cc_from_horiz(s.degs_rot_cc_from_horiz),
+	length(s.length)
+{
+}
+
+MyRay::MyRay(wxRealPoint center_o_s, double degs_rot_cc_from_horiz_s,
+			 int length_s)
+: degs_rot_cc_from_horiz(degs_rot_cc_from_horiz_s), length(length_s)
+{
+	center = wxPoint((int) center_o_s.x, (int) center_o_s.y);
+	center_o = center_o_s;
+}
+
+bool MyRay::pointWithin(const wxPoint& pt)
+{
+	// should use line intersection instead
+	return GenUtils::distance(center, pt) <= length;
+}
+
+bool MyRay::regionIntersect(const wxRegion& r)
+{
+	return false;
+}
+
+void MyRay::applyScaleTrans(const MyScaleTrans& A)
+{
+	MyShape::applyScaleTrans(A); // apply affine transform to base class
+	A.transform(center_o, &center);
+}
+
+void MyRay::paintSelf(wxDC& dc)
+{
+	dc.SetPen(getPen());
+	dc.SetBrush(getBrush());
+	
+	double dx = length;
+	double dy = 0;
+	
+	// now rotate the vector (dx,dy) by deg_rot_cc_from_horiz
+	double rad = degs_rot_cc_from_horiz * 0.0174532925; // pi/180 = 0.1745...
+	double c_rad = cos(rad);
+	double s_rad = sin(rad);
+	double rot_dx = c_rad*dx - s_rad*dy;
+	double rot_dy = -(s_rad*dx + c_rad*dy);
+	
+	wxPoint n_center(center.x+getXNudge(), center.y+getYNudge());
+	dc.DrawLine(center.x+getXNudge(), center.y+getYNudge(),
+				center.x+getXNudge()+floor(rot_dx+0.5),
+				center.y+getYNudge()+floor(rot_dy+0.5));
+}
+
 
 MyText::MyText()
 : text(""), font(*GeoDaConst::medium_font),
@@ -788,8 +1106,9 @@ MyText::MyText()
 	degs_rot_cc_from_horiz(0),
 	degs_rot_cc_from_horiz_o(0),
 	horiz_align(h_center), vert_align(v_center),
-	ref_pt_x_nudge(0), ref_pt_y_nudge(0)
+	hidden(false)
 {
+	for (int i=0; i<5; i++) { bb_poly[i].x = 0; bb_poly[i].y = 0; }
 }
 
 MyText::MyText(wxString text_s, wxFont font_s, const wxRealPoint& ref_pt_s,
@@ -800,18 +1119,21 @@ MyText::MyText(wxString text_s, wxFont font_s, const wxRealPoint& ref_pt_s,
 	ref_pt(ref_pt_s), ref_pt_o(ref_pt_s),
 	degs_rot_cc_from_horiz(degs_rot_cc_from_horiz_s),
 	degs_rot_cc_from_horiz_o(degs_rot_cc_from_horiz_s),
-	horiz_align(h_align), vert_align(v_align),
-	ref_pt_x_nudge(x_nudge), ref_pt_y_nudge(y_nudge)
+	horiz_align(h_align), vert_align(v_align), hidden(false)
 {
+	setNudge(x_nudge, y_nudge);
+	for (int i=0; i<5; i++) { bb_poly[i].x = 0; bb_poly[i].y = 0; }
 }
 
 MyText::MyText(const MyText& s)
-	: text(s.text), font(s.font), ref_pt(s.ref_pt), ref_pt_o(s.ref_pt_o),
+	: MyShape(s), text(s.text), font(s.font),
+	ref_pt(s.ref_pt), ref_pt_o(s.ref_pt_o),
 	degs_rot_cc_from_horiz(s.degs_rot_cc_from_horiz),
 	degs_rot_cc_from_horiz_o(s.degs_rot_cc_from_horiz_o),
 	horiz_align(s.horiz_align), vert_align(s.vert_align),
-	ref_pt_x_nudge(s.ref_pt_x_nudge), ref_pt_y_nudge(s.ref_pt_y_nudge)
+	hidden(s.hidden)
 {
+	for (int i=0; i<5; i++) bb_poly[i] = s.bb_poly[i];
 }
 
 MyText& MyText::operator=(const MyText& s)
@@ -825,20 +1147,28 @@ MyText& MyText::operator=(const MyText& s)
 	degs_rot_cc_from_horiz_o = s.degs_rot_cc_from_horiz_o;
 	horiz_align = s.horiz_align;
 	vert_align = s.vert_align;
-	ref_pt_x_nudge = s.ref_pt_x_nudge;
-	ref_pt_y_nudge = s.ref_pt_y_nudge;
+	hidden = s.hidden;
+	for (int i=0; i<5; i++) bb_poly[i] = s.bb_poly[i];
 	
 	return *this;
 }
 
+bool MyText::pointWithin(const wxPoint& pt)
+{
+	return MyShapeAlgs::pointInPolygon(pt, 5, bb_poly);
+}
+
 void MyText::paintSelf(wxDC& dc)
 {
-	LOG_MSG("Entering MyText::paintSelf");
-	if (pen == *wxTRANSPARENT_PEN) return;
+	//LOG_MSG("Entering MyText::paintSelf");
+	if (hidden) return;
+		
+	wxPen pen = getPen();
+	pen.SetWidth(1);
 	dc.SetPen(pen);
-	dc.SetBrush(brush);
+	dc.SetBrush(getBrush());
 	dc.SetFont(font);
-	dc.SetTextForeground(pen.GetColour());
+	dc.SetTextForeground(getPen().GetColour());
 
 	//wxString text("This is a very big test.");
 	//wxSize extent(dc.GetTextExtent(text));
@@ -847,50 +1177,52 @@ void MyText::paintSelf(wxDC& dc)
 	//dc.DrawPoint(t_ref_pt.x, t_ref_pt.y);	
 	
 	wxPoint text_pos;
-	wxRealPoint nudged_ref_pt(ref_pt.x+ref_pt_x_nudge, ref_pt.y+ref_pt_y_nudge);
+	wxRealPoint nudged_ref_pt(ref_pt.x+getXNudge(), ref_pt.y+getYNudge());
 	text_pos = wxPoint(MyText::calcRefPoint(dc, text, font, nudged_ref_pt,
 											degs_rot_cc_from_horiz,
 											horiz_align, vert_align));
 	dc.DrawRotatedText(text, text_pos.x, text_pos.y,
 					   degs_rot_cc_from_horiz);
 	
-	// Draw a box around text for debugging purposes
-	//LOG(ref_pt.x);
-	//LOG(ref_pt.y);
-	//LOG(ref_pt_x_nudge);
-	//LOG(ref_pt_y_nudge);
-	//
-	//wxSize extent(dc.GetTextExtent(text));
-	//double x = extent.GetWidth();
-	//double y = extent.GetHeight();
+	// Calculate the bounding polygon.  This is needed for pointWithin
+	wxSize extent(dc.GetTextExtent(text));
+	double x = extent.GetWidth();
+	double y = extent.GetHeight();
 	// rotate vector (x,0) by deg_rot_cc_from _horiz
-	//double theta = degs_rot_cc_from_horiz / 57.2957796;
-	//double xp_x = x * cos(theta);
-	//double yp_x = x * sin(theta);
+	double theta = degs_rot_cc_from_horiz / 57.2957796;
+	double xp_x = x * cos(theta);
+	double yp_x = x * sin(theta);
 	// now calculate upper left and upper right points
-	//wxPoint ul(text_pos);
-	//wxPoint ur(ul.x+xp_x, ul.y-yp_x);
+	wxPoint ul(text_pos);
+	wxPoint ur(ul.x+xp_x, ul.y-yp_x);
 	
 	// rotate vector (0,y) by deg_rot_cc_from_horiz
-	//double xp_y = -y * sin(theta);
-	//double yp_y = y * cos(theta);
+	double xp_y = -y * sin(theta);
+	double yp_y = y * cos(theta);
 	// now calculate lower left point and lower right point
-	//wxPoint ll(ul.x-xp_y, ul.y+yp_y);
-	//wxPoint lr(ll.x+xp_x, ll.y-yp_x);
+	wxPoint ll(ul.x-xp_y, ul.y+yp_y);
+	wxPoint lr(ll.x+xp_x, ll.y-yp_x);
 	
-	// draw the full text bounding box
+	bb_poly[0] = ul;
+	bb_poly[1] = ur;
+	bb_poly[2] = lr;
+	bb_poly[3] = ll;
+	bb_poly[4] = ul;
+	
+	// draw the full text bounding box for debugging purposes
+	//dc.SetBrush(*wxTRANSPARENT_BRUSH);
+	//dc.DrawPolygon(5, bb_poly);
 	//dc.DrawLine(ul, ur);
 	//dc.DrawLine(ur, lr);
 	//dc.DrawLine(lr, ll);
 	//dc.DrawLine(ll, ul);
 	
-	//wxPoint t_ref_pt(ref_pt.x, ref_pt.y);
+	//wxPoint t_ref_pt(ref_pt.x+getXNudge(), ref_pt.y+getYNudge());
 	//dc.DrawCircle(t_ref_pt, 6);
 	//dc.DrawPoint(t_ref_pt);
-	// End draw box for debugging purposes
 	
 	dc.SetTextForeground(*wxBLACK);
-	LOG_MSG("Exiting MyText::paintSelf");
+	//LOG_MSG("Exiting MyText::paintSelf");
 }
 
 void MyText::applyScaleTrans(const MyScaleTrans& A)
@@ -967,8 +1299,7 @@ MyTable::MyTable()
 	ref_pt(0,0), ref_pt_o(0,0),
 	horiz_align(MyText::h_center), vert_align(MyText::v_center),
 	cell_h_align(MyText::h_center), cell_v_align(MyText::v_center),
-	row_gap(3), col_gap(10),
-	ref_pt_x_nudge(0), ref_pt_y_nudge(0)
+	row_gap(3), col_gap(10), hidden(false)
 {
 }
 
@@ -988,18 +1319,19 @@ MyTable::MyTable(const std::vector<wxString>& vals_s,
 	horiz_align(horiz_align_s), vert_align(vert_align_s),
 	cell_h_align(cell_h_align_s), cell_v_align(cell_v_align_s),
 	row_gap(row_gap_s), col_gap(col_gap_s),
-	ref_pt_x_nudge(x_nudge), ref_pt_y_nudge(y_nudge)
+	hidden(false)
 {
+	setNudge(x_nudge, y_nudge);
 }
 
 MyTable::MyTable(const MyTable& s)
-	: vals(s.vals), attributes(s.attributes),
+	: MyShape(s), vals(s.vals), attributes(s.attributes),
 	rows(s.rows), cols(s.cols), font(s.font),
 	ref_pt(s.ref_pt), ref_pt_o(s.ref_pt_o),
 	horiz_align(s.horiz_align), vert_align(s.vert_align),
 	cell_h_align(s.cell_h_align), cell_v_align(s.cell_v_align),
 	row_gap(s.row_gap), col_gap(s.col_gap),
-	ref_pt_x_nudge(s.ref_pt_x_nudge), ref_pt_y_nudge(s.ref_pt_y_nudge)
+	hidden(s.hidden)
 {
 }
 
@@ -1019,8 +1351,7 @@ MyTable& MyTable::operator=(const MyTable& s)
 	cell_v_align = s.cell_v_align;
 	row_gap = s.row_gap;
 	col_gap = s.col_gap;
-	ref_pt_x_nudge = s.ref_pt_x_nudge;
-	ref_pt_y_nudge = s.ref_pt_y_nudge;
+	hidden = s.hidden;
 	
 	return *this;
 }
@@ -1029,12 +1360,11 @@ void MyTable::paintSelf(wxDC& dc)
 {
 	using namespace std;
 	//LOG_MSG("Entering MyTable::paintSelf");
-	if (pen == *wxTRANSPARENT_PEN ||
-		vals.size() == 0 || rows*cols != vals.size()) return;
-	dc.SetPen(pen);
-	dc.SetBrush(brush);
+	if (hidden || vals.size() == 0 || rows*cols != vals.size()) return;
+	dc.SetPen(getPen());
+	dc.SetBrush(getBrush());
 	dc.SetFont(font);
-	dc.SetTextForeground(pen.GetColour());
+	dc.SetTextForeground(getPen().GetColour());
 	
 	// we know that rows>0 and cols>0 and that rows*cols == vals.size()
 	// let's find the max vertical extent and the max horizontal
@@ -1126,8 +1456,8 @@ void MyTable::paintSelf(wxDC& dc)
 	} else if (vert_align == MyText::bottom) {
 		n_ref_pt.y += table_height;
 	}
-	n_ref_pt.x += ref_pt_x_nudge;
-	n_ref_pt.y += ref_pt_y_nudge;
+	n_ref_pt.x += getXNudge();
+	n_ref_pt.y += getYNudge();
 	
 	bool attribs_defined = (attributes.size() == vals.size());
 	
@@ -1148,17 +1478,65 @@ void MyTable::paintSelf(wxDC& dc)
 	//LOG_MSG("Exiting MyTable::paintSelf");
 }
 
+void MyTable::GetSize(wxDC& dc, int& w, int& h)
+{
+	using namespace std;
+	if (hidden || vals.size() == 0 || rows*cols != vals.size()) return;
+	dc.SetPen(getPen());
+	dc.SetFont(font);
+	
+	vector<int> row_h(rows, 0);
+	vector<int> col_w(cols, 0);
+	vector<wxSize> extents(rows*cols); 
+	for (int i=0; i<rows; i++) {
+		for (int j=0; j<cols; j++) {
+			int ij = i*cols+j;
+			extents[ij] = dc.GetTextExtent(vals[ij]);
+			if (row_h[i] < extents[ij].GetHeight()) {
+				row_h[i] = extents[ij].GetHeight();
+			}
+			if (col_w[j] < extents[ij].GetWidth()) {
+				col_w[j] = extents[ij].GetWidth();
+			}
+		}
+	}
+	
+	w = 0;
+	h = 0;
+	for (int i=0; i<cols; i++) w += col_w[i];
+	for (int i=0; i<rows; i++) h += row_h[i];
+	w += (cols-1)*col_gap;
+	h += (rows-1)*row_gap;
+}
+
 void MyTable::applyScaleTrans(const MyScaleTrans& A)
 {
 	A.transform(ref_pt_o, &ref_pt);
 }
 
+MyAxis::MyAxis()
+	: caption(wxEmptyString), is_horizontal(true),
+	caption_font(*GeoDaConst::small_font), font(*GeoDaConst::small_font),
+	hidden(false)
+{
+}	
+
+MyAxis::MyAxis(const MyAxis& s)
+	: MyShape(s), caption(s.caption), scale(s.scale),
+	is_horizontal(s.is_horizontal), caption_font(s.caption_font), font(s.font),
+	a(s.a), b(s.b), a_o(s.a_o), b_o(s.b_o), hidden(s.hidden)
+{
+}
+
 MyAxis::MyAxis(const wxString& caption_s, const AxisScale& s,
-			   const wxPoint& a_s, const wxPoint& b_s)
+			   const wxRealPoint& a_s, const wxRealPoint& b_s,
+			   int x_nudge, int y_nudge)
 	: caption(caption_s), scale(s), is_horizontal(a_s.y == b_s.y),
 	a(a_s), b(b_s), a_o(a_s), b_o(b_s),
-font(*GeoDaConst::small_font), caption_font(*GeoDaConst::medium_font)
+	font(*GeoDaConst::small_font), caption_font(*GeoDaConst::medium_font),
+	hidden(false)
 {
+	setNudge(x_nudge, y_nudge);
 }
 
 void MyAxis::applyScaleTrans(const MyScaleTrans& A)
@@ -1169,29 +1547,39 @@ void MyAxis::applyScaleTrans(const MyScaleTrans& A)
 
 void MyAxis::paintSelf(wxDC& dc)
 {
-	dc.SetPen(pen);
-	dc.SetBrush(brush);
+	if (hidden) return;
+	wxPoint aa = a;
+	aa.x += getXNudge();
+	aa.y += getYNudge();
+	wxPoint bb = b;
+	bb.x += getXNudge();
+	bb.y += getYNudge();
+	dc.SetPen(getPen());
+	dc.SetBrush(getBrush());
 	dc.SetFont(font);
-	double my_tic_inc = (GenUtils::distance(a,b) / scale.scale_range) *
+	double my_tic_inc = (GenUtils::distance(aa,bb) / scale.scale_range) *
 							scale.tic_inc;
 	const int tic_length = 4;
 	const double label_offset = 8;
 	const double caption_offset = 26;
 	if (isHorizontal()) {
-		dc.DrawLine(a.x, a.y, b.x, b.y);
+		dc.DrawLine(aa.x, aa.y, bb.x, bb.y);
 		for (int i=0, iend=scale.tics.size(); i<iend; i++) {
-			int my_x = ((double) a.x) + (((double) i) * my_tic_inc);
-			dc.DrawLine(my_x, a.y, my_x, a.y + tic_length);
+			int my_x = ((double) aa.x) + (((double) i) * my_tic_inc);
+			int tl_delta = scale.tics_str_show[i] ? 1 : -1;
+			dc.DrawLine(my_x, aa.y, my_x, aa.y + (tic_length+tl_delta));
 			wxString text(scale.tics_str[i].c_str(), wxConvUTF8);
-			wxRealPoint ref_pt(my_x, a.y+label_offset);
+			wxRealPoint ref_pt(my_x, aa.y+label_offset);
 			double cc_rot_degs = 0;
 			wxPoint text_pos = MyText::calcRefPoint(dc, text, font, ref_pt,
 													cc_rot_degs,
 													MyText::h_center,
 													MyText::top);
-			dc.DrawRotatedText(text, text_pos.x, text_pos.y, cc_rot_degs);
+			if (scale.tics_str_show[i]) {
+				dc.DrawRotatedText(text, text_pos.x, text_pos.y, cc_rot_degs);
+			}
 		}
-		wxRealPoint ref_pt(a.x + (b.x - a.x)/2, a.y + caption_offset);
+		wxRealPoint ref_pt(aa.x + (bb.x - aa.x)/2, aa.y + caption_offset);
 		double	cc_rot_degs = 0;
 		wxPoint text_pos = MyText::calcRefPoint(dc, caption, caption_font,
 												ref_pt, cc_rot_degs,
@@ -1199,20 +1587,23 @@ void MyAxis::paintSelf(wxDC& dc)
 												MyText::top);
 		dc.DrawRotatedText(caption, text_pos.x, text_pos.y, cc_rot_degs);
 	} else {
-		dc.DrawLine(a.x, a.y, b.x, b.y);
+		dc.DrawLine(aa.x, aa.y, bb.x, bb.y);
 		for (int i=0, iend=scale.tics.size(); i<iend; i++) {
-			int my_y = ((double) a.y) - (((double) i) * my_tic_inc);
-			dc.DrawLine(a.x - tic_length, my_y, a.x, my_y);
+			int my_y = ((double) aa.y) - (((double) i) * my_tic_inc);
+			int tl_delta = scale.tics_str_show[i] ? 1 : -1;
+			dc.DrawLine(aa.x - (tic_length+tl_delta), my_y, aa.x, my_y);
 			wxString text(scale.tics_str[i].c_str(), wxConvUTF8);
-			wxRealPoint ref_pt(a.x-label_offset, my_y);
+			wxRealPoint ref_pt(aa.x-label_offset, my_y);
 			double cc_rot_degs = 90;
 			wxPoint text_pos = MyText::calcRefPoint(dc, text, font, ref_pt,
 													cc_rot_degs,
 													MyText::h_center,
 													MyText::bottom);
-			dc.DrawRotatedText(text, text_pos.x, text_pos.y, cc_rot_degs);			
+			if (scale.tics_str_show[i]) {
+				dc.DrawRotatedText(text, text_pos.x, text_pos.y, cc_rot_degs);
+			}
 		}
-		wxRealPoint ref_pt(a.x - caption_offset, a.y + (b.y - a.y)/2);
+		wxRealPoint ref_pt(aa.x - caption_offset, aa.y + (bb.y - aa.y)/2);
 		double	cc_rot_degs = 90;
 		wxPoint text_pos = MyText::calcRefPoint(dc, caption, caption_font,
 												ref_pt, cc_rot_degs,

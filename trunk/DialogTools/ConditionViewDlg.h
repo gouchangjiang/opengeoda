@@ -22,10 +22,10 @@
 
 #include <wx/dialog.h>
 
-class CConditionViewDlg: public wxDialog
+class ConditionViewDlg: public wxDialog
 { 
 public:
-    CConditionViewDlg( wxWindow* parent, wxWindowID id = -1,
+    ConditionViewDlg( wxWindow* parent, wxWindowID id = -1,
 					  const wxString& caption = "Choose View Type",
 					  const wxPoint& pos = wxDefaultPosition,
 					  const wxSize& size = wxDefaultSize,

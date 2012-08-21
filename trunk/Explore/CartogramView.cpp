@@ -39,18 +39,11 @@
 #include "../GenUtils.h"
 #include "../GeneralWxUtils.h"
 #include "../logger.h"
-#include "ConditionalView.h"
 #include "CartogramView.h"
 
 
 extern Selection gSelection;
 extern GeoDaEventType gEvent;
-extern int gObservation;
-extern wxString m_gVar1, m_gVar2;
-
-extern wxString	gCompleteFileName;
-extern double *m_gX;
-
 extern MyFrame* frame;
 
 const double friction = 0.25;
@@ -87,11 +80,13 @@ END_EVENT_TABLE()
 // Cartogram Frame
 // ---------------------------------------------------------------------------
 
-CartogramFrame::CartogramFrame(wxFrame *parent, Project* project,
+CartogramFrame::CartogramFrame(wxFrame *parent,
+							   double* v1, int num_obs, const wxString& v1_name,
+							   Project* project,
 							   const wxString& title,
 							   const wxPoint& pos, const wxSize& size,
 							   const long style)
-           :TemplateFrame(parent, project, title, pos, size, style)
+: TemplateFrame(parent, project, title, pos, size, style)
 {
 	old_style = true;
 	my_children.Append(this);
@@ -103,13 +98,14 @@ CartogramFrame::CartogramFrame(wxFrame *parent, Project* project,
 	m_splitter = new wxSplitterWindow(this);
 
 	legend = new CartogramLegend(m_splitter, wxPoint(0, 0),
-								 wxSize(0,0), m_gVar1);
-	canvas = new CartogramCanvas(m_splitter, wxPoint(0, 0), wxSize(0,0));
+								 wxSize(0,0), v1_name);
+	canvas = new CartogramCanvas(m_splitter,
+								 v1, num_obs, v1_name, project,
+								 wxPoint(0, 0), wxSize(0,0));
 	
 	template_legend = legend;
 	template_canvas = canvas;
 	template_canvas->template_frame = this;
-	template_legend->template_frame = this;
 	
 	m_splitter->SplitVertically(legend, canvas, 100);
 
@@ -243,33 +239,36 @@ void CartogramFrame::OnHinge30(wxCommandEvent& WXUNUSED(event))
 // ---------------------------------------------------------------------------
 
 // Define a constructor for my canvas
-CartogramCanvas::CartogramCanvas(wxWindow *parent, const wxPoint& pos,
+CartogramCanvas::CartogramCanvas(wxWindow *parent,
+								 double* v1, int num_obs_s,
+								 const wxString& v1_name,
+								 Project* project_s,
+								 const wxPoint& pos,
 								 const wxSize& size)
-	: TemplateCanvas(parent, pos, size)
+: TemplateCanvas(parent, pos, size), num_obs(num_obs_s), project(project_s)
 {
 	MAX_NEIGHBOR = 50;
 
-	location.resize(gObservation + 1);
-	RawData = new double[gObservation + 1];
+	location.resize(num_obs + 1);
+	RawData = new double[num_obs + 1];
 	m_HingeCheck15 = true;
 	m_HingeCheck30 = false;
 
-	for(int i=0; i < gObservation; i++) RawData[i] = m_gX[i];
+	for(int i=0; i < num_obs; i++) RawData[i] = v1[i];
 	
-	bodies = gObservation+1;
+	bodies = num_obs+1;
 
 	xl = new double[bodies];
 	yl = new double[bodies];
 	tree = new struct leaf[bodies];
 	list = new int[bodies];
 
-	vector<double> x(gObservation+1);
-	vector<double> y(gObservation+1);
+	vector<double> x(num_obs+1);
+	vector<double> y(num_obs+1);
 	myBox* b = new myBox;
 
-	long obs = gObservation;
-
-	ComputeXY(gCompleteFileName, &obs, x, y, b, true);
+	long temp_num_obs;
+	ComputeXY(project->shp_fname.GetFullPath(), &temp_num_obs, x, y, b, true);
 
 	xMin = b->p1.x;
 	yMin = b->p1.y;
@@ -277,15 +276,15 @@ CartogramCanvas::CartogramCanvas(wxWindow *parent, const wxPoint& pos,
 	yMax = b->p2.y;
 
 	//  Construct Cartogram
-	radius = new double[gObservation+1];
-	loc_x = new double[gObservation+1];
-	loc_y = new double[gObservation+1];
-	outliers = new int[gObservation+1];
+	radius = new double[num_obs+1];
+	loc_x = new double[num_obs+1];
+	loc_y = new double[num_obs+1];
+	outliers = new int[num_obs+1];
 
 	InitCartogram(x, y, RawData);
 	ConstructCartogram();
 
-	for(int i=0; i<gObservation; i++) {
+	for(int i=0; i<num_obs; i++) {
 		if(xMin > (loc_x[i]-radius[i]))	xMin = (loc_x[i]-radius[i]);
 		if(xMax < (loc_x[i]+radius[i]))	xMax = (loc_x[i]+radius[i]);
 		if(yMin > (loc_y[i]-radius[i]))	yMin = (loc_y[i]-radius[i]);
@@ -294,9 +293,9 @@ CartogramCanvas::CartogramCanvas(wxWindow *parent, const wxPoint& pos,
 
 	delete b; b = 0;
 
-	colors = new wxColour[gObservation];
+	colors = new wxColour[num_obs];
 
-	for(int i=0; i<gObservation; i++) colors[i] = wxColour(0,200,0);
+	for(int i=0; i<num_obs; i++) colors[i] = wxColour(0,200,0);
 
     SetBackgroundColour(wxColour("WHITE"));
     Refresh();
@@ -400,7 +399,7 @@ void CartogramCanvas::CheckSize()
 		offset_y = (Height-(int) ((yMax-yMin)*yDensity))/2;
 	}
 
-	for (int cnt= 0; cnt < gObservation; ++cnt) {
+	for (int cnt= 0; cnt < num_obs; ++cnt) {
 		location.at(cnt).x = (int) ((loc_x[cnt]-xMin)*xDensity+offset_x);
 		location.at(cnt).y = (int) (Height-(loc_y[cnt]-yMin)*yDensity-offset_y);
 	}
@@ -416,26 +415,25 @@ void CartogramCanvas::OnSize(wxSizeEvent& event)
 void CartogramCanvas::InitCartogram(const vector<double>& x11,
 									const vector<double>& y11,
 									double* RawData)
-{
-	obs = gObservation;
-	
+{	
 	map_to_people = 9000000;
 	map_to_coorindate = 300000;
 	
 	char buf_filename[512];
-	strcpy( buf_filename, (const char*)gCompleteFileName.mb_str(wxConvUTF8) );
+	wxString fname(project->shp_fname.GetFullPath());
+	strcpy( buf_filename, (const char*)fname.mb_str(wxConvUTF8) );
 	char* filename = buf_filename;
 	
-	if (!gCompleteFileName.IsEmpty()) { 
+	if (!fname.IsEmpty()) { 
 		//  create shpfile		
 		
 		long nPoints; myBox* B=new myBox;
-		nPoints = GetShpFileSize(gCompleteFileName);
+		nPoints = GetShpFileSize(fname);
 		
 		vector<double> x(nPoints+1);
 		vector<double> y(nPoints+1);
 		
-		ComputeXY(gCompleteFileName, &nPoints, x, y, B, true);
+		ComputeXY(fname, &nPoints, x, y, B, true);
 		
 		myPoint *pt = NULL;
 		pt = new myPoint[nPoints+1];
@@ -449,7 +447,7 @@ void CartogramCanvas::InitCartogram(const vector<double>& x11,
 		compare = XYSort;
 		qsort((void*) pt, nPoints, sizeof(myPoint), compare);
 		
-		char dbffl[128];
+		char dbffl[256];
 
 		GenUtils::extension(dbffl,filename,"dbf");
 		
@@ -467,7 +465,7 @@ void CartogramCanvas::InitCartogram(const vector<double>& x11,
 		BB.p1.x -= 0.01; BB.p1.y -= 0.01;
 		BB.p2.x += 0.01; BB.p2.y += 0.01;
 		
-		wxString otFile = gCompleteFileName+ "_temp.shp";
+		wxString otFile = fname+ "_temp.shp";
 		char buf_otfl[512];
 		strcpy( buf_otfl, (const char*)otFile.mb_str(wxConvUTF8) );
 		char* otfl = buf_otfl;
@@ -492,7 +490,7 @@ void CartogramCanvas::InitCartogram(const vector<double>& x11,
 		conti = shp2gal(filename, 1, false);
 	}
 	
-	bodys  = gObservation;
+	bodys  = num_obs;
 	done = 0;
 	
 	people = new double[bodies];
@@ -509,20 +507,20 @@ void CartogramCanvas::InitCartogram(const vector<double>& x11,
 	
 	long cnt = 0;
 	// Checking for ZEROS and NEGATIVES
-	int *Index0 = new int[obs];
-	ValueFlag = new int[obs];
+	int *Index0 = new int[num_obs];
+	ValueFlag = new int[num_obs];
 	// ValueFlag= 0:Negative; 1:zero; 2:positive
-	for (cnt= 0; cnt < obs; ++cnt) {
+	for (cnt= 0; cnt < num_obs; ++cnt) {
 	    Index0[cnt]= cnt;
 		ValueFlag[cnt] = 2;
 	}
 	
-	IndexSortD(RawData, Index0, 0, obs-1);
+	IndexSortD(RawData, Index0, 0, num_obs-1);
 	
 	double range;
 	bool AllNegative = false;
-	if (RawData[Index0[obs-1]] <= 0) {
-		double range = RawData[Index0[obs-1]] - RawData[Index0[0]];
+	if (RawData[Index0[num_obs-1]] <= 0) {
+		double range = RawData[Index0[num_obs-1]] - RawData[Index0[0]];
 		if (range == 0.0) {
 			range = 1.0;
 		}
@@ -536,17 +534,17 @@ void CartogramCanvas::InitCartogram(const vector<double>& x11,
 	}
 	else {
 		int k=0;
-		while (k < obs && RawData[Index0[k]] < 0) {
+		while (k < num_obs && RawData[Index0[k]] < 0) {
 			ValueFlag[Index0[k]] = 0;
 			k++;
 		}
 		
-		while (k < obs && RawData[Index0[k]] == 0) {
+		while (k < num_obs && RawData[Index0[k]] == 0) {
 			ValueFlag[Index0[k]] = 1;
 			k++;
 		}
 		
-		range = RawData[Index0[obs-1]] - RawData[Index0[0]];
+		range = RawData[Index0[num_obs-1]] - RawData[Index0[0]];
 		if (range == 0.0) {
 			wxMessageBox("All have the same values!");
 			range = 1.0;
@@ -575,12 +573,12 @@ void CartogramCanvas::InitCartogram(const vector<double>& x11,
 	delete [] Index0;
 	Index0 = NULL;
 	int *Index;
-	Index = new int[obs];
+	Index = new int[num_obs];
 	
-	for (cnt= 0; cnt < obs; ++cnt)
+	for (cnt= 0; cnt < num_obs; ++cnt)
 	    Index[cnt]= cnt;
 	
-	int   obs1= obs - 1, obsPlus= obs + 1;
+	int   obs1= num_obs - 1, obsPlus= num_obs + 1;
 	IndexSortD(people, Index, 0, obs1);
 	q[0] = Index[0];               // smallest value
 	q[4] = Index[obs1];            // largest value
@@ -588,14 +586,14 @@ void CartogramCanvas::InitCartogram(const vector<double>& x11,
 	// apparently it isn't used anywhere, so it doesn't really matter
 	q[2] = Index[obsPlus/2-1];     // median
 
-	if (obs >= 5) {
+	if (num_obs >= 5) {
 		//previously: q[1] = Index[obsPlus/4-1];     // 1st quartile
-		q[1] = Index[(obs+1)/4 - 1];
+		q[1] = Index[(num_obs+1)/4 - 1];
 		//previously: q[3] = Index[3*obsPlus/4-1];   // 3rd quartile
-		q[3] = Index[3*(obs+1)/4 - 1];
+		q[3] = Index[3*(num_obs+1)/4 - 1];
 	} else {
 		q[1] = Index[0];
-		q[3] = Index[obs-1];
+		q[3] = Index[num_obs-1];
 	}
 	
 	delete [] Index;
@@ -619,7 +617,7 @@ void CartogramCanvas::InitCartogram(const vector<double>& x11,
 	out_min = Lower;
 	int i = 0;
 	
-	for(i=0; i<obs; i++) {	
+	for(i=0; i<num_obs; i++) {	
 		if (people[i] > 0) {
 			if( (people[i] > rMax) && (people[i] <= out_max) )
 				rMax = people[i];
@@ -628,7 +626,7 @@ void CartogramCanvas::InitCartogram(const vector<double>& x11,
 		}
 	}
 	
-	for(i=0; i<obs; i++) {	
+	for(i=0; i<num_obs; i++) {	
 		if(people[i] > out_max) {
 			outliers[i] = 2;
 		} else if(people[i] < out_min) {
@@ -692,7 +690,7 @@ void CartogramCanvas::AdjustHinge(double Hinge)
 	out_min = Lower;
 	int i = 0;
 	
-	for(i=0; i<obs; i++) {	
+	for(i=0; i<num_obs; i++) {	
 		if (people[i] > 0) {
 			if( (people[i] > rMax) && (people[i] <= out_max) )
 				rMax = people[i];
@@ -701,7 +699,7 @@ void CartogramCanvas::AdjustHinge(double Hinge)
 		}
 	}
 	
-	for(i=0; i<obs; i++) {	
+	for(i=0; i<num_obs; i++) {	
 		if(people[i] > out_max)	{
 			outliers[i] = 2;
 		} else if(people[i] < out_min) {
@@ -816,7 +814,7 @@ void CartogramCanvas::ConstructCartogram(int n_iter)
     yMin = (loc_y[0]-radius[0]);
     yMax = (loc_y[0]+radius[0]);
 
-	for(int i=1; i<gObservation; i++) {
+	for(int i=1; i<num_obs; i++) {
 		if(xMin > (loc_x[i]-radius[i])) xMin = (loc_x[i]-radius[i]);
 		if(xMax < (loc_x[i]+radius[i]))	xMax = (loc_x[i]+radius[i]);
 		if(yMin > (loc_y[i]-radius[i]))	yMin = (loc_y[i]-radius[i]);
@@ -829,7 +827,7 @@ void CartogramCanvas::ConstructCartogram(int n_iter)
 
 void CartogramCanvas::add_point(int pointer, int axis)
 {
-    if(tree[pointer].id == 0) {
+    if (tree[pointer].id == 0) {
 		tree[pointer].id = body;
 		tree[pointer].id = body;
 		tree[pointer].left = 0;
@@ -838,15 +836,15 @@ void CartogramCanvas::add_point(int pointer, int axis)
 		tree[pointer].ypos = yl[body];
 		
     } else {
-		if(axis == 1) {
-			if(xl[body] >= tree[pointer].xpos) {
-				if(tree[pointer].left == 0){ 
+		if (axis == 1) {
+			if (xl[body] >= tree[pointer].xpos) {
+				if (tree[pointer].left == 0){ 
 					end_pointer += 1;
 					tree[pointer].left = end_pointer;
 				}
 				add_point(tree[pointer].left, 3-axis);
 			} else {
-				if(tree[pointer].right == 0) { 
+				if (tree[pointer].right == 0) { 
 					end_pointer +=1;
 					tree[pointer].right = end_pointer;
 				}
@@ -854,13 +852,13 @@ void CartogramCanvas::add_point(int pointer, int axis)
 			}
 		} else {
 			if (yl[body] >= tree[pointer].ypos) {
-				if(tree[pointer].left == 0) {
+				if (tree[pointer].left == 0) {
 					end_pointer += 1;
 					tree[pointer].left = end_pointer;
 				}
 				add_point(tree[pointer].left, 3-axis);
 			} else {
-				if(tree[pointer].right == 0) { 
+				if (tree[pointer].right == 0) { 
 					end_pointer += 1;
 					tree[pointer].right = end_pointer;
 				}
@@ -905,7 +903,7 @@ void CartogramCanvas::get_point(int pointer, int axis)
 
 void CartogramCanvas::DrawAllCircles(wxDC* pDC)
 {
-	for (int cnt= 0; cnt < gObservation; ++cnt) {
+	for (int cnt= 0; cnt < num_obs; ++cnt) {
 		wxColour    color=colors[cnt];
 		if (outliers[cnt] == 2)
 			color = wxColour(244,4,4);
@@ -976,7 +974,7 @@ int	CartogramCanvas::SelectByRect(wxMouseEvent& event)
 	else gEvent= NEW_SELECTION;
   
 	int mCnt= 0;
-	for (int cnt= 0; cnt < gObservation; ++cnt) {
+	for (int cnt= 0; cnt < num_obs; ++cnt) {
 		if (location.at(cnt).x >= p1.x && location.at(cnt).x <= p2.x &&
 			location.at(cnt).y >= p1.y && location.at(cnt).y <= p2.y &&
 			(gEvent == NEW_SELECTION || !gSelection.selected(cnt)))  {
@@ -997,7 +995,7 @@ int	CartogramCanvas::SelectByRect(wxMouseEvent& event)
 void CartogramCanvas::SelectByPoint(wxMouseEvent& event)
 {
 	int Id = GeoDaConst::EMPTY;
-	for (int cnt= 0; cnt < gObservation; ++cnt) {
+	for (int cnt= 0; cnt < num_obs; ++cnt) {
 		if (fabs(location.at(cnt).x - gSelect1.x) < radius[cnt]*rFactor &&
 			fabs(location.at(cnt).y - gSelect2.y) < radius[cnt]*rFactor) {
 			if((geoda_sqr(location.at(cnt).x-gSelect1.x) +
@@ -1090,7 +1088,7 @@ END_EVENT_TABLE()
 CartogramLegend::CartogramLegend(wxWindow *parent, const wxPoint& pos,
 								 const wxSize& size,
 								 wxString var1)
-	: TemplateLegend(parent, pos, size)
+	: TemplateLegend(parent, 0, pos, size)
 {
 	d_rect = 20; 
 	px = 10;
@@ -1164,7 +1162,6 @@ void CartogramLegend::OnEvent(wxMouseEvent& event)
 		LOG_MSG("CarogramLegend::OnEvent, event.RightUp() == true");
 		wxMenu* optMenu =
 		wxXmlResource::Get()->LoadMenu("ID_CARTOGRAM_VIEW_MENU_LEGEND");
-		((CartogramFrame*) template_frame)->UpdateMenuCheckMarks(optMenu);
 		PopupMenu(optMenu, event.GetPosition());
 	}
 }	

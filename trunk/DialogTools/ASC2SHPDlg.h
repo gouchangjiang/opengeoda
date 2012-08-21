@@ -20,19 +20,19 @@
 #ifndef __GEODA_CENTER_ASC2SHP_DLG_H__
 #define __GEODA_CENTER_ASC2SHP_DLG_H__
 
-class CASC2SHPDlg: public wxDialog
+class ASC2SHPDlg: public wxDialog
 {    
     DECLARE_EVENT_TABLE()
 
 public:
-    CASC2SHPDlg( );
-    CASC2SHPDlg( wxWindow* parent, wxWindowID id = -1,
-				const wxString& caption = "Convert ASC to SHP",
+    ASC2SHPDlg( );
+    ASC2SHPDlg( wxWindow* parent, wxWindowID id = -1,
+				const wxString& caption = "Convert ASCII to SHP",
 				const wxPoint& pos = wxDefaultPosition,
 				const wxSize& size = wxDefaultSize,
 				long style = wxCAPTION|wxSYSTEM_MENU );
     bool Create( wxWindow* parent, wxWindowID id = -1,
-				const wxString& caption = "Convert ASC to SHP",
+				const wxString& caption = "Convert ASCII to SHP",
 				const wxPoint& pos = wxDefaultPosition,
 				const wxSize& size = wxDefaultSize,
 				long style = wxCAPTION|wxSYSTEM_MENU );

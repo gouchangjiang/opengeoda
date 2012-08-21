@@ -20,13 +20,13 @@
 #ifndef __GEODA_CENTER_SHP_2_ASC_DLG_H__
 #define __GEODA_CENTER_SHP_2_ASC_DLG_H__
 
-class CSHP2ASCDlg: public wxDialog
+class SHP2ASCDlg: public wxDialog
 {    
     DECLARE_EVENT_TABLE()
 
 public:
-    CSHP2ASCDlg( );
-    CSHP2ASCDlg( wxWindow* parent, wxWindowID id = -1,
+    SHP2ASCDlg( );
+    SHP2ASCDlg( wxWindow* parent, wxWindowID id = -1,
 				const wxString& caption = "Exporting Shape to Boundary",
 				const wxPoint& pos = wxDefaultPosition,
 				const wxSize& size = wxDefaultSize,

@@ -49,6 +49,12 @@ public:
     void CreateControls();
 
 	void OnAddColumnClick( wxCommandEvent& event );
+	void OnRateResultUpdated( wxCommandEvent& event );
+    void OnRateResultTmUpdated( wxCommandEvent& event );
+	void OnRateOperand1Updated( wxCommandEvent& event );
+	void OnRateOperand1TmUpdated( wxCommandEvent& event );
+    void OnRateOperand2Updated( wxCommandEvent& event );
+	void OnRateOperand2TmUpdated( wxCommandEvent& event );
 	void OnOpenWeightClick( wxCommandEvent& event );
 	void OnMethodChange( wxCommandEvent& event );
 	
@@ -64,11 +70,18 @@ public:
 	FieldNewCalcBinDlg* b_panel;
 	FieldNewCalcLagDlg* l_panel;
 	
+	bool IsTimeVariant(int col_id);
+	bool IsAllTime(int col_id, int tm_sel);
+	
 	bool all_init;
+	bool is_space_time;
     wxChoice* m_result;
+	wxChoice* m_result_tm;
     wxChoice* m_event;
+	wxChoice* m_event_tm;
     wxChoice* m_method;
     wxChoice* m_base;
+	wxChoice* m_base_tm;
     wxChoice* m_weight;
 	wxBitmapButton* m_weight_button;
 	Project* project;
@@ -82,6 +95,7 @@ public:
 	
 	void Apply();
 	void InitFieldChoices();
+	void InitTime(wxChoice* time_list);
 };
 
 #endif
