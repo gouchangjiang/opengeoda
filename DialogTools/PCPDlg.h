@@ -20,9 +20,11 @@
 #ifndef __GEODA_CENTER_PCP_DLG_H__
 #define __GEODA_CENTER_PCP_DLG_H__
 
+#include <map>
 #include <vector>
 #include <wx/dialog.h>
 #include <wx/listbox.h>
+#include "../GenUtils.h"
 
 class DbfGridTableBase;
 
@@ -30,15 +32,18 @@ class PCPDlg: public wxDialog
 {    
 public:
     PCPDlg(DbfGridTableBase* grid_base, wxWindow* parent,
-			wxWindowID id = wxID_ANY, 
-			const wxString& title = "Parallel Coordinate Plot", 
-			const wxPoint& pos = wxDefaultPosition, 
-			const wxSize& size = wxDefaultSize,
-			long style = wxCAPTION|wxSYSTEM_MENU );
+		   wxWindowID id = wxID_ANY, 
+		   const wxString& title = "Parallel Coordinate Plot", 
+		   const wxPoint& pos = wxDefaultPosition, 
+		   const wxSize& size = wxDefaultSize,
+		   long style = wxCAPTION|wxSYSTEM_MENU );
 
 	std::vector<int> pcp_col_ids;
-
-private:
+	std::vector<int> pcp_col_tm_ids;
+	
+	std::vector<int> col_ids;
+	std::vector<GeoDaVarInfo> var_info;
+	
     void CreateControls();
 	void Init();
 	
@@ -52,11 +57,13 @@ private:
 	void OnExclOneClick( wxCommandEvent& ev );
 	void OnExclListDClick(wxCommandEvent& ev );
 	void UpdateOkButton();
-	
+
+protected:
 	wxListBox* m_exclude_list;
 	wxListBox* m_include_list;
 	
-	std::map<wxString, int> dedup_to_id;
+	std::map<wxString, int> name_to_id;
+	std::map<wxString, int> name_to_tm_id;
 	// a mapping from displayed col order to actual col ids in table
 	// Eg, in underlying table, we might have A, B, C, D, E, F,
 	// but because of user wxGrid col reorder operaions might see these

@@ -34,15 +34,15 @@
 #define wxCLOSE_BOX 0x1000
 #endif
 
-class CDBF2SHPDlg: public wxDialog
+class DBF2SHPDlg: public wxDialog
 {    
-    DECLARE_CLASS( CDBF2SHPDlg )
+    DECLARE_CLASS( DBF2SHPDlg )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
-    CDBF2SHPDlg( );
-    CDBF2SHPDlg( wxWindow* parent, wxWindowID id = -1, const wxString& caption = "Convert DBF to SHP", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxSYSTEM_MENU );
+    DBF2SHPDlg( );
+    DBF2SHPDlg( wxWindow* parent, wxWindowID id = -1, const wxString& caption = "Convert DBF to SHP", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxSYSTEM_MENU );
 
     /// Creation
     bool Create( wxWindow* parent, wxWindowID id = -1, const wxString& caption = "Convert DBF to SHP", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxSYSTEM_MENU );
@@ -50,7 +50,7 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-////@begin CDBF2SHPDlg event handler declarations
+////@begin DBF2SHPDlg event handler declarations
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for IDOK_ADD
     void OnOkAddClick( wxCommandEvent& event );
@@ -64,21 +64,21 @@ public:
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for IDC_OPEN_IDBF
     void OnCOpenIdbfClick( wxCommandEvent& event );
 
-////@end CDBF2SHPDlg event handler declarations
+////@end DBF2SHPDlg event handler declarations
 
-////@begin CDBF2SHPDlg member function declarations
+////@begin DBF2SHPDlg member function declarations
 
-////@end CDBF2SHPDlg member function declarations
+////@end DBF2SHPDlg member function declarations
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
-////@begin CDBF2SHPDlg member variables
+////@begin DBF2SHPDlg member variables
     wxTextCtrl* m_inputfile;
     wxTextCtrl* m_outputfile;
     wxChoice* m_X;
     wxChoice* m_Y;
-////@end CDBF2SHPDlg member variables
+////@end DBF2SHPDlg member variables
 
 	wxString fn;
 };

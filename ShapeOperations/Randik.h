@@ -39,7 +39,13 @@ public:
 		Iterate();
 		return cohort[current];
     }
-    int* Perm(const int size);    // return random permutation of 1...size
+	// return random permutation of 1...size
+    int* Perm(const int size);
+	// same as above, except for permutation vector is returned in
+	// thePermutation and theRands is passed in as scratch.  Both
+	// vectors must be fully allocated unlike the above which
+	// allocates memory and must be deleted by caller.
+	bool Perm(const int size, int* thePermutation, long* theRands);
 	void PermG(const int size, int* thePermutation);  
 private:
     enum {

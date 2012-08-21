@@ -33,18 +33,22 @@
 #undef check // macro undefine needed for Xcode compilation with Boost.Geometry
 //#include <boost/geometry/geometry.hpp>
 //#include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/multi_array.hpp>
 #include "ShapeOperations/ShpFile.h"
 #include "Generic/HighlightState.h"
 #include <wx/filename.h>
 #include <vector>
 #include <set>
 
+typedef boost::multi_array<int, 2> i_array_type;
+
 //using namespace boost::geometry;
 
 class DbfGridTableBase;
 class WeightsManager;
-class DbfFileReader;
 class FramesManager;
+class TimeChooserDlg;
+class MyPoint;
 
 class Project {
 public:
@@ -63,20 +67,49 @@ public:
 	wxString GetMainName(); // name part only, no extension
 	wxFileName shp_fname; // including full path
 	HighlightState* highlight_state;
+	HighlightState* GetHighlightState() { return highlight_state; }
 	double GetMapAspectRatio() { return map_aspect_ratio; }
     int GetNumRecords() { return num_records; }
 	DbfGridTableBase* GetGridBase() { return grid_base; }
 	WeightsManager* GetWManager() { return w_manager; }
 	FramesManager* GetFramesManager() { return frames_manager; }
+	TimeChooserDlg* GetTimeChooser() { return time_chooser; }
 	void AddNeighborsToSelection();
+	bool IsAllowEnableSave() { return (allow_enable_save &&
+									   !shp_file_needs_first_save);
+	}
+	void SetAllowEnableSave(bool v) { allow_enable_save = v; }
 	bool IsTableOnlyProject() { return table_only_project; }
 	int GetProjectId() { return project_id; }
+	i_array_type& GetSharedCategoryScratch() { return shared_category_scratch; }
+	void CreateShapefileFromPoints(const std::vector<double> x,
+								   const std::vector<double> y);
+	bool IsShpFileNeedsFirstSave() { return shp_file_needs_first_save; }
+	void SetShapeFileNeedsFirstSave(bool v) { shp_file_needs_first_save = v; }
+	
+	void AddMeanCenters();
+	void AddCentroids();
+	const std::vector<MyPoint*>& GetMeanCenters();
+	const std::vector<MyPoint*>& GetCentroids();
+	
 	// One-off for Regression Dialog only.
 	wxWindow* regression_dlg;
 	
+	// default variables
+	wxString default_v1_name;
+	wxString default_v2_name;
+	wxString default_v3_name;
+	wxString default_v4_name;
+	int default_v1_time;
+	int default_v2_time;
+	int default_v3_time;
+	int default_v4_time;
+
 protected:
+	bool allow_enable_save;
+	bool shp_file_needs_first_save;
 	bool OpenShpFile(wxFileName shp_fname_s);
-	bool is_project_valid; // true if project Shape File created successfully
+	bool is_project_valid; // true if project Shapefile created successfully
 	wxString open_error_message; // error message for project open failure.
 	bool table_only_project; // true iff only grid_base was passed in
 	// without Shapefile.
@@ -87,6 +120,13 @@ protected:
 	DbfGridTableBase* grid_base;
 	WeightsManager* w_manager;
 	FramesManager* frames_manager;
+	TimeChooserDlg* time_chooser;
+	std::vector<MyPoint*> mean_centers;
+	std::vector<MyPoint*> centroids;
+	
+	/** The following array is not thread safe since it is shared by
+	 every TemplateCanvas instance in a given project. */
+	static i_array_type shared_category_scratch;	
 };
 
 #endif

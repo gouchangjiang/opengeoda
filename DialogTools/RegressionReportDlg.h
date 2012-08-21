@@ -31,15 +31,15 @@
 #define SYMBOL_CREGRESSIONREPORTDLG_POSITION wxDefaultPosition
 ////@end control identifiers
 
-class CRegressionReportDlg: public wxDialog
+class RegressionReportDlg: public wxDialog
 {    
-    DECLARE_DYNAMIC_CLASS( CRegressionReportDlg )
+    DECLARE_DYNAMIC_CLASS( RegressionReportDlg )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
-    CRegressionReportDlg( );
-    CRegressionReportDlg( wxWindow* parent, wxString showText,
+    RegressionReportDlg( );
+    RegressionReportDlg( wxWindow* parent, wxString showText,
         wxWindowID id = SYMBOL_CREGRESSIONREPORTDLG_IDNAME,
         const wxString& caption = SYMBOL_CREGRESSIONREPORTDLG_TITLE,
         const wxPoint& pos = SYMBOL_CREGRESSIONREPORTDLG_POSITION,
@@ -57,31 +57,31 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-////@begin CRegressionReportDlg event handler declarations
+////@begin RegressionReportDlg event handler declarations
 
     /// wxEVT_CLOSE_WINDOW event handler for IDD_REGRESSION_REPORT
     void OnClose(wxCloseEvent& event);
 	void OnMouseEvent(wxMouseEvent& event);
 	void OnFontChanged(wxCommandEvent& event);
 
-////@end CRegressionReportDlg event handler declarations
+////@end RegressionReportDlg event handler declarations
 
-////@begin CRegressionReportDlg member function declarations
+////@begin RegressionReportDlg member function declarations
 
     /// Retrieves bitmap resources
     wxBitmap GetBitmapResource( const wxString& name );
 
     /// Retrieves icon resources
     wxIcon GetIconResource( const wxString& name );
-////@end CRegressionReportDlg member function declarations
+////@end RegressionReportDlg member function declarations
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
-////@begin CRegressionReportDlg member variables
+////@begin RegressionReportDlg member variables
     wxTextCtrl* m_textbox;
     wxString results;
-////@end CRegressionReportDlg member variables
+////@end RegressionReportDlg member variables
 };
 
 #endif

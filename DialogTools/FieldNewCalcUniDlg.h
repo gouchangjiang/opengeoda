@@ -50,8 +50,10 @@ public:
 	
 	void OnAddColumnClick( wxCommandEvent& event );
     void OnUnaryResultUpdated( wxCommandEvent& event );
+	void OnUnaryResultTmUpdated( wxCommandEvent& event );
 	void OnUnaryOperatorUpdated( wxCommandEvent& event );
     void OnUnaryOperandUpdated( wxCommandEvent& event );
+	void OnUnaryOperandTmUpdated( wxCommandEvent& event );
 
 	void UpdateOtherPanels();
 	void SetOtherPanelPointers(FieldNewCalcSpecialDlg* s_panel_s,
@@ -65,11 +67,17 @@ public:
 	FieldNewCalcLagDlg* l_panel;
 	FieldNewCalcRateDlg* r_panel;
 
+	bool IsTimeVariant(int col_id);
+	bool IsAllTime(int col_id, int tm_sel);
+	
 	bool all_init;
+	bool is_space_time;
 	std::vector<wxString> m_var_str;
     wxChoice* m_result;
+	wxChoice* m_result_tm;
     wxChoice* m_op;
     wxComboBox* m_var;
+	wxChoice* m_var_tm;
 	double m_const;
 	bool m_valid_const;
 	int m_var_sel;
@@ -83,6 +91,7 @@ public:
 	
 	void Apply();
 	void InitFieldChoices();
+	void InitTime(wxChoice* time_list);
 	void Display();
 	
 	enum OpType {

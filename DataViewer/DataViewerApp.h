@@ -23,10 +23,13 @@
 #include <wx/app.h>
 #include "DataViewer.h"
 
+class FramesManager;
+
 class DataViewerApp : public wxApp
 {
 public:
 	virtual bool OnInit();
+	FramesManager* frames_manager;
 };
 
 DECLARE_APP( DataViewerApp )

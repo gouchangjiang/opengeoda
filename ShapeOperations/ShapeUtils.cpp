@@ -347,7 +347,7 @@ bool ShapeUtils::isRookNeighbors(const PolygonContents& pc1,
 				prt_len = pc1.parts[i+1] - pc1.parts[i];
 			}
 		}
-		// note that endpoints are repeated in shapefiles
+		// note that endpoints are repeated in Shapefiles
 		for (int j=0; j<prt_len-1; j++) {
 			Edge e(pc1.points[pts_offset+j],
 				   pc1.points[pts_offset+j+1]);
@@ -369,7 +369,7 @@ bool ShapeUtils::isRookNeighbors(const PolygonContents& pc1,
 				prt_len = pc2.parts[i+1] - pc2.parts[i];
 			}
 		}
-		// note that endpoints are repeated in shapefiles
+		// note that endpoints are repeated in Shapefiles
 		for (int j=0; j<prt_len-1; j++) {
 			Edge e(pc2.points[pts_offset+j],
 				   pc2.points[pts_offset+j+1]);
@@ -402,4 +402,77 @@ double ShapeUtils::CalcAspectRatio(Shapefile::Header header)
 	return 0;
 }
 
+void ShapeUtils::populatePointShpFile(const std::vector<double>& x,
+									  const std::vector<double>& y,
+									  Shapefile::Index& index,
+									  Shapefile::Main& main)
+{
+	initHeader(index.header);
+	initHeader(main.header);
+	index.header.shape_type = Shapefile::POINT;
+	main.header.shape_type = Shapefile::POINT;
+	double xmin = x[0];
+	double xmax = x[0];
+	double ymin = y[0];
+	double ymax = y[0];
+	int records = x.size();
+	for (int i=0; i<records; i++) {
+		if (x[i] < xmin) xmin = x[i];
+		if (x[i] > xmax) xmax = x[i];
+		if (y[i] < ymin) ymin = y[i];
+		if (y[i] > ymax) ymax = y[i];
+	}
+	index.header.bbox_x_min = xmin;
+	index.header.bbox_y_min = ymin;
+	index.header.bbox_x_max = xmax;
+	index.header.bbox_y_max = ymax;
+	main.header.bbox_x_min = xmin;
+	main.header.bbox_y_min = ymin;
+	main.header.bbox_x_max = xmax;
+	main.header.bbox_y_max = ymax;
+	
+	index.header.file_length = 50 + records*4;
+	main.header.file_length = 50 + records*14;
+	
+	// each main record has:
+	// rec number: 4 bytes
+	// content length: 4 bytes
+	// shape type: 4 bytes
+	// x and y doubles: 16 bytes
+	// total = 28 bytes = 14 words (16-bit words)
+	
+	// main record content length: 16 bytes for data plus 4 bytes for
+	// shape type = 20 bytes = 10 (16-bit words)
+	
+	index.records.clear();
+	main.records.clear();
+	index.records.resize(records);
+	main.records.resize(records);
+	for (int i=0; i<records; i++) {
+		index.records[i].offset = 50 + i*14;
+		index.records[i].content_length = 10;
+		
+		main.records[i].header.record_number = i+1;
+		main.records[i].header.content_length = 10;
+		Shapefile::PointContents* pc = new Shapefile::PointContents();
+		main.records[i].contents_p = pc;
+		pc->x = x[i];
+		pc->y = y[i];
+	}
+}
 
+void ShapeUtils::initHeader(Shapefile::Header& header)
+{
+	header.file_code = 9994;
+	header.file_length = 0;
+	header.version = 1000;
+	header.shape_type = 0;
+	header.bbox_x_min = 0;
+	header.bbox_y_min = 0;
+	header.bbox_x_max = 0;
+	header.bbox_y_max = 0;
+	header.bbox_z_min = 0;
+	header.bbox_z_max = 0;
+	header.bbox_m_min = 0;
+	header.bbox_m_max = 0;
+}

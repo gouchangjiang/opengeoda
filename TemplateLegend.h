@@ -20,21 +20,38 @@
 #ifndef __GEODA_CENTER_TEMPLATE_LEGEND_H__
 #define __GEODA_CENTER_TEMPLATE_LEGEND_H__
 
+#include <wx/menu.h>
 #include <wx/scrolwin.h>
 #include <wx/dc.h>
 
+class TemplateCanvas;
 class TemplateFrame;
 
 class TemplateLegend: public wxScrolledWindow
 {
 public:
-	TemplateLegend(wxWindow *parent, const wxPoint& pos, const wxSize& size);
+	TemplateLegend(wxWindow *parent, TemplateCanvas* template_canvas,
+				   const wxPoint& pos, const wxSize& size);
 	virtual ~TemplateLegend();
 	
-	virtual void OnDraw(wxDC& dc) = 0;
+	void OnCategoryColor(wxCommandEvent& event);
+	void OnEvent(wxMouseEvent& event);
+	virtual void OnDraw(wxDC& dc);
+	
 	wxColour legend_background_color;
-
-	TemplateFrame* template_frame;
+	TemplateCanvas* template_canvas;
+	
+protected:
+	void SelectAllInCategory(int category, bool add_to_selection = false);
+	int GetCategoryClick(wxMouseEvent& event);
+	void AddCategoryColorToMenu(wxMenu* menu, int cat_clicked);
+	
+	int px, py, m_w, m_l; 
+	int d_rect; 
+	bool all_init;
+	int opt_menu_cat; // last category added to Legend menu
+	
+	static const int ID_CATEGORY_COLOR;
 	
 	DECLARE_ABSTRACT_CLASS(TemplateLegend)
 	DECLARE_EVENT_TABLE()

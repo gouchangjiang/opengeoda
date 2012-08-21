@@ -23,10 +23,11 @@
 #include <map>
 #include <wx/filename.h>
 #include <wx/stopwatch.h>
+#include "../DataViewer/DbfGridTableBase.h"
 #include "../GenUtils.h"
 #include "../ShapeOperations/Randik.h"
 #include "../logger.h"
-#include "GetisOrdMapView.h"
+#include "GetisOrdMapNewView.h"
 #include "GStatCoordinator.h"
 
 /*
@@ -119,57 +120,233 @@ wxThread::ExitCode GStatWorkerThread::Entry()
 
 
 GStatCoordinator::GStatCoordinator(const GalWeight* gal_weights_s,
-								   bool row_standardize_weights,
-								   const wxString& field_name_s,
-								   const std::vector<double>& x_s)
-: gal_weights(gal_weights_s),
-W(gal_weights_s->gal),
-weight_name(wxFileName(gal_weights_s->wflnm).GetFullName()),
+								   DbfGridTableBase* grid_base,
+								   const std::vector<GeoDaVarInfo>& var_info_s,
+								   const std::vector<int>& col_ids,
+								   bool row_standardize_weights)
+: W(gal_weights_s->gal),
+weight_name(wxFileName(gal_weights_s->wflnm).GetName()),
 row_standardize(row_standardize_weights),
-field_name(field_name_s), x(x_s),
-G(x_s.size(), 0), G_defined(x_s.size(), true),
-G_star(x_s.size(), 0),
-z(x_s.size(), 0), z_star(x_s.size(), 0),
-p(x_s.size(), 0), p_star(x_s.size(), 0),
-pseudo_p(x_s.size(), 0), pseudo_p_star(x_s.size(), 0),
-permutations(499)
+num_obs(grid_base->GetNumberRows()),
+permutations(499),
+var_info(var_info_s),
+data(var_info_s.size())
 {
 	SetSignificanceFilter(1);
+	for (int i=0; i<var_info.size(); i++) {
+		grid_base->GetColData(col_ids[i], data[i]);
+	}
+	InitFromVarInfo();
+	
 	maps.resize(8);
 	for (int i=0, iend=maps.size(); i<iend; i++) {
-		maps[i] = (GetisOrdMapFrame*) 0;
+		maps[i] = (GetisOrdMapNewFrame*) 0;
 	}
-	n = 0;
-	tot_obs = x.size();
-	x_star = 0;
-	x_sstar = 0;
-	for (int i=0; i<tot_obs; i++) {
-		if ( W[i].Size() > 0 ) {
-			n++;
-			x_star += x[i];
-			x_sstar += x[i] * x[i];
-		}
-	}
-	
-	ExG = 1.0/(n-1); // same for all i when W is row-standardized
-	ExGstar = 1.0/n; // same for all i when W is row-standardized
-	mean_x = x_star / n; // x hat (overall)
-	var_x = x_sstar/n - mean_x*mean_x; // s^2 overall
-	
-	// when W is row-standardized, VarGstar same for all i
-	// same as s^2 / (n^2 mean_x ^2)
-	VarGstar = var_x / (n*n * mean_x*mean_x);
-	// when W is row-standardized, sdGstar same for all i
-	sdGstar = sqrt(VarGstar);
-	
-	CalcGs();
-	CalcPseudoP();
 }
 
 GStatCoordinator::~GStatCoordinator()
 {
 	LOG_MSG("In GStatCoordinator::~GStatCoordinator");
+	DeallocateVectors();
 }
+
+void GStatCoordinator::DeallocateVectors()
+{
+	for (int i=0; i<G_vecs.size(); i++) if (G_vecs[i]) delete [] G_vecs[i];
+	G_vecs.clear();
+
+	for (int i=0; i<G_defined_vecs.size(); i++) {
+		if (G_defined_vecs[i]) delete [] G_defined_vecs[i];
+	}
+	G_defined_vecs.clear();
+
+	for (int i=0; i<G_star_vecs.size(); i++) {
+		if (G_star_vecs[i]) delete [] G_star_vecs[i];
+	}
+	G_star_vecs.clear();
+
+	for (int i=0; i<z_vecs.size(); i++) if (z_vecs[i]) delete [] z_vecs[i];
+	z_vecs.clear();
+
+	for (int i=0; i<p_vecs.size(); i++) if (p_vecs[i]) delete [] p_vecs[i];
+	p_vecs.clear();
+	
+	for (int i=0; i<z_star_vecs.size(); i++) {
+		if (z_star_vecs[i]) delete [] z_star_vecs[i];
+	}
+	z_star_vecs.clear();
+	
+	for (int i=0; i<p_star_vecs.size(); i++) {
+		if (p_star_vecs[i]) delete [] p_star_vecs[i];
+	}
+	p_star_vecs.clear();
+	
+	for (int i=0; i<pseudo_p_vecs.size(); i++) {
+		if (pseudo_p_vecs[i]) delete [] pseudo_p_vecs[i];
+	}
+	pseudo_p_vecs.clear();
+	
+	for (int i=0; i<pseudo_p_star_vecs.size(); i++) {
+		if (pseudo_p_star_vecs[i]) delete [] pseudo_p_star_vecs[i];
+	}
+	pseudo_p_star_vecs.clear();
+	
+	for (int i=0; i<x_vecs.size(); i++) if (x_vecs[i]) delete [] x_vecs[i];
+	x_vecs.clear();
+}
+
+/** allocate based on var_info and num_time_vals **/
+void GStatCoordinator::AllocateVectors()
+{
+	int tms = num_time_vals;
+	G_vecs.resize(tms);
+	G_defined_vecs.resize(tms);
+	G_star_vecs.resize(tms);
+	z_vecs.resize(tms);
+	p_vecs.resize(tms);
+	z_star_vecs.resize(tms);
+	p_star_vecs.resize(tms);
+	pseudo_p_vecs.resize(tms);
+	pseudo_p_star_vecs.resize(tms);
+	x_vecs.resize(tms);
+	
+	n.resize(tms, 0);
+	x_star.resize(tms, 0);
+	x_sstar.resize(tms, 0);
+	ExG.resize(tms);
+	ExGstar.resize(tms);
+	mean_x.resize(tms);
+	var_x.resize(tms);
+	VarGstar.resize(tms);
+	sdGstar.resize(tms);
+	
+	map_valid.resize(tms);
+	map_error_message.resize(tms);
+	has_isolates.resize(tms);
+	has_undefined.resize(tms);
+	for (int i=0; i<tms; i++) {
+		G_vecs[i] = new double[num_obs];
+		G_defined_vecs[i] = new bool[num_obs];
+		for (int j=0; j<num_obs; j++) G_defined_vecs[i][j] = true;
+		G_star_vecs[i] = new double[num_obs];
+		z_vecs[i] = new double[num_obs];
+		p_vecs[i] = new double[num_obs];
+		z_star_vecs[i] = new double[num_obs];
+		p_star_vecs[i] = new double[num_obs];
+		pseudo_p_vecs[i] = new double[num_obs];
+		pseudo_p_star_vecs[i] = new double[num_obs];
+		x_vecs[i] = new double[num_obs];
+		
+		map_valid[i] = true;
+		map_error_message[i] = wxEmptyString;
+	}
+}
+
+/** We assume only that var_info is initialized correctly.
+ ref_var_index, is_any_time_variant, is_any_sync_with_global_time and
+ num_time_vals are first updated based on var_info */ 
+void GStatCoordinator::InitFromVarInfo()
+{
+	DeallocateVectors();
+	
+	num_time_vals = 1;
+	is_any_time_variant = var_info[0].is_time_variant;
+	is_any_sync_with_global_time = false;
+	ref_var_index = -1;
+	if (var_info[0].is_time_variant &&
+		var_info[0].sync_with_global_time) {
+		num_time_vals = (var_info[0].time_max - var_info[0].time_min) + 1;
+		is_any_sync_with_global_time = true;
+		ref_var_index = 0;
+	}
+
+	AllocateVectors();
+	
+	for (int t=var_info[0].time_min; t<=var_info[0].time_max; t++) {
+		int d_t = t - var_info[0].time_min;
+		for (int i=0; i<num_obs; i++) x_vecs[d_t][i] = data[0][t][i];
+	}
+	
+	for (int t=0; t<num_time_vals; t++) {
+		x = x_vecs[t];
+		for (int i=0; i<num_obs; i++) {
+			if ( W[i].Size() > 0 ) {
+				n[t]++;
+				x_star[t] += x[i];
+				x_sstar[t] += x[i] * x[i];
+			}
+		}
+		ExG[t] = 1.0/(n[t]-1); // same for all i when W is row-standardized
+		ExGstar[t] = 1.0/n[t]; // same for all i when W is row-standardized
+		mean_x[t] = x_star[t] / n[t]; // x hat (overall)
+		var_x[t] = x_sstar[t]/n[t] - mean_x[t]*mean_x[t]; // s^2 overall
+		
+		// when W is row-standardized, VarGstar same for all i
+		// same as s^2 / (n^2 mean_x ^2)
+		VarGstar[t] = var_x[t] / (n[t]*n[t] * mean_x[t]*mean_x[t]);
+		// when W is row-standardized, sdGstar same for all i
+		sdGstar[t] = sqrt(VarGstar[t]);		
+	}
+	
+	CalcGs();
+	CalcPseudoP();
+}
+
+/** Update Secondary Attributes based on Primary Attributes.
+ Update num_time_vals and ref_var_index based on Secondary Attributes. */
+void GStatCoordinator::VarInfoAttributeChange()
+{
+	GeoDa::UpdateVarInfoSecondaryAttribs(var_info);
+	
+	is_any_time_variant = false;
+	is_any_sync_with_global_time = false;
+	for (int i=0; i<var_info.size(); i++) {
+		if (var_info[i].is_time_variant) is_any_time_variant = true;
+		if (var_info[i].sync_with_global_time) {
+			is_any_sync_with_global_time = true;
+		}
+	}
+	ref_var_index = -1;
+	num_time_vals = 1;
+	for (int i=0; i<var_info.size() && ref_var_index == -1; i++) {
+		if (var_info[i].is_ref_variable) ref_var_index = i;
+	}
+	if (ref_var_index != -1) {
+		num_time_vals = (var_info[ref_var_index].time_max -
+						 var_info[ref_var_index].time_min) + 1;
+	}
+	//GeoDa::PrintVarInfoVector(var_info);
+}
+
+/** The category vector c_val will be filled based on the current
+ significance filter and significance values corresponding to specified
+ canvas_time.  */
+void GStatCoordinator::FillClusterCats(int canvas_time,
+									   bool is_gi, bool is_perm,
+									   std::vector<wxInt64>& c_val)
+{
+	int t = canvas_time;
+	double* p_val = 0;
+	if (is_gi && is_perm) p_val = pseudo_p_vecs[t];
+	if (is_gi && !is_perm) p_val = p_vecs[t];
+	if (!is_gi && is_perm) p_val = pseudo_p_star_vecs[t];
+	if (!is_gi && !is_perm) p_val = p_star_vecs[t];
+	double* z_val = is_gi ? z_vecs[t] : z_star_vecs[t];
+	
+	c_val.resize(num_obs);
+	for (int i=0; i<num_obs; i++) {
+		if (W[i].Size() == 0) {
+			c_val[i] = 3; // isolate
+		} else if (!G_defined_vecs[t][i]) {
+			c_val[i] = 4; // undefined
+		} else if (p_val[i] <= significance_cutoff) {
+			c_val[i] = z_val[i] > 0 ? 1 : 2; // high = 1, low = 2
+		} else {
+			c_val[i] = 0; // not significant
+		}
+	}
+}
+
 
 /** Initialize Gi and Gi_star.  We handle either binary or row-standardized
  binary weights.  Weights with self-neighbors are handled correctly. */
@@ -178,99 +355,114 @@ void GStatCoordinator::CalcGs()
 	using boost::math::normal; // typedef provides default type is double.
 	// Construct a standard normal distribution std_norm_dist
 	normal std_norm_dist; // default mean = zero, and s.d. = unity
-	has_undefined = false;
-	has_isolates = false;
+	
+	for (int t=0; t<num_time_vals; t++) {
+		G = G_vecs[t];
+		G_defined = G_defined_vecs[t];
+		G_star = G_star_vecs[t];
+		z = z_vecs[t];
+		p = p_vecs[t];
+		z_star = z_star_vecs[t];
+		p_star = p_star_vecs[t];
+		pseudo_p = pseudo_p_vecs[t];
+		pseudo_p_star = pseudo_p_star_vecs[t];
+		x = x_vecs[t];
+		
+		has_undefined[t] = false;
+		has_isolates[t] = false;
 
-	double n_expr = sqrt((n-1)*(n-1)*(n-2));
-	for (long i=0; i<tot_obs; i++) {
-		if ( W[i].size > 0 ) {
-			double lag = 0;
-			bool self_neighbor = false;
-			for (int j=0; j<W[i].size; j++) {
-				if (W[i].data[j] != i) {
-					lag += x[W[i].data[j]];
-				} else {
-					self_neighbor = true;
+		double n_expr = sqrt((n[t]-1)*(n[t]-1)*(n[t]-2));
+		for (long i=0; i<num_obs; i++) {
+			if ( W[i].size > 0 ) {
+				double lag = 0;
+				bool self_neighbor = false;
+				for (int j=0; j<W[i].size; j++) {
+					if (W[i].data[j] != i) {
+						lag += x[W[i].data[j]];
+					} else {
+						self_neighbor = true;
+					}
 				}
-			}
-			double Wi = self_neighbor ? W[i].size-1 : W[i].size;
-			if (row_standardize) {
-				lag /= W[i].size;
-				Wi /= W[i].size;
-			}
-			double xd_i = x_star - x[i];
-			if (xd_i != 0) {
-				G[i] = lag / xd_i;
-			} else {
-				G_defined[i] = false;
-			}
-			double x_hat_i = xd_i * ExG; // (x_star - x[i])/(n-1)
+				double Wi = self_neighbor ? W[i].size-1 : W[i].size;
+				if (row_standardize) {
+					lag /= W[i].size;
+					Wi /= W[i].size;
+				}
+				double xd_i = x_star[t] - x[i];
+				if (xd_i != 0) {
+					G[i] = lag / xd_i;
+				} else {
+					G_defined[i] = false;
+				}
+				double x_hat_i = xd_i * ExG[t]; // (x_star - x[i])/(n-1)
 
-			double ExGi = Wi/(n-1);
-			// location-specific variance
-			double ss_i = (x_sstar - x[i]*x[i])/(n-1) - x_hat_i*x_hat_i;
-			double sdG_i = sqrt(Wi*(n-1-Wi)*ss_i)/(n_expr * x_hat_i);
+				double ExGi = Wi/(n[t]-1);
+				// location-specific variance
+				double ss_i = ((x_sstar[t] - x[i]*x[i])/(n[t]-1)
+							   - x_hat_i*x_hat_i);
+				double sdG_i = sqrt(Wi*(n[t]-1-Wi)*ss_i)/(n_expr * x_hat_i);
 				
-			// compute z and one-sided p-val from standard-normal table
-			if (G_defined[i]) {
-				z[i] = (G[i] - ExGi)/sdG_i;
-				if (z[i] >= 0) {
-					p[i] = 1.0-cdf(std_norm_dist, z[i]);
+				// compute z and one-sided p-val from standard-normal table
+				if (G_defined[i]) {
+					z[i] = (G[i] - ExGi)/sdG_i;
+					if (z[i] >= 0) {
+						p[i] = 1.0-cdf(std_norm_dist, z[i]);
+					} else {
+						p[i] = cdf(std_norm_dist, z[i]);
+					}
 				} else {
-					p[i] = cdf(std_norm_dist, z[i]);
+					has_undefined[t] = true;
 				}
 			} else {
-				has_undefined = true;
+				has_isolates[t] = true;
 			}
-		} else {
-			has_isolates = true;
 		}
-	}
 	
-	if (x_star == 0) {
-		for (long i=0; i<tot_obs; i++) G_defined[i] = false;
-		has_undefined = true;
-		return;
-	}
+		if (x_star[t] == 0) {
+			for (long i=0; i<num_obs; i++) G_defined[i] = false;
+			has_undefined[t] = true;
+			break;
+		}
 	
-	if (row_standardize) {
-		for (long i=0; i<tot_obs; i++) {
-			double lag = 0;
-			bool self_neighbor = false;
-			for (int j=0; j<W[i].size; j++) {
-				if (W[i].data[j] == i) self_neighbor = true;
-				lag += x[W[i].data[j]];
+		if (row_standardize) {
+			for (long i=0; i<num_obs; i++) {
+				double lag = 0;
+				bool self_neighbor = false;
+				for (int j=0; j<W[i].size; j++) {
+					if (W[i].data[j] == i) self_neighbor = true;
+					lag += x[W[i].data[j]];
+				}
+				G_star[i] = self_neighbor ? lag/(W[i].size * x_star[t]) :
+					(lag+x[i])/((W[i].size+1) * x_star[t]);
+				z_star[i] = (G_star[i] - ExGstar[t])/sdGstar[t];
 			}
-			G_star[i] = self_neighbor ? lag/(W[i].size * x_star) :
-				(lag+x[i])/((W[i].size+1) * x_star);
-			z_star[i] = (G_star[i] - ExGstar)/sdGstar;
-		}
-	} else { // binary weights
-		double n_expr_mean_x = n * sqrt(n-1) * mean_x;
-		for (long i=0; i<tot_obs; i++) {
-			double lag = 0;
-			bool self_neighbor = false;
-			for (int j=0; j<W[i].size; j++) {
-				if (W[i].data[j] == i) self_neighbor = true;
-				lag += x[W[i].data[j]];
+		} else { // binary weights
+			double n_expr_mean_x = n[t] * sqrt(n[t]-1) * mean_x[t];
+			for (long i=0; i<num_obs; i++) {
+				double lag = 0;
+				bool self_neighbor = false;
+				for (int j=0; j<W[i].size; j++) {
+					if (W[i].data[j] == i) self_neighbor = true;
+					lag += x[W[i].data[j]];
+				}
+				if (!self_neighbor) lag += x[i];
+				G_star[i] = lag / x_star[t];
+				double Wi = self_neighbor ? W[i].size : W[i].size+1;
+				// location-specific mean
+				double ExGi_star = Wi/n[t];
+				// location-specific variance
+				double sdG_i_star = sqrt(Wi*(n[t]-Wi)*var_x[t])/n_expr_mean_x;
+				z_star[i] = (G_star[i] - ExGi_star)/sdG_i_star;
 			}
-			if (!self_neighbor) lag += x[i];
-			G_star[i] = lag / x_star;
-			double Wi = self_neighbor ? W[i].size : W[i].size+1;
-			// location-specific mean
-			double ExGi_star = Wi/n;
-			// location-specific variance
-			double sdG_i_star = sqrt(Wi*(n-Wi)*var_x)/n_expr_mean_x;
-			z_star[i] = (G_star[i] - ExGi_star)/sdG_i_star;
 		}
-	}
 	
-	for (long i=0; i<tot_obs; i++) {
-		// compute z and one-sided p-val from standard-normal table
-		if (z_star[i] >= 0) {
-			p_star[i] = 1.0-cdf(std_norm_dist, z_star[i]);
-		} else {
-			p_star[i] = cdf(std_norm_dist, z_star[i]);
+		for (long i=0; i<num_obs; i++) {
+			// compute z and one-sided p-val from standard-normal table
+			if (z_star[i] >= 0) {
+				p_star[i] = 1.0-cdf(std_norm_dist, z_star[i]);
+			} else {
+				p_star[i] = cdf(std_norm_dist, z_star[i]);
+			}
 		}
 	}
 }
@@ -280,17 +472,46 @@ void GStatCoordinator::CalcPseudoP()
 	LOG_MSG("Entering GStatCoordinator::CalcPseudoP");
 	wxStopWatch sw;
 	int nCPUs = wxThread::GetCPUCount();
+	
+	// To ensure thread safety, only work on one time slice of data
+	// at a time.  For each time period t:
+	// 1. copy data for time period t into data1 and data2 arrays
+	// 2. Perform multi-threaded computation
+	// 3. copy results into results array
+	
 	if (nCPUs <= 1) {
 		LOG_MSG(wxString::Format("%d threading cores detected "
 								 "so running single threaded", nCPUs));
-		CalcPseudoP_range(0, tot_obs-1);
 	} else {
 		LOG_MSG(wxString::Format("%d threading cores detected, "
 								 "running multi-threaded.", nCPUs));
-		CalcPseudoP_threaded();
 	}
-	LOG_MSG(wxString::Format("GStat on %d obs with %d perms took %ld ms",
-							 tot_obs, permutations, sw.Time()));
+	
+	for (int t=0; t<num_time_vals; t++) {
+		LOG_MSG(wxString::Format("Calculating GStat significances for time "
+								 "period %d", t));
+
+		G = G_vecs[t];
+		G_defined = G_defined_vecs[t];
+		G_star = G_star_vecs[t];
+		z = z_vecs[t];
+		p = p_vecs[t];
+		z_star = z_star_vecs[t];
+		p_star = p_star_vecs[t];
+		pseudo_p = pseudo_p_vecs[t];
+		pseudo_p_star = pseudo_p_star_vecs[t];
+		x = x_vecs[t];
+		x_star_t = x_star[t];
+		
+		if (nCPUs <= 1) {
+			CalcPseudoP_range(0, num_obs-1);
+		} else {
+			CalcPseudoP_threaded();
+		}
+	}
+	LOG_MSG(wxString::Format("GStat on %d obs with %d perms over %d "
+							 "time periods took %ld ms",
+							 num_obs, permutations, num_time_vals, sw.Time()));
 	LOG_MSG("Exiting GStatCoordinator::CalcPseudoP");
 }
 
@@ -311,13 +532,13 @@ void GStatCoordinator::CalcPseudoP_threaded()
 	
 	// divide up work according to number of observations
 	// and number of CPUs
-	int work_chunk = tot_obs / nCPUs;
+	int work_chunk = num_obs / nCPUs;
 	int obs_start = 0;
 	int obs_end = obs_start + work_chunk;
 	
 	bool is_thread_error = false;
-	int quotient = tot_obs / nCPUs;
-	int remainder = tot_obs % nCPUs;
+	int quotient = num_obs / nCPUs;
+	int remainder = num_obs % nCPUs;
 	int tot_threads = (quotient > 0) ? nCPUs : remainder;
 	
 	for (int i=0; i<tot_threads && !is_thread_error; i++) {
@@ -350,7 +571,7 @@ void GStatCoordinator::CalcPseudoP_threaded()
 		LOG_MSG("Error: Could not spawn a worker thread, falling back "
 				"to single-threaded pseudo-p calculation.");
 		// fall back to single thread calculation mode
-		CalcPseudoP_range(0, tot_obs-1);
+		CalcPseudoP_range(0, num_obs-1);
 	} else {
 		LOG_MSG("Starting all worker threads");
 		std::list<wxThread*>::iterator it;
@@ -376,18 +597,18 @@ void GStatCoordinator::CalcPseudoP_threaded()
  permutation code, we will disallow self-neighbors. */
 void GStatCoordinator::CalcPseudoP_range(int obs_start, int obs_end)
 {
-	OgSet workPermutation(tot_obs);
+	OgSet workPermutation(num_obs);
 	Randik rng;
 	
 	//const int DBGI = 4;
 	//std::map<int,int> freq;
-	//for (int j=0; j<tot_obs; j++) freq[j] = 0;
-	int max_rand = tot_obs-1;
+	//for (int j=0; j<num_obs; j++) freq[j] = 0;
+	int max_rand = num_obs-1;
 	for (long i=obs_start; i<=obs_end; i++) {
 		const int numNeighsI = W[i].Size();
 		const double numNeighsD = W[i].Size();
 		if ( numNeighsI > 0 && G_defined[i]) { //only compute for non-isolates
-			double xd_i = x_star - x[i]; // know != 0 since G_defined[i] true
+			double xd_i = x_star_t - x[i]; // know != 0 since G_defined[i] true
 			
 			int countGLarger = 0;
 			int countGStarLarger = 0;
@@ -415,11 +636,11 @@ void GStatCoordinator::CalcPseudoP_range(int obs_start, int obs_end)
 				
 				if (row_standardize) {
 					permutedG = lag_i / (numNeighsD * xd_i);
-					permutedGStar = (lag_i+x[i]) / ((numNeighsD+1)*x_star);	
+					permutedGStar = (lag_i+x[i]) / ((numNeighsD+1)*x_star_t);	
 				} else { // binary weights
 					// Wi = numNeighsD // assume no self-neighbors
 					permutedG = lag_i / xd_i;
-					permutedGStar = (lag_i+x[i]) / x_star;
+					permutedGStar = (lag_i+x[i]) / x_star_t;
 				}
 				//LOG(G[i]);
 				//LOG(permutedG);
@@ -435,7 +656,7 @@ void GStatCoordinator::CalcPseudoP_range(int obs_start, int obs_end)
 				if (permutedGStar >= G_star[i]) countGStarLarger++;
 			}
 			//if (i == DBGI) {
-			//	for (int j=0; j<tot_obs; j++) LOG(freq[j]);
+			//	for (int j=0; j<num_obs; j++) LOG(freq[j]);
 			//	LOG(G_star[i]);
 			//	LOG(countGStarLarger);
 			//	LOG(permutations);
@@ -467,12 +688,12 @@ void GStatCoordinator::SetSignificanceFilter(int filter_id)
 	if (filter_id == 4) significance_cutoff = 0.0001;
 }
 
-void GStatCoordinator::registerObserver(GetisOrdMapFrame* o)
+void GStatCoordinator::registerObserver(GetisOrdMapNewFrame* o)
 {
 	maps[o->map_type] = o;
 }
 
-void GStatCoordinator::removeObserver(GetisOrdMapFrame* o)
+void GStatCoordinator::removeObserver(GetisOrdMapNewFrame* o)
 {
 	LOG_MSG("Entering GStatCoordinator::removeObserver");
 	maps[o->map_type] = 0;

@@ -64,8 +64,7 @@ void DataViewerDeleteColDlg::OnDelete( wxCommandEvent& ev )
 		m_del_button->Enable(false);
 		return;
 	}
-	int col_del_pos;
-	col_del_pos = col_id_map[m_field->GetSelection()];
+	int col_del_pos = col_id_map[m_field->GetSelection()];
 	wxString del_name = grid_base->col_data[col_del_pos]->name;
 	
 	grid_base->DeleteCol(col_del_pos);
@@ -78,7 +77,9 @@ void DataViewerDeleteColDlg::OnChoice( wxCommandEvent& ev )
 {
 	m_message->SetLabelText("");
 	if (m_field->GetSelection() != wxNOT_FOUND) {
-		m_del_button->Enable(true);
+		int col_del_pos = col_id_map[m_field->GetSelection()];
+		wxString del_name = grid_base->col_data[col_del_pos]->name;
+		m_del_button->Enable(!grid_base->IsSpaceTimeIdField(del_name));
 	}
 }
 

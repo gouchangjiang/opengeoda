@@ -535,8 +535,6 @@ void Arcball::set_transform(const Vec3 & c, const Vec3 &t, const Quat & q)
   q_drag = q;
 }
 
-
-
 int unproject_pixel(int *pixel, double *world, double z)
 {
     GLdouble modelMatrix[16];

@@ -27,6 +27,7 @@
 #ifndef __GEODA_CENTER_GEODACONST_H__
 #define __GEODA_CENTER_GEODACONST_H__
 
+#include <vector>
 #include <wx/gdicmn.h>
 #include <wx/string.h>
 #include <wx/colour.h>
@@ -58,6 +59,7 @@ public:
 	static const int default_dbf_double_len = 18;
 	static const int max_dbf_double_decimals = 15;
 	static const int min_dbf_double_decimals = 1;
+	static const int default_display_decimals = 4;
 	static const int default_dbf_double_decimals = 7;
 	static const int max_dbf_string_len = 254;
 	static const int min_dbf_string_len = 1;
@@ -66,17 +68,46 @@ public:
 	static const int min_dbf_date_len = 8;
 	static const int default_dbf_date_len = 8;
 	
+	// Shared menu ids
+	static const int ID_TIME_SYNC_VAR1 = wxID_HIGHEST + 1000;
+	static const int ID_TIME_SYNC_VAR2 = wxID_HIGHEST + 1001;
+	static const int ID_TIME_SYNC_VAR3 = wxID_HIGHEST + 1002;
+	static const int ID_TIME_SYNC_VAR4 = wxID_HIGHEST + 1004;
+	
+	static const int ID_FIX_SCALE_OVER_TIME_VAR1 = wxID_HIGHEST + 2000;
+	static const int ID_FIX_SCALE_OVER_TIME_VAR2 = wxID_HIGHEST + 2001;
+	static const int ID_FIX_SCALE_OVER_TIME_VAR3 = wxID_HIGHEST + 2002;
+	static const int ID_FIX_SCALE_OVER_TIME_VAR4 = wxID_HIGHEST + 2004;
+	
+	static const int ID_PLOTS_PER_VIEW_1 = wxID_HIGHEST + 3000;
+	static const int ID_PLOTS_PER_VIEW_2 = wxID_HIGHEST + 3001;
+	static const int ID_PLOTS_PER_VIEW_3 = wxID_HIGHEST + 3002;
+	static const int ID_PLOTS_PER_VIEW_4 = wxID_HIGHEST + 3003;
+	static const int ID_PLOTS_PER_VIEW_5 = wxID_HIGHEST + 3004;
+	static const int ID_PLOTS_PER_VIEW_6 = wxID_HIGHEST + 3005;
+	static const int ID_PLOTS_PER_VIEW_7 = wxID_HIGHEST + 3006;
+	static const int ID_PLOTS_PER_VIEW_8 = wxID_HIGHEST + 3007;
+	static const int ID_PLOTS_PER_VIEW_9 = wxID_HIGHEST + 3008;
+	static const int ID_PLOTS_PER_VIEW_10 = wxID_HIGHEST + 3009;
+	static const int max_plots_per_view_menu_items = 10;
+	static const int ID_PLOTS_PER_VIEW_OTHER = wxID_HIGHEST + 3100;
+	static const int ID_PLOTS_PER_VIEW_ALL = wxID_HIGHEST + 3200;
+	
 	// Standard wxFont pointers.
+	static wxFont* extra_small_font;
 	static wxFont* small_font;
 	static wxFont* medium_font;
 	static wxFont* large_font;
 	
-	// MyShape constantants
-	 
+	// MyShape constants
+	static const wxPen* default_myshape_pen;
+	static const wxBrush* default_myshape_brush;
+	
 	// MyPoint radius to give a larger target for clicking on
 	static const int my_point_click_radius = 2;
 	
 	// Shared Colours
+	static std::vector<wxColour> qualitative_colors;
 	
 	// The following are defined in shp2cnt and should be moved from there.
 	//background color -- this is light gray
@@ -109,6 +140,7 @@ public:
 	
 	// Map
 	static const wxSize map_default_size;
+	static const int map_default_legend_width;
 	// this is a light forest green
 	static const wxColour map_default_fill_colour;
 	static const wxColour map_default_outline_colour;
@@ -131,21 +163,36 @@ public:
 	// Scatterplot
 	static const wxSize scatterplot_default_size;
 	static const wxColour scatterplot_scale_color; // black
-	static const wxColour scatterplot_regression_color; // aqua
-	static const wxColour scatterplot_regression_selected_color; // green
-	static const wxColour scatterplot_regression_excluded_color; // red
+	static const wxColour scatterplot_regression_color; // purple
+	static const wxColour scatterplot_regression_selected_color; // red
+	static const wxColour scatterplot_regression_excluded_color; // blue
 	static const wxColour scatterplot_origin_axes_color; // grey
 	static wxPen* scatterplot_reg_pen;
 	static wxPen* scatterplot_reg_selected_pen;
 	static wxPen* scatterplot_reg_excluded_pen;
 	static wxPen* scatterplot_scale_pen;
 	static wxPen* scatterplot_origin_axes_pen;
+
+	// Bubble Chart
+	static const wxSize bubble_chart_default_size;
+	static const int bubble_chart_default_legend_width;
+	
+	// 3D Plot
+	static const wxColour three_d_plot_default_highlight_colour;
+	static const wxColour three_d_plot_default_point_colour;
+	static const wxColour three_d_plot_default_background_colour;
 	
 	// Boxplot
 	static const wxSize boxplot_default_size;
+	static const wxColour boxplot_point_color;
+	static const wxColour boxplot_median_color;
+	static const wxColour boxplot_mean_point_color;
+	static const wxColour boxplot_q1q2q3_color;
 	
 	// PCP (Parallel Coordinate Plot)
 	static const wxSize pcp_default_size;
+	static const wxColour pcp_line_color;
+	static const wxColour pcp_horiz_line_color;
 	
 	// 3D Plot
 	static const wxSize three_d_default_size;
@@ -157,7 +204,7 @@ public:
 	// General Global Constants
 	static const int FileNameLen = 512; // max length of file names
 	static const int RealWidth = 19;    // default width of output for reals
-	static const int ShpHeaderSize = 50; // size of the header record in shapefile
+	static const int ShpHeaderSize = 50; // size of the header record in Shapefile
 	static const int ShpObjIdLen = 20;    // length of the ID of shape object
 };
 

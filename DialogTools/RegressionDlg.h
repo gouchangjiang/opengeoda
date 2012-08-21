@@ -80,10 +80,10 @@ public:
     void OnCOpenWeightClick( wxCommandEvent& event );
 
     wxListBox* m_varlist;
+	wxTextCtrl* m_dependent;
+	wxListBox* m_independentlist;
     wxChoice* m_choice;
     wxCheckBox* m_CheckConstant;
-    wxTextCtrl* m_dependent;
-    wxListBox* m_independentlist;
     wxCheckBox* m_CheckWeight;
     wxCheckBox* m_standardize;
     wxRadioButton* m_radio1;
@@ -114,6 +114,9 @@ public:
 	bool		b_done1,b_done2, b_done3;
 	int			m_nCount;
 	int			m_nTimer;
+	
+	std::map<wxString, int> name_to_id;
+	std::map<wxString, int> name_to_tm_id;
 	std::vector<int> col_id_map;
 	wxString logReport;
 	

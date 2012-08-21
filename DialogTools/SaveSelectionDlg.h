@@ -23,7 +23,7 @@
 #include <vector>
 #include <wx/button.h>
 #include <wx/checkbox.h>
-#include <wx/combobox.h>
+#include <wx/choice.h>
 #include <wx/dialog.h>
 #include <wx/textctrl.h>
 
@@ -41,17 +41,23 @@ public:
 					 long style = wxCAPTION|wxSYSTEM_MENU );
 
     void CreateControls();
-	void OnSaveFieldCB( wxCommandEvent& event );
-	void OnSaveFieldCBtext( wxCommandEvent& event );
+	void OnAddField( wxCommandEvent& event );
+	void OnSaveFieldChoice( wxCommandEvent& event );
+	void OnSaveFieldChoiceTm( wxCommandEvent& event );
+	void EnableTimeField();
 	void OnSelCheckBox( wxCommandEvent& event );
 	void OnUnselCheckBox( wxCommandEvent& event );
 	void OnSelUnselTextChange( wxCommandEvent& event);
 	void OnApplySaveClick( wxCommandEvent& event );
 	void OnCancelClick( wxCommandEvent& event );
-	void Init();
 
 private:
-	wxComboBox* m_save_field_cb;
+	void FillColIdMap();
+	void InitField();
+	void InitTime();	
+	
+	wxChoice* m_save_field_choice;
+	wxChoice* m_save_field_choice_tm;
 	wxCheckBox* m_sel_check_box;	
 	wxTextCtrl* m_sel_val_text;
 	wxCheckBox* m_unsel_check_box;	
@@ -59,6 +65,7 @@ private:
 	wxButton* m_apply_save_button;
 	
 	bool m_all_init;
+	bool is_space_time;
 	void CheckApplySaveSettings();
 	
 	// col_id_map[i] is a map from the i'th item in the fields drop-down

@@ -28,12 +28,12 @@ class ConditionalViewFrame;
 class Project;
 class DbfGridTableBase;
 
-class CConditionalVariableXView : public TemplateCanvas
+class ConditionalVariableXView : public TemplateCanvas
 {
 public:
-	CConditionalVariableXView(const wxString& varXname,
+	ConditionalVariableXView(const wxString& varXname,
 							  const double* xVals,
-							  wxWindow *parent,
+							  wxWindow *parent, int num_obs,
 							  const wxPoint& pos = wxDefaultPosition,
 							  const wxSize& size = wxDefaultSize);
 
@@ -44,6 +44,7 @@ public:
     wxString varX;
     double coordinate_handle[4];
     int sel;
+	int num_obs;
 
     void OnEvent(wxMouseEvent& event);
     void OnSize(wxSizeEvent& event);
@@ -64,12 +65,12 @@ public:
 };
 
 
-class CConditionalVariableYView : public TemplateCanvas
+class ConditionalVariableYView : public TemplateCanvas
 {
 public:
-	CConditionalVariableYView(const wxString& varYname,
+	ConditionalVariableYView(const wxString& varYname,
 							  const double* yVals,
-							  wxWindow *parent,
+							  wxWindow *parent, int num_obs,
 							  const wxPoint& pos = wxDefaultPosition, 
 							  const wxSize& size = wxDefaultSize);
 	
@@ -80,7 +81,8 @@ public:
     wxString varY;
     double coordinate_handle[4];
     int sel;
-
+	int num_obs;
+	
     void OnEvent(wxMouseEvent& event);
     void OnSize(wxSizeEvent& event);
 
@@ -99,22 +101,22 @@ public:
     DECLARE_EVENT_TABLE()
 };
 
-class CConditionalVariableNULLView : public TemplateCanvas
+class ConditionalVariableNULLView : public TemplateCanvas
 {
 public:
-	CConditionalVariableNULLView(wxWindow *parent,
+	ConditionalVariableNULLView(wxWindow *parent,
 								 const wxPoint& pos = wxDefaultPosition,
 								 const wxSize& size = wxDefaultSize);
 	virtual void OnDraw(wxDC& dc) {};
 	DECLARE_EVENT_TABLE()
 };
 
-class CConditionalVariableHeaderView : public TemplateCanvas
+class ConditionalVariableHeaderView : public TemplateCanvas
 {
 public:
-	CConditionalVariableHeaderView(wxWindow *parent,
+	ConditionalVariableHeaderView(wxWindow *parent,
 								   DbfGridTableBase* grid_base,
-								   const wxString& cc3, int cc3_col,
+								   double* v3, const wxString& v3_name,
 								   const wxPoint& pos = wxDefaultPosition,
 								   const wxSize& size = wxDefaultSize);
 
@@ -122,6 +124,7 @@ public:
     wxString var;
     double coordinate_handle[4];
     int sel;
+	int num_obs;
 
     void OnSize(wxSizeEvent& event);
 
@@ -133,16 +136,30 @@ public:
     DECLARE_EVENT_TABLE()
 };
 
+class MapSortElement
+{
+public:
+	double value;
+	double x;
+	double y;
+	int recordIndex;
+	
+	MapSortElement(double v, int i); 
+	MapSortElement() {};
+	bool operator > (MapSortElement& a);
+	bool operator < (MapSortElement& a);
+	MapSortElement& operator= (const MapSortElement& a);
+};
 
-class MapSortElement;
 class ConditionalViewFrame: public TemplateFrame
 {
 public:
     ConditionalViewFrame(wxFrame *parent,
 						 Project* project,
-						 const wxString& cc1, const wxString& cc2,
-						 const wxString& cc3, const wxString& cc4,
-						 const wxString& title,
+						 double* v1, const wxString& v1_name,
+						 double* v2, const wxString& v2_name,
+						 double* v3, const wxString& v3_name,
+						 double* v4, const wxString& v4_name,						 const wxString& title,
 						 const wxPoint& pos = wxDefaultPosition,
 						 const wxSize& size = wxDefaultSize,
 						 const long style = wxDEFAULT_FRAME_STYLE);
@@ -150,18 +167,19 @@ public:
 
 	std::vector<wxWindow*> win_array; // 3x3=9 elem array of wxWindow pointers
 	
-	// either CConditionalVariableHeaderView or CConditionalVariableNULLView
+	// either ConditionalVariableHeaderView or ConditionalVariableNULLView
 	wxWindow* win_01_hdr_or_null;
-	CConditionalVariableNULLView*	win_00_null;
-	CConditionalVariableYView*		win_10_y_axis;
-	CConditionalVariableNULLView*	win_20_null;
-	CConditionalVariableXView*		win_21_x_axis;
+	ConditionalVariableNULLView*	win_00_null;
+	ConditionalVariableYView*		win_10_y_axis;
+	ConditionalVariableNULLView*	win_20_null;
+	ConditionalVariableXView*		win_21_x_axis;
 
 	int mViewType;
 
 	int *flags;
 	double x1, x2, x3, x4, y1, y2, y3, y4;
 	double *RawDataX, *RawDataY;
+	int num_obs;
 	
 	void UpdateViews();
 
@@ -186,7 +204,6 @@ public:
 	void QuickSortFieldValT(MapSortElement* array, int low, int high);
 	void SortT(MapSortElement*, MapSortElement*, MapSortElement*);
 	void SwapT(MapSortElement*, MapSortElement*);
-
 
     DECLARE_EVENT_TABLE()
 };
@@ -214,32 +231,6 @@ inline float MAX(float r, float g, float b)
 	}
 }
 
-inline void convert_hsv( float r, float g, float b, float *result )
-{
-	float min, max, delta;
-	min = MIN( r, g, b );
-	max = MAX( r, g, b );
-    result[2] = max;             // v
-	delta = max - min;
-	if( max != 0 ) {
-		result[1] = delta / max;  // s
-	} else {
-		// r = g = b = 0         // s = 0, v is undefined
-		result[1] = 0;
-		result[0] = -1;
-		return;
-	}
-	if( r == max ) {
-		result[0] = ( g - b ) / delta;     // between yellow & magenta
-	} else if( g == max ) {
-		result[0] = 2 + ( b - r ) / delta; // between cyan & yellow
-	}
-	result[0] = 4 + ( r - g ) / delta; // between magenta & cyan
-	result[0] *= 60;                           // degrees
-	if( result[0] < 0 ) result[0] += 360;
-}
-                                                                                
-                                                                                
 inline void convert_rgb(float x, float y, float z, float* result)
 {
 	float h;
@@ -248,7 +239,7 @@ inline void convert_rgb(float x, float y, float z, float* result)
 	int i;
 	
 	h = x;
-	if(y == 0.0) {
+	if (y == 0.0) {
 		r = z;
 		g = z;
 		b = z;
@@ -262,8 +253,7 @@ inline void convert_rgb(float x, float y, float z, float* result)
 		q = z * (1.0 - (y * f));
 		t = z * (1.0 - y * (1.0 - f));
 		
-		switch(i)
-		{
+		switch(i) {
 			case 0:
 				r = z;  g = t;  b = p;
 				break;
@@ -283,7 +273,7 @@ inline void convert_rgb(float x, float y, float z, float* result)
 				r = z;  g = p;  b = q;
 				break;
 			default:
-				r = 0.0;        b = 0.0;        b = 0.0;
+				r = 0.0; g = 0.0; b = 0.0;
 				break;
 		}
 	}
@@ -292,7 +282,6 @@ inline void convert_rgb(float x, float y, float z, float* result)
 	result[1] = g;
 	result[2] = b;
 }
-
 
 
 #endif

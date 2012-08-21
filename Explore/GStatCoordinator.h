@@ -18,14 +18,14 @@
  */
 
 /**
- NOTE: GStatCoordinator and GetisOrdMapView implement the
+ NOTE: GStatCoordinator and GetisOrdMapNewView implement the
  Observable/Observer interface.  However, we have chosen not to define
- a GStatCoordinatorObserver interface for GetisOrdMapView to implement
+ a GStatCoordinatorObserver interface for GetisOrdMapNewView to implement
  because GStatCoordinator needs to know more details about the
- GetisOrdMapView instances that register with it.  In particular, we only
- allow at most 8 different GetisOrdMapView instances to be observers, and
+ GetisOrdMapNewView instances that register with it.  In particular, we only
+ allow at most 8 different GetisOrdMapNewView instances to be observers, and
  each instance must be a different type according to the options enumerated
- in GetisOrdMapView::GMapType.
+ in GetisOrdMapNewView::GMapType.
  */
 
 #ifndef __GEODA_CENTER_G_STAT_COORDINATOR_H__
@@ -33,13 +33,15 @@
 
 #include <list>
 #include <vector>
+#include <boost/multi_array.hpp>
 #include <wx/string.h>
 #include <wx/thread.h>
+#include "../GenUtils.h"
 #include "../ShapeOperations/GalWeight.h"
 
-class GetisOrdMapFrame;
-class GStatCoordinatorObserver;
+class GetisOrdMapNewFrame; // instead of GStatCoordinatorObserver
 class GStatCoordinator;
+typedef boost::multi_array<double, 2> d_array_type;
 
 class GStatWorkerThread : public wxThread
 {
@@ -67,8 +69,10 @@ class GStatCoordinator
 {
 public:
 	GStatCoordinator(const GalWeight* gal_weights,
-					 bool row_standardize_weights,
-					 const wxString& field_name, const std::vector<double>& x);
+					 DbfGridTableBase* grid_base,
+					 const std::vector<GeoDaVarInfo>& var_info,
+					 const std::vector<int>& col_ids,
+					 bool row_standardize_weights);
 	virtual ~GStatCoordinator();
 	
 	bool IsOk() { return true; }
@@ -77,63 +81,102 @@ public:
 	int significance_filter; // 0: >0.05 1: 0.05, 2: 0.01, 3: 0.001, 4: 0.0001
 	double significance_cutoff; // either 0.05, 0.01, 0.001 or 0.0001
 	void SetSignificanceFilter(int filter_id);
-	int permutations; // any number from 10 to 10000, 500 will be default
+	int GetSignificanceFilter() { return significance_filter; }
+	int permutations; // any number from 9 to 99999, 499 will be default
 	
-	double n; // # non-neighborless observations
-	// # total number of observations, including neighborless observations
-	long tot_obs;
-	double x_star; // sum of all x_i
-	double x_sstar; // sum of all (x_i)^2
+	std::vector<double> n; // # non-neighborless observations
 	
-	std::vector<double> G;
-	std::vector<bool> G_defined; // check for divide-by-zero
-	std::vector<double> G_star;
-	
-	double ExG; // same for all i since we row-standardize W
-	double ExGstar; // same for all i since we row-standardize W
-	double mean_x; // x hat (overall)
-	double var_x; // s^2 overall
+	double x_star_t; // temporary x_star for use in worker threads
+	std::vector<double> x_star; // sum of all x_i // threaded
+	std::vector<double> x_sstar; // sum of all (x_i)^2
+		
+	std::vector<double> ExG; // same for all i since we row-standardize W
+	std::vector<double> ExGstar; // same for all i since we row-standardize W
+	std::vector<double> mean_x; // x hat (overall)
+	std::vector<double> var_x; // s^2 overall
 	// since W is row-standardized, VarGstar same for all i
 	// same as s^2 / (n^2 mean_x ^2)
-	double VarGstar;
+	std::vector<double> VarGstar;
 	// since W is row-standardized, sdGstar same for all i
-	double sdGstar;
+	std::vector<double> sdGstar;
 	
+protected:
+	// The following ten are just temporary pointers into the corresponding
+	// space-time data arrays below
+	double* G; //threaded
+	bool* G_defined; // check for divide-by-zero //threaded
+	double* G_star; //threaded
 	// z-val corresponding to each G_i
-	std::vector<double> z;
+	double* z;
 	// p-val from z_i using standard normal table
-	std::vector<double> p;
-	
+	double* p;
 	// z-val corresponding to each G_star_i
-	std::vector<double> z_star;
+	double* z_star;
 	// p-val from z_i^star using standard normal table
-	std::vector<double> p_star;
+	double* p_star;
+	double* pseudo_p; //threaded
+	double* pseudo_p_star; //threaded
+	double* x; //threaded
 	
-	std::vector<double> pseudo_p;
-	std::vector<double> pseudo_p_star;
-	
-	wxString weight_name;
-	const GalWeight* gal_weights;
+public:
+	std::vector<double*> G_vecs; //threaded
+	std::vector<bool*> G_defined_vecs; // check for divide-by-zero //threaded
+	std::vector<double*> G_star_vecs; //threaded
+	// z-val corresponding to each G_i
+	std::vector<double*> z_vecs;
+	// p-val from z_i using standard normal table
+	std::vector<double*> p_vecs;
+	// z-val corresponding to each G_star_i
+	std::vector<double*> z_star_vecs;
+	// p-val from z_i^star using standard normal table
+	std::vector<double*> p_star_vecs;
+	std::vector<double*> pseudo_p_vecs; //threaded
+	std::vector<double*> pseudo_p_star_vecs; //threaded
+	std::vector<double*> x_vecs; //threaded
+
 	const GalElement* W;
-	wxString field_name;
-	std::vector<double> x;
+	wxString weight_name;
+
+	int num_obs; // total # obs including neighborless obs
+	int num_time_vals; // number of valid time periods based on var_info
 	
-	bool GetHasIsolates() { return has_isolates; }
-	bool GetHasUndefined() { return has_undefined; }
+	// This variable should be empty for GStatMapNewCanvas
+	std::vector<d_array_type> data; // data[variable][time][obs]
 	
-	void registerObserver(GetisOrdMapFrame* o);
-	void removeObserver(GetisOrdMapFrame* o);
+	// All GetisOrdMapNewCanvas objects synchronize themselves
+	// from the following 6 variables.
+	int ref_var_index;
+	std::vector<GeoDaVarInfo> var_info;
+	bool is_any_time_variant;
+	bool is_any_sync_with_global_time;
+	std::vector<bool> map_valid;
+	std::vector<wxString> map_error_message;
+	
+	bool GetHasIsolates(int time) { return has_isolates[time]; }
+	bool GetHasUndefined(int time) { return has_undefined[time]; }
+	
+	void registerObserver(GetisOrdMapNewFrame* o);
+	void removeObserver(GetisOrdMapNewFrame* o);
 	void notifyObservers();
 	/** The array of registered observer objects. */
-	std::vector<GetisOrdMapFrame*> maps;	
+	std::vector<GetisOrdMapNewFrame*> maps;	
 	
 	void CalcPseudoP();
 	void CalcPseudoP_range(int obs_start, int obs_end);
-private:
+	
+	void InitFromVarInfo();
+	void VarInfoAttributeChange();
+	
+	void FillClusterCats(int canvas_time, bool is_gi, bool is_perm,
+						 std::vector<wxInt64>& c_val);
+protected:
+	void DeallocateVectors();
+	void AllocateVectors();
+	
 	void CalcPseudoP_threaded();
 	void CalcGs();
-	bool has_undefined;
-	bool has_isolates;
+	std::vector<bool> has_undefined;
+	std::vector<bool> has_isolates;
 	bool row_standardize;
 };
 

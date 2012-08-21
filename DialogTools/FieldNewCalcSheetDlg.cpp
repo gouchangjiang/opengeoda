@@ -130,7 +130,8 @@ void FieldNewCalcSheetDlg::OnApplyClick( wxCommandEvent& event )
 		project->GetGridBase()->GetView()->Refresh();
 	}
 	GeneralWxUtils::EnableMenuItem(MyFrame::theFrame->GetMenuBar(),
-								   XRCID("ID_NEW_TABLE_SAVE"),
-							project->GetGridBase()->ChangedSinceLastSave());
+								   XRCID("ID_SAVE_PROJECT"),
+							project->GetGridBase()->ChangedSinceLastSave() &&
+								   project->IsAllowEnableSave());
 }
 

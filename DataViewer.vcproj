@@ -292,6 +292,34 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="DialogTools"
+			>
+			<File
+				RelativePath=".\DialogTools\OpenSpaceTimeDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogTools\OpenSpaceTimeDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogTools\TimeChooserDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogTools\TimeChooserDlg.h"
+				>
+			</File>
+		</Filter>
+		<File
+			RelativePath=".\FramesManager.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\FramesManager.h"
+			>
+		</File>
 		<File
 			RelativePath=".\GeneralWxUtils.cpp"
 			>

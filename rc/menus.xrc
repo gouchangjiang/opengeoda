@@ -4,14 +4,27 @@
     <object class="wxMenu" name="ID_MENU">
       <label>&amp;File</label>
       <object class="wxMenuItem" name="ID_OPEN_SHAPE_FILE">
-        <label>&amp;Open Shape File</label>
+        <label>&amp;Open Shapefile</label>
         <accel>Ctrl+O</accel>
       </object>
       <object class="wxMenuItem" name="ID_OPEN_TABLE_ONLY">
         <label>Open Table Only</label>
       </object>
+      <object class="wxMenuItem" name="ID_OPEN_SPACE_TIME_SHAPEFILE">
+        <label>Open Space-Time Shapefile</label>
+      </object>
+      <object class="wxMenuItem" name="ID_OPEN_SPACE_TIME_TABLE_ONLY">
+        <label>Open Space-Time Table Only</label>
+      </object>
       <object class="wxMenuItem" name="ID_CLOSE_ALL">
         <label>Close &amp;All</label>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_SAVE_PROJECT">
+        <label>Save</label>
+      </object>
+      <object class="wxMenuItem" name="ID_SAVE_AS_PROJECT">
+        <label>Save As...</label>
       </object>
       <object class="separator"/>
       <object class="wxMenuItem" name="wxID_EXIT">
@@ -31,7 +44,7 @@
           <enabled>1</enabled>
         </object>
         <object class="wxMenuItem" name="ID_TOOLS_WEIGHTS_CHAR">
-          <label>Properties</label>
+          <label>Neighbors Histogram</label>
           <enabled>0</enabled>
         </object>
       </object>
@@ -47,11 +60,8 @@
           <label>Polygons to Centroids</label>
         </object>
         <object class="separator"/>
-        <object class="wxMenuItem" name="ID_SHAPE_POINTS_FROM_DBF">
-          <label>Points from DBF</label>
-        </object>
-        <object class="wxMenuItem" name="ID_SHAPE_POINTS_FROM_ASCII">
-          <label>Points from ASCII</label>
+        <object class="wxMenuItem" name="ID_POINTS_FROM_TABLE">
+          <label>Points from Table</label>
         </object>
         <object class="wxMenuItem" name="ID_SHAPE_POLYGONS_FROM_GRID">
           <label>Polygons from Grid</label>
@@ -66,8 +76,8 @@
       </object>
       <object class="wxMenu" name="ID_MENU">
         <label>Data Export</label>
-        <object class="wxMenuItem" name="ID_EXPORT_DATA_TO_ASCII">
-          <label>ASCII</label>
+        <object class="wxMenuItem" name="ID_EXPORT_TO_CSV_FILE">
+          <label>CSV File</label>
         </object>
         <object class="wxMenuItem" name="ID_EXPORT_MEAN_CENTERS">
           <label>Mean Centers</label>
@@ -78,6 +88,9 @@
       </object>
     </object>
     <object class="wxMenu" name="ID_MENU">
+      <object class="wxMenuItem" name="ID_SHOW_TIME_CHOOSER">
+        <label>Time Control</label>
+      </object>
       <object class="wxMenuItem" name="ID_NEW_TABLE_MOVE_SELECTED_TO_TOP">
         <label>Move Selected to Top</label>
       </object>
@@ -95,87 +108,87 @@
       </object>
       <object class="separator"/>
       <object class="wxMenuItem" name="ID_NEW_TABLE_FIELD_CALCULATION">
-        <label>Field Calculation</label>
+        <label>Variable Calculation</label>
       </object>
       <object class="wxMenuItem" name="ID_NEW_TABLE_ADD_COLUMN">
-        <label>Add Field</label>
+        <label>Add Variable</label>
       </object>
       <object class="wxMenuItem" name="ID_NEW_TABLE_DELETE_COLUMN">
-        <label>Delete Field</label>
+        <label>Delete Variable</label>
       </object>
       <object class="wxMenuItem" name="ID_NEW_TABLE_EDIT_FIELD_PROP">
-        <label>Edit Field Properties</label>
+        <label>Edit Variable Properties</label>
       </object>
       <object class="separator"/>
+      <object class="wxMenuItem" name="ID_SPACE_TIME_TOOL">
+        <label>Convert to Space-Time Project</label>
+      </object>
       <object class="wxMenuItem" name="ID_NEW_TABLE_MERGE_TABLE_DATA">
         <label>Merge Table Data</label>
       </object>
-      <object class="wxMenuItem" name="ID_NEW_TABLE_SAVE_COPY_OF_SHP_FILE">
-        <label>Save Copy of Shape File</label>
-      </object>
-      <object class="wxMenuItem" name="ID_NEW_TABLE_SAVE_COPY_OF_TABLE">
-        <label>Save Copy of Table</label>
-      </object>
-      <object class="wxMenuItem" name="ID_NEW_TABLE_SAVE">
-        <label>Save</label>
-      </object>
+      
+      
       <label>T&amp;able</label>
     </object>
     <object class="wxMenu" name="ID_MENU">
       <label>&amp;Map</label>
-      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_QUANTILE">
-        <label>Quantile</label>
-        <checkable>1</checkable>
+      <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_THEMELESS">
+        <label>Themeless Map</label>
       </object>
-      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_PERCENTILE">
-        <label>Percentile</label>
-        <checkable>1</checkable>
+      <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_CHOROPLETH_QUANTILE">
+        <label>Quantile Map</label>
       </object>
-      <object class="wxMenu" name="ID_MENU">
+      <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_CHOROPLETH_PERCENTILE">
+        <label>Percentile Map</label>
+      </object>
+      <object class="wxMenu" name="ID_OPEN_MENU">
+        <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_HINGE_15">
+          <label>Hinge=1.5</label>
+        </object>
+        <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_HINGE_30">
+          <label>Hinge=3.0</label>
+        </object>
         <label>Box Map</label>
-        <object class="wxMenuItem" name="ID_MAP_HINGE_15">
-          <label>Hinge = 1.5</label>
-          <checkable>1</checkable>
-        </object>
-        <object class="wxMenuItem" name="ID_MAP_HINGE_30">
-          <label>Hinge = 3.0</label>
-          <checkable>1</checkable>
-        </object>
       </object>
-      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_STDDEV">
-        <label>Standard Deviation</label>
-        <checkable>1</checkable>
+      <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_CHOROPLETH_STDDEV">
+        <label>Standard Deviation Map</label>
+      </object>
+      <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_UNIQUE_VALUES">
+        <label>Unique Values Map</label>
+      </object>
+      <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_NATURAL_BREAKS">
+        <label>Natural Breaks Map</label>
+      </object>
+      <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_EQUAL_INTERVALS">
+        <label>Equal Intervals Map</label>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenu" name="ID_MENU">
+        <object class="wxMenuItem" name="ID_OPEN_RATES_SMOOTH_RAWRATE">
+          <label>Raw Rate</label>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_OPEN_RATES_SMOOTH_EXCESSRISK">
+          <label>Excess Risk</label>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_OPEN_RATES_EMPIRICAL_BAYES_SMOOTHER">
+          <label>Empirical Bayes</label>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_OPEN_RATES_SPATIAL_RATE_SMOOTHER">
+          <label>Spatial Rate</label>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_OPEN_RATES_SPATIAL_EMPIRICAL_BAYES">
+          <label>Spatial Empirical Bayes</label>
+          <checkable>1</checkable>
+        </object>
+        <label>Rates-Calculated Map</label>
       </object>
       <object class="separator"/>
       <object class="wxMenuItem" name="ID_SHOW_CARTOGRAM_MAP">
         <label>Cartogram</label>
-      </object>
-      <object class="separator"/>
-      <object class="wxMenu" name="ID_MENU">
-        <label>Smooth</label>
-        <object class="wxMenuItem" name="IDM_SMOOTH_RAWRATE">
-          <label>Raw Rate</label>
-          <checkable>1</checkable>
-        </object>
-        <object class="wxMenuItem" name="IDM_SMOOTH_EXCESSRISK">
-          <label>Excess Risk</label>
-          <checkable>1</checkable>
-        </object>
-        <object class="wxMenuItem" name="IDM_EMPERICAL_BAYES_SMOOTHER">
-          <label>Empirical Bayes</label>
-          <checkable>1</checkable>
-        </object>
-        <object class="wxMenuItem" name="IDM_SPATIAL_RATE_SMOOTHER">
-          <label>Spatial Rate</label>
-          <checkable>1</checkable>
-        </object>
-        <object class="wxMenuItem" name="IDM_SPATIAL_EMPIRICAL_BAYES">
-          <label>Spatial Empirical Bayes</label>
-          <checkable>1</checkable>
-        </object>
-      </object>
-      <object class="wxMenuItem" name="ID_MAPANALYSIS_SAVERESULTS">
-        <label>Save Rates</label>
       </object>
       <object class="separator"/>
       <object class="wxMenu" name="ID_MENU">
@@ -187,34 +200,25 @@
           <label>Cumulative</label>
         </object>
       </object>
-      <object class="separator"/>
-      <object class="wxMenuItem" name="ID_MAP_RESET">
-        <label>Reset Map</label>
-      </object>
-      <object class="wxMenuItem" name="ID_SHOW_CONVERTED_FEATURES">
-        <label>Load Matching Map</label>
-        <enabled>0</enabled>
-      </object>
-      <object class="wxMenuItem" name="ID_NEW_MAP_WINDOW">
-        <label>New Map Window</label>
-        <enabled>0</enabled>
-      </object>
     </object>
     <object class="wxMenu" name="ID_MENU">
       <object class="wxMenuItem" name="IDM_HIST">
         <label>Histogram</label>
       </object>
-      <object class="wxMenuItem" name="IDM_SCATTERPLOT">
-        <label>Scatter Plot</label>
-      </object>
       <object class="wxMenuItem" name="IDM_BOX">
         <label>Box Plot</label>
       </object>
-      <object class="wxMenuItem" name="IDM_PCP">
-        <label>Parallel Coordinate Plot</label>
+      <object class="wxMenuItem" name="IDM_SCATTERPLOT">
+        <label>Scatter Plot</label>
+      </object>
+      <object class="wxMenuItem" name="IDM_BUBBLECHART">
+        <label>Bubble Chart</label>
       </object>
       <object class="wxMenuItem" name="IDM_3DP">
         <label>3D Scatter Plot</label>
+      </object>
+      <object class="wxMenuItem" name="IDM_PCP">
+        <label>Parallel Coordinate Plot</label>
       </object>
       <object class="wxMenuItem" name="IDM_CC">
         <label>Conditional Plot</label>
@@ -227,19 +231,20 @@
         <label>Univariate Moran's I</label>
       </object>
       <object class="wxMenuItem" name="IDM_GMORAN">
-        <label>Multivariate Moran's I</label>
+        <label>Bivariate Moran's I</label>
       </object>
       <object class="wxMenuItem" name="IDM_MORAN_EBRATE">
         <label>Moran's I with EB Rate</label>
       </object>
+      <object class="separator"/>
       <object class="wxMenuItem" name="IDM_UNI_LISA">
-        <label>Univariate LISA</label>
+        <label>Univariate Local Moran's I</label>
       </object>
       <object class="wxMenuItem" name="IDM_MULTI_LISA">
-        <label>Multivariate LISA</label>
+        <label>Bivariate Local Moran's I</label>
       </object>
       <object class="wxMenuItem" name="IDM_LISA_EBRATE">
-        <label>LISA with EB Rate</label>
+        <label>Local Moran's I with EB Rate</label>
       </object>
       <object class="separator"/>
       <object class="wxMenuItem" name="IDM_GETIS_ORD">
@@ -249,7 +254,7 @@
     <object class="wxMenu" name="ID_MENU">
       <label>Metho&amp;ds</label>
       <object class="wxMenuItem" name="ID_REGRESSION_CLASSIC">
-        <label>Regress</label>
+        <label>Regression</label>
         <enabled>1</enabled>
       </object>
     </object>
@@ -264,6 +269,73 @@
     </object>
   </object>
   <object class="wxMenu" name="ID_DEFAULT_MENU_OPTIONS">
+    <label>Options</label>
+  </object>
+  <object class="wxMenu" name="ID_3D_PLOT_VIEW_MENU_OPTIONS">
+    <object class="wxMenu" name="ID_MENU">
+      <label>Color</label>
+      <object class="wxMenuItem" name="ID_SELECTABLE_FILL_COLOR">
+        <label>Point Color</label>
+      </object>
+      <object class="wxMenuItem" name="ID_HIGHLIGHT_COLOR">
+        <label>Highlight Color</label>
+      </object>
+      <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
+        <label>Background Color</label>
+      </object>
+    </object>
+    <label>Options</label>
+  </object>
+  <object class="wxMenu" name="ID_BOX_NEW_PLOT_VIEW_MENU_OPTIONS">
+    <object class="wxMenu" name="ID_MENU">
+      <label>Hinge</label>
+      <object class="wxMenuItem" name="ID_OPTIONS_HINGE_15">
+        <label>1.5</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_OPTIONS_HINGE_30">
+        <label>3.0</label>
+        <checkable>1</checkable>
+      </object>
+    </object>
+    <object class="wxMenuItem" name="ID_DISPLAY_STATISTICS">
+      <label>Display Statistics</label>
+      <checkable>1</checkable>
+      <checked>0</checked>
+    </object>
+    <object class="wxMenuItem" name="ID_SHOW_AXES">
+      <label>Show Vertical Axis</label>
+      <checkable>1</checkable>
+      <checked>1</checked>
+    </object>
+    <object class="wxMenuItem" name="ID_DISPLAY_STATUS_BAR">
+      <label>Show Status Bar</label>
+      <checkable>1</checkable>
+      <checked>1</checked>
+    </object>
+    <object class="separator"/>
+    <object class="wxMenu" name="ID_MENU">
+      <label>Color</label>
+      <object class="wxMenuItem" name="ID_SELECTABLE_FILL_COLOR">
+        <label>Point Color</label>
+      </object>
+      <object class="wxMenuItem" name="ID_HIGHLIGHT_COLOR">
+        <label>Highlight Color</label>
+      </object>
+      <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
+        <label>Background Color</label>
+      </object>
+    </object>
+    <object class="separator"/>
+    <object class="wxMenuItem" name="ID_SAVE_CANVAS_IMAGE_AS">
+      <label>Save Image As</label>
+    </object>
+    <object class="wxMenuItem" name="ID_SAVE_SELECTED_TO_COLUMN">
+      <label>Save Selection</label>
+    </object>
+    <object class="wxMenuItem" name="ID_COPY_IMAGE_TO_CLIPBOARD">
+      <label>Copy Image To Clipboard</label>
+    </object>
     <label>Options</label>
   </object>
   <object class="wxMenu" name="ID_BOXPLOT_VIEW_MENU_OPTIONS">
@@ -411,6 +483,47 @@
     </object>
     <label>Options</label>
   </object>
+  <object class="wxMenu" name="ID_HISTOGRAM_NEW_VIEW_MENU_OPTIONS">
+    <object class="wxMenuItem" name="ID_HISTOGRAM_INTERVALS">
+      <label>Choose Intervals</label>
+    </object>
+    <object class="wxMenuItem" name="ID_DISPLAY_STATISTICS">
+      <label>Display Statistics</label>
+      <checkable>1</checkable>
+      <checked>0</checked>
+    </object>
+    <object class="wxMenuItem" name="ID_SHOW_AXES">
+      <label>Show Axes</label>
+      <checkable>1</checkable>
+      <checked>1</checked>
+    </object>
+    <object class="wxMenuItem" name="ID_DISPLAY_STATUS_BAR">
+      <label>Show Status Bar</label>
+      <checkable>1</checkable>
+      <checked>1</checked>
+    </object>
+    <object class="separator"/>
+    <object class="wxMenu" name="ID_MENU">
+      <label>Color</label>
+      <object class="wxMenuItem" name="ID_HIGHLIGHT_COLOR">
+        <label>Highlight Color</label>
+      </object>
+      <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
+        <label>Background Color</label>
+      </object>
+    </object>
+    <object class="separator"/>
+    <object class="wxMenuItem" name="ID_SAVE_CANVAS_IMAGE_AS">
+      <label>Save Image As</label>
+    </object>
+    <object class="wxMenuItem" name="ID_SAVE_SELECTED_TO_COLUMN">
+      <label>Save Selection</label>
+    </object>
+    <object class="wxMenuItem" name="ID_COPY_IMAGE_TO_CLIPBOARD">
+      <label>Copy Image To Clipboard</label>
+    </object>
+    <label>Options</label>
+  </object>
   <object class="wxMenu" name="ID_HISTOGRAM_VIEW_MENU_OPTIONS">
     <label>Options</label>
     <object class="wxMenuItem" name="ID_HISTOGRAM_INTERVALS">
@@ -451,7 +564,7 @@
     </object>
     <label>Options</label>
   </object>
-  <object class="wxMenu" name="ID_GETIS_ORD_VIEW_MENU_OPTIONS">
+  <object class="wxMenu" name="ID_GETIS_ORD_NEW_VIEW_MENU_OPTIONS">
     <object class="wxMenu" name="ID_MENU">
       <label>Randomization</label>
       <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_99PERMUTATION">
@@ -467,7 +580,7 @@
         <label>999 Permutations</label>
       </object>
       <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_OTHER">
-        <label>Other (up to 49999)</label>
+        <label>Other (up to 99999)</label>
       </object>
     </object>
     <object class="wxMenu" name="ID_MENU">
@@ -489,89 +602,102 @@
         <checkable>1</checkable>
       </object>
     </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_ADD_NEIGHBORS_TO_SELECTION">
-      <label>Add Neighbors To Selection</label>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Select All...</label>
-      <object class="wxMenuItem" name="ID_SELECT_CORES">
-        <label>Cores</label>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_NEIGHBORS_OF_CORES">
-        <label>Neighbors of Cores</label>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_CORES_AND_NEIGHBORS">
-        <label>Cores and Neighbors</label>
-      </object>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Selection Shape</label>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_RECT">
-        <label>Rectangle</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_LINE">
-        <label>Line</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_CIRCLE">
-        <label>Circle</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="wxMenuItem" name="ID_SELECTION_MODE">
-      <label>Selection Mode</label>
-      <checkable>1</checkable>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Zoom</label>
-      <object class="wxMenuItem" name="ID_ZOOM_IN">
-        <label>Zoom In</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_ZOOM_OUT">
-        <label>Zoom out</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_FIT_TO_WINDOW_MODE">
-        <label>Fit To Window</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="wxMenuItem" name="ID_PAN_MODE">
-      <label>Panning Mode</label>
-      <checkable>1</checkable>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Color</label>
-      <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_VISIBLE">
-        <label>Outlines Visible</label>
-        <checkable>1</checkable>
-        <checked>1</checked>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECTABLE_FILL_COLOR">
-        <label>Map</label>
-      </object>
-      <object class="wxMenuItem" name="ID_HIGHLIGHT_COLOR">
-        <label>Highlight Color</label>
-      </object>
-      <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
-        <label>Background</label>
-      </object>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_MAP_ADDMEANCENTERS">
-      <label>Add Mean Centers to Table</label>
-    </object>
-    <object class="wxMenuItem" name="ID_MAP_ADDCENTROIDS">
-      <label>Add Centroids to Table</label>
-    </object>
-    <object class="separator"/>
     <object class="wxMenuItem" name="ID_SAVE_GETIS_ORD">
       <label>Save Results</label>
     </object>
     <object class="separator"/>
+    <object class="wxMenuItem" name="ID_ADD_NEIGHBORS_TO_SELECTION">
+      <label>Add Neighbors To Selection</label>
+    </object>
+    <object class="wxMenu" name="ID_MENU">
+      <label>Select All...</label>
+      <object class="wxMenuItem" name="ID_SELECT_CORES">
+        <label>Cores</label>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECT_NEIGHBORS_OF_CORES">
+        <label>Neighbors of Cores</label>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECT_CORES_AND_NEIGHBORS">
+        <label>Cores and Neighbors</label>
+      </object>
+    </object>
+    <object class="separator"/>
+    <object class="wxMenu" name="ID_SHAPE_CENTERS_MENU">
+      <object class="wxMenuItem" name="ID_MAP_ADDMEANCENTERS">
+        <label>Add Mean Centers to Table</label>
+      </object>
+      <object class="wxMenuItem" name="ID_MAP_ADDCENTROIDS">
+        <label>Add Centroids to Table</label>
+      </object>
+      <object class="wxMenuItem" name="ID_DISPLAY_MEAN_CENTERS">
+        <label>Display Mean Centers</label>
+        <checkable>1</checkable>
+        <enabled>0</enabled>
+      </object>
+      <object class="wxMenuItem" name="ID_DISPLAY_CENTROIDS">
+        <label>Display Centroids</label>
+        <checkable>1</checkable>
+        <enabled>0</enabled>
+      </object>
+      <label>Shape Centers</label>
+    </object>
+    <object class="separator"/>
+    <object class="wxMenu" name="ID_MENU">
+      <label>Selection Shape</label>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_RECT">
+        <label>Rectangle</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_CIRCLE">
+        <label>Circle</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_LINE">
+        <label>Line</label>
+        <checkable>1</checkable>
+      </object>
+    </object>
+    <object class="wxMenuItem" name="ID_SELECTION_MODE">
+      <label>Selection Mode</label>
+      <checkable>1</checkable>
+    </object>
+    <object class="wxMenuItem" name="ID_PAN_MODE">
+      <label>Panning Mode</label>
+      <checkable>1</checkable>
+    </object>
+    <object class="wxMenuItem" name="ID_ZOOM_MODE">
+      <label>Zooming Mode</label>
+      <checkable>1</checkable>
+    </object>
+    <object class="wxMenuItem" name="ID_FIT_TO_WINDOW_MODE">
+      <label>Fit-To-Window Mode</label>
+      <checkable>1</checkable>
+    </object>
+    <object class="wxMenuItem" name="ID_FIXED_ASPECT_RATIO_MODE">
+      <label>Fixed Aspect Ratio Mode</label>
+      <checkable>1</checkable>
+    </object>
+    <object class="wxMenu" name="ID_MENU">
+      <label>Color</label>
+      <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_COLOR">
+        <label>Outline Color</label>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_VISIBLE">
+        <label>Outlines Visible</label>
+        <checkable>1</checkable>
+        <checked>1</checked>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECTABLE_FILL_COLOR">
+        <label>Selectable Fill Color</label>
+      </object>
+      <object class="wxMenuItem" name="ID_HIGHLIGHT_COLOR">
+        <label>Highlight Color</label>
+      </object>
+      <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
+        <label>Background Color</label>
+      </object>
+    </object>
+    <object class="separator"/>
     <object class="wxMenuItem" name="ID_SAVE_CANVAS_IMAGE_AS">
       <label>Save Image As</label>
     </object>
@@ -583,7 +709,7 @@
     </object>
     <label>Options</label>
   </object>
-  <object class="wxMenu" name="ID_GETIS_ORD_VIEW_MENU_CONTEXT">
+  <object class="wxMenu" name="ID_LISAMAP_NEW_VIEW_MENU_OPTIONS">
     <object class="wxMenu" name="ID_MENU">
       <label>Randomization</label>
       <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_99PERMUTATION">
@@ -599,7 +725,7 @@
         <label>999 Permutations</label>
       </object>
       <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_OTHER">
-        <label>Other (up to 49999)</label>
+        <label>Other (up to 99999)</label>
       </object>
     </object>
     <object class="wxMenu" name="ID_MENU">
@@ -621,264 +747,10 @@
         <checkable>1</checkable>
       </object>
     </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_ADD_NEIGHBORS_TO_SELECTION">
-      <label>Add Neighbors To Selection</label>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Select All...</label>
-      <object class="wxMenuItem" name="ID_SELECT_CORES">
-        <label>Cores</label>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_NEIGHBORS_OF_CORES">
-        <label>Neighbors of Cores</label>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_CORES_AND_NEIGHBORS">
-        <label>Cores and Neighbors</label>
-      </object>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Selection Shape</label>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_RECT">
-        <label>Rectangle</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_LINE">
-        <label>Line</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_CIRCLE">
-        <label>Circle</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="wxMenuItem" name="ID_SELECTION_MODE">
-      <label>Selection Mode</label>
-      <checkable>1</checkable>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Zoom</label>
-      <object class="wxMenuItem" name="ID_ZOOM_IN">
-        <label>Zoom In</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_ZOOM_OUT">
-        <label>Zoom out</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_FIT_TO_WINDOW_MODE">
-        <label>Fit To Window</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="wxMenuItem" name="ID_PAN_MODE">
-      <label>Panning Mode</label>
-      <checkable>1</checkable>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Color</label>
-      <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_VISIBLE">
-        <label>Outlines Visible</label>
-        <checkable>1</checkable>
-        <checked>1</checked>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECTABLE_FILL_COLOR">
-        <label>Map</label>
-      </object>
-      <object class="wxMenuItem" name="ID_HIGHLIGHT_COLOR">
-        <label>Highlight Color</label>
-      </object>
-      <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
-        <label>Background</label>
-      </object>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_SAVE_GETIS_ORD">
-      <label>Save Results</label>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_SAVE_CANVAS_IMAGE_AS">
-      <label>Save Image As</label>
-    </object>
-    <object class="wxMenuItem" name="ID_SAVE_SELECTED_TO_COLUMN">
-      <label>Save Selection</label>
-    </object>
-    <object class="wxMenuItem" name="ID_COPY_IMAGE_TO_CLIPBOARD">
-      <label>Copy Image To Clipboard</label>
-    </object>
-    <label>Options</label>
-  </object>
-  <object class="wxMenu" name="ID_LISAMAP_VIEW_MENU_OPTIONS">
-    <object class="wxMenu" name="ID_MENU">
-      <label>Randomization</label>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_99PERMUTATION">
-        <label>99 Permutations</label>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_199PERMUTATION">
-        <label>199 Permutations</label>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_499PERMUTATION">
-        <label>499 Permutations</label>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_999PERMUTATION">
-        <label>999 Permutations</label>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_OTHER">
-        <label>Other (up to 49999)</label>
-      </object>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Significance Filter</label>
-      <object class="wxMenuItem" name="ID_SIGNIFICANCE_FILTER_05">
-        <label>0.05</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SIGNIFICANCE_FILTER_01">
-        <label>0.01</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SIGNIFICANCE_FILTER_001">
-        <label>0.001</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SIGNIFICANCE_FILTER_0001">
-        <label>0.0001</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_ADD_NEIGHBORS_TO_SELECTION">
-      <label>Add Neighbors To Selection</label>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Select All...</label>
-      <object class="wxMenuItem" name="ID_SELECT_CORES">
-        <label>Cores</label>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_NEIGHBORS_OF_CORES">
-        <label>Neighbors of Cores</label>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_CORES_AND_NEIGHBORS">
-        <label>Cores and Neighbors</label>
-      </object>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Selection Shape</label>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_RECT">
-        <label>Rectangle</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_LINE">
-        <label>Line</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_CIRCLE">
-        <label>Circle</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="wxMenuItem" name="ID_SELECTION_MODE">
-      <label>Selection Mode</label>
-      <checkable>1</checkable>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Zoom</label>
-      <object class="wxMenuItem" name="ID_ZOOM_IN">
-        <label>Zoom In</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_ZOOM_OUT">
-        <label>Zoom out</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_FIT_TO_WINDOW_MODE">
-        <label>Fit To Window</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="wxMenuItem" name="ID_PAN_MODE">
-      <label>Panning Mode</label>
-      <checkable>1</checkable>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Color</label>
-      <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_VISIBLE">
-        <label>Outlines Visible</label>
-        <checkable>1</checkable>
-        <checked>1</checked>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECTABLE_FILL_COLOR">
-        <label>Map</label>
-      </object>
-      <object class="wxMenuItem" name="ID_HIGHLIGHT_COLOR">
-        <label>Highlight Color</label>
-      </object>
-      <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
-        <label>Background</label>
-      </object>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_MAP_ADDMEANCENTERS">
-      <label>Add Mean Centers to Table</label>
-    </object>
-    <object class="wxMenuItem" name="ID_MAP_ADDCENTROIDS">
-      <label>Add Centroids to Table</label>
-    </object>
-    <object class="separator"/>
     <object class="wxMenuItem" name="ID_SAVE_LISA">
       <label>Save Results</label>
     </object>
     <object class="separator"/>
-    <object class="wxMenuItem" name="ID_SAVE_CANVAS_IMAGE_AS">
-      <label>Save Image As</label>
-    </object>
-    <object class="wxMenuItem" name="ID_SAVE_SELECTED_TO_COLUMN">
-      <label>Save Selection</label>
-    </object>
-    <object class="wxMenuItem" name="ID_COPY_IMAGE_TO_CLIPBOARD">
-      <label>Copy Image To Clipboard</label>
-    </object>
-    <label>Options</label>
-  </object>
-  <object class="wxMenu" name="ID_LISAMAP_VIEW_MENU_CONTEXT">
-    <object class="wxMenu" name="ID_MENU">
-      <label>Randomization</label>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_99PERMUTATION">
-        <label>99 Permutations</label>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_199PERMUTATION">
-        <label>199 Permutations</label>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_499PERMUTATION">
-        <label>499 Permutations</label>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_999PERMUTATION">
-        <label>999 Permutations</label>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_OTHER">
-        <label>Other (up to 49999)</label>
-      </object>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Significance Filter</label>
-      <object class="wxMenuItem" name="ID_SIGNIFICANCE_FILTER_05">
-        <label>0.05</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SIGNIFICANCE_FILTER_01">
-        <label>0.01</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SIGNIFICANCE_FILTER_001">
-        <label>0.001</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SIGNIFICANCE_FILTER_0001">
-        <label>0.0001</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="separator"/>
     <object class="wxMenuItem" name="ID_ADD_NEIGHBORS_TO_SELECTION">
       <label>Add Neighbors To Selection</label>
     </object>
@@ -894,18 +766,39 @@
         <label>Cores and Neighbors</label>
       </object>
     </object>
+    <object class="separator"/>
+    <object class="wxMenu" name="ID_SHAPE_CENTERS_MENU">
+      <object class="wxMenuItem" name="ID_MAP_ADDMEANCENTERS">
+        <label>Add Mean Centers to Table</label>
+      </object>
+      <object class="wxMenuItem" name="ID_MAP_ADDCENTROIDS">
+        <label>Add Centroids to Table</label>
+      </object>
+      <object class="wxMenuItem" name="ID_DISPLAY_MEAN_CENTERS">
+        <label>Display Mean Centers</label>
+        <checkable>1</checkable>
+        <enabled>0</enabled>
+      </object>
+      <object class="wxMenuItem" name="ID_DISPLAY_CENTROIDS">
+        <label>Display Centroids</label>
+        <checkable>1</checkable>
+        <enabled>0</enabled>
+      </object>
+      <label>Shape Centers</label>
+    </object>
+    <object class="separator"/>
     <object class="wxMenu" name="ID_MENU">
       <label>Selection Shape</label>
       <object class="wxMenuItem" name="ID_SELECT_WITH_RECT">
         <label>Rectangle</label>
         <checkable>1</checkable>
       </object>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_LINE">
-        <label>Line</label>
-        <checkable>1</checkable>
-      </object>
       <object class="wxMenuItem" name="ID_SELECT_WITH_CIRCLE">
         <label>Circle</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_LINE">
+        <label>Line</label>
         <checkable>1</checkable>
       </object>
     </object>
@@ -913,248 +806,137 @@
       <label>Selection Mode</label>
       <checkable>1</checkable>
     </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Zoom</label>
-      <object class="wxMenuItem" name="ID_ZOOM_IN">
-        <label>Zoom In</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_ZOOM_OUT">
-        <label>Zoom out</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_FIT_TO_WINDOW_MODE">
-        <label>Fit To Window</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
     <object class="wxMenuItem" name="ID_PAN_MODE">
       <label>Panning Mode</label>
       <checkable>1</checkable>
     </object>
+    <object class="wxMenuItem" name="ID_ZOOM_MODE">
+      <label>Zooming Mode</label>
+      <checkable>1</checkable>
+    </object>
+    <object class="wxMenuItem" name="ID_FIT_TO_WINDOW_MODE">
+      <label>Fit-To-Window Mode</label>
+      <checkable>1</checkable>
+    </object>
+    <object class="wxMenuItem" name="ID_FIXED_ASPECT_RATIO_MODE">
+      <label>Fixed Aspect Ratio Mode</label>
+      <checkable>1</checkable>
+    </object>
     <object class="wxMenu" name="ID_MENU">
       <label>Color</label>
+      <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_COLOR">
+        <label>Outline Color</label>
+      </object>
       <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_VISIBLE">
         <label>Outlines Visible</label>
         <checkable>1</checkable>
         <checked>1</checked>
       </object>
       <object class="wxMenuItem" name="ID_SELECTABLE_FILL_COLOR">
-        <label>Map</label>
+        <label>Selectable Fill Color</label>
       </object>
       <object class="wxMenuItem" name="ID_HIGHLIGHT_COLOR">
         <label>Highlight Color</label>
       </object>
       <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
-        <label>Background</label>
+        <label>Background Color</label>
       </object>
     </object>
     <object class="separator"/>
-    <object class="wxMenuItem" name="ID_SAVE_LISA">
+    <object class="wxMenuItem" name="ID_SAVE_CANVAS_IMAGE_AS">
+      <label>Save Image As</label>
+    </object>
+    <object class="wxMenuItem" name="ID_SAVE_SELECTED_TO_COLUMN">
+      <label>Save Selection</label>
+    </object>
+    <object class="wxMenuItem" name="ID_COPY_IMAGE_TO_CLIPBOARD">
+      <label>Copy Image To Clipboard</label>
+    </object>
+    <label>Options</label>
+  </object>
+  <object class="wxMenu" name="ID_LISA_SCATTER_PLOT_VIEW_MENU_OPTIONS">
+    <object class="wxMenu" name="ID_MENU">
+      <object class="wxMenuItem" name="ID_SELECT_WITH_RECT">
+        <label>Rectangle</label>
+        <checkable>1</checkable>
+        <checked>1</checked>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_CIRCLE">
+        <label>Circle</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_LINE">
+        <label>Line</label>
+        <checkable>1</checkable>
+      </object>
+      <label>Selection Shape</label>
+    </object>
+    <object class="wxMenuItem" name="ID_VIEW_REGRESSION_SELECTED">
+      <label>Show Regression of Selected</label>
+      <checkable>1</checkable>
+      <checked>0</checked>
+    </object>
+    <object class="wxMenuItem" name="ID_VIEW_REGRESSION_SELECTED_EXCLUDED">
+      <label>Show Regression of Selected Excluded</label>
+      <checkable>1</checkable>
+      <checked>0</checked>
+    </object>
+    <object class="wxMenuItem" name="ID_DISPLAY_STATISTICS">
+      <label>Display Statistics</label>
+      <checkable>1</checkable>
+      <checked>0</checked>
+    </object>
+    <object class="wxMenuItem" name="ID_SHOW_AXES_THROUGH_ORIGIN">
+      <label>Show Axes Through Origin</label>
+      <checkable>1</checkable>
+      <checked>1</checked>
+    </object>
+    <object class="wxMenuItem" name="ID_DISPLAY_STATUS_BAR">
+      <label>Show Status Bar</label>
+      <checkable>1</checkable>
+      <checked>1</checked>
+    </object>
+    <object class="separator"/>
+    <object class="wxMenu" name="ID_MENU">
+      <label>Randomization</label>
+      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_99PERMUTATION">
+        <label>99 Permutations</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_199PERMUTATION">
+        <label>199 Permutations</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_499PERMUTATION">
+        <label>499 Permutations</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_999PERMUTATION">
+        <label>999 Permutations</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_OTHER">
+        <label>Other (up to 99999)</label>
+        <checkable>1</checkable>
+      </object>
+    </object>
+    <object class="wxMenuItem" name="ID_SAVE_MORANI">
       <label>Save Results</label>
     </object>
     <object class="separator"/>
-    <object class="wxMenuItem" name="ID_SAVE_CANVAS_IMAGE_AS">
-      <label>Save Image As</label>
-    </object>
-    <object class="wxMenuItem" name="ID_SAVE_SELECTED_TO_COLUMN">
-      <label>Save Selection</label>
-    </object>
-    <object class="wxMenuItem" name="ID_COPY_IMAGE_TO_CLIPBOARD">
-      <label>Copy Image To Clipboard</label>
-    </object>
-    <label>Options</label>
-  </object>
-  <object class="wxMenu" name="ID_MAP_VIEW_MENU_OPTIONS">
-    <label>Options</label>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Selection Shape</label>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_RECT">
-        <label>Rectangle</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_LINE">
-        <label>Line</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_CIRCLE">
-        <label>Circle</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="wxMenuItem" name="ID_SELECTION_MODE">
-      <label>Selection Mode</label>
-      <checkable>1</checkable>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Zoom</label>
-      <object class="wxMenuItem" name="ID_ZOOM_IN">
-        <label>Zoom In</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_ZOOM_OUT">
-        <label>Zoom out</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_FIT_TO_WINDOW_MODE">
-        <label>Fit To Window</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="wxMenuItem" name="ID_PAN_MODE">
-      <label>Panning Mode</label>
-      <checkable>1</checkable>
-    </object>
     <object class="wxMenu" name="ID_MENU">
       <label>Color</label>
-      <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_VISIBLE">
-        <label>Outlines Visible</label>
-        <checkable>1</checkable>
-        <checked>1</checked>
+      <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_COLOR">
+        <label>Regression Line Color</label>
       </object>
       <object class="wxMenuItem" name="ID_SELECTABLE_FILL_COLOR">
-        <label>Map</label>
+        <label>Point Color</label>
       </object>
       <object class="wxMenuItem" name="ID_HIGHLIGHT_COLOR">
         <label>Highlight Color</label>
       </object>
       <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
-        <label>Background</label>
-      </object>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_MAP_ADDMEANCENTERS">
-      <label>Add Mean Centers to Table</label>
-    </object>
-    <object class="wxMenuItem" name="ID_MAP_ADDCENTROIDS">
-      <label>Add Centroids to Table</label>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_SAVE_CANVAS_IMAGE_AS">
-      <label>Save Image As</label>
-    </object>
-    <object class="wxMenuItem" name="ID_SAVE_SELECTED_TO_COLUMN">
-      <label>Save Selection</label>
-    </object>
-    <object class="wxMenuItem" name="ID_COPY_IMAGE_TO_CLIPBOARD">
-      <label>Copy Image To Clipboard</label>
-    </object>
-  </object>
-  <object class="wxMenu" name="ID_MAP_VIEW_MENU_CONTEXT">
-    <object class="wxMenu" name="ID_MENU">
-      <label>Map</label>
-      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_QUANTILE">
-        <label>Quantile</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_PERCENTILE">
-        <label>Percentile</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenu" name="ID_MENU">
-        <label>Box Map</label>
-        <object class="wxMenuItem" name="ID_MAP_HINGE_15">
-          <label>Hinge = 1.5</label>
-          <checkable>1</checkable>
-        </object>
-        <object class="wxMenuItem" name="ID_MAP_HINGE_30">
-          <label>Hinge = 3.0</label>
-          <checkable>1</checkable>
-        </object>
-      </object>
-      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_STDDEV">
-        <label>Std Dev</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Smooth</label>
-      <object class="wxMenuItem" name="IDM_SMOOTH_RAWRATE">
-        <label>Raw Rate</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="IDM_SMOOTH_EXCESSRISK">
-        <label>Excess Risk</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="IDM_EMPERICAL_BAYES_SMOOTHER">
-        <label>Empirical Bayes</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="IDM_SPATIAL_RATE_SMOOTHER">
-        <label>Spatial Rate</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="IDM_SPATIAL_EMPIRICAL_BAYES">
-        <label>Spatial Empirical Bayes</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="wxMenuItem" name="ID_MAPANALYSIS_SAVERESULTS">
-      <label>Save Rates</label>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_MAP_ADDMEANCENTERS">
-      <label>Add Mean Centers to Table</label>
-    </object>
-    <object class="wxMenuItem" name="ID_MAP_ADDCENTROIDS">
-      <label>Add Centroids to Table</label>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Selection Shape</label>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_RECT">
-        <label>Rectangle</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_LINE">
-        <label>Line</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECT_WITH_CIRCLE">
-        <label>Circle</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="wxMenuItem" name="ID_SELECTION_MODE">
-      <label>Selection Mode</label>
-      <checkable>1</checkable>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Zoom</label>
-      <object class="wxMenuItem" name="ID_ZOOM_IN">
-        <label>Zoom In</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_ZOOM_OUT">
-        <label>Zoom out</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_FIT_TO_WINDOW_MODE">
-        <label>Fit To Window</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="wxMenuItem" name="ID_PAN_MODE">
-      <label>Panning Mode</label>
-      <checkable>1</checkable>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Color</label>
-      <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_VISIBLE">
-        <label>Outlines Visible</label>
-        <checkable>1</checkable>
-        <checked>1</checked>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECTABLE_FILL_COLOR">
-        <label>Map</label>
-      </object>
-      <object class="wxMenuItem" name="ID_HIGHLIGHT_COLOR">
-        <label>Highlight Color</label>
-      </object>
-      <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
-        <label>Background</label>
+        <label>Background Color</label>
       </object>
     </object>
     <object class="separator"/>
@@ -1178,6 +960,164 @@
     </object>
     <label>Options</label>
   </object>
+  <object class="wxMenu" name="ID_MAP_NEW_VIEW_MENU_OPTIONS">
+    <object class="wxMenu" name="ID_MENU">
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_THEMELESS">
+        <label>Themeless</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_QUANTILE">
+        <label>Quantile</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_PERCENTILE">
+        <label>Percentile</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenu" name="ID_MENU">
+        <object class="wxMenuItem" name="ID_MAPANALYSIS_HINGE_15">
+          <label>Hinge=1.5</label>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_MAPANALYSIS_HINGE_30">
+          <label>Hinge=3.0</label>
+          <checkable>1</checkable>
+        </object>
+        <label>Box Map</label>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_STDDEV">
+        <label>Standard Deviation</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_UNIQUE_VALUES">
+        <label>Unique Values</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_NATURAL_BREAKS">
+        <label>Natural Breaks</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_EQUAL_INTERVALS">
+        <label>Equal Intervals</label>
+        <checkable>1</checkable>
+      </object>
+      <label>Change Current Map Type</label>
+    </object>
+    <object class="wxMenuItem" name="ID_SAVE_CATEGORIES">
+      <label>Save Categories</label>
+    </object>
+    <object class="separator"/>
+    <object class="wxMenu" name="ID_MENU">
+      <label>Rates</label>
+      <object class="wxMenuItem" name="ID_RATES_SMOOTH_RAWRATE">
+        <label>Raw Rate</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_RATES_SMOOTH_EXCESSRISK">
+        <label>Excess Risk</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_RATES_EMPIRICAL_BAYES_SMOOTHER">
+        <label>Empirical Bayes</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_RATES_SPATIAL_RATE_SMOOTHER">
+        <label>Spatial Rate</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_RATES_SPATIAL_EMPIRICAL_BAYES">
+        <label>Spatial Empirical Bayes</label>
+        <checkable>1</checkable>
+      </object>
+    </object>
+    <object class="wxMenuItem" name="ID_MAPANALYSIS_SAVERESULTS">
+      <label>Save Rates</label>
+    </object>
+    <object class="separator"/>
+    <object class="wxMenu" name="ID_SHAPE_CENTERS_MENU">
+      <object class="wxMenuItem" name="ID_MAP_ADDMEANCENTERS">
+        <label>Add Mean Centers to Table</label>
+      </object>
+      <object class="wxMenuItem" name="ID_MAP_ADDCENTROIDS">
+        <label>Add Centroids to Table</label>
+      </object>
+      <object class="wxMenuItem" name="ID_DISPLAY_MEAN_CENTERS">
+        <label>Display Mean Centers</label>
+        <checkable>1</checkable>
+        <enabled>0</enabled>
+      </object>
+      <object class="wxMenuItem" name="ID_DISPLAY_CENTROIDS">
+        <label>Display Centroids</label>
+        <checkable>1</checkable>
+        <enabled>0</enabled>
+      </object>
+      <label>Shape Centers</label>
+    </object>
+    <object class="separator"/>
+    <object class="wxMenu" name="ID_MENU">
+      <label>Selection Shape</label>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_RECT">
+        <label>Rectangle</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_CIRCLE">
+        <label>Circle</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_LINE">
+        <label>Line</label>
+        <checkable>1</checkable>
+      </object>
+    </object>
+    <object class="wxMenuItem" name="ID_SELECTION_MODE">
+      <label>Selection Mode</label>
+      <checkable>1</checkable>
+    </object>
+    <object class="wxMenuItem" name="ID_PAN_MODE">
+      <label>Panning Mode</label>
+      <checkable>1</checkable>
+    </object>
+    <object class="wxMenuItem" name="ID_ZOOM_MODE">
+      <label>Zooming Mode</label>
+      <checkable>1</checkable>
+    </object>
+    <object class="wxMenuItem" name="ID_FIT_TO_WINDOW_MODE">
+      <label>Fit-To-Window Mode</label>
+      <checkable>1</checkable>
+    </object>
+    <object class="wxMenuItem" name="ID_FIXED_ASPECT_RATIO_MODE">
+      <label>Fixed Aspect Ratio Mode</label>
+      <checkable>1</checkable>
+    </object>
+    <object class="wxMenu" name="ID_MENU">
+      <label>Color</label>
+      <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_COLOR">
+        <label>Outline Color</label>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_VISIBLE">
+        <label>Outlines Visible</label>
+        <checkable>1</checkable>
+        <checked>1</checked>
+      </object>
+      <object class="wxMenuItem" name="ID_HIGHLIGHT_COLOR">
+        <label>Highlight Color</label>
+      </object>
+      <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
+        <label>Background Color</label>
+      </object>
+    </object>
+    <object class="separator"/>
+    <object class="wxMenuItem" name="ID_SAVE_CANVAS_IMAGE_AS">
+      <label>Save Image As</label>
+    </object>
+    <object class="wxMenuItem" name="ID_SAVE_SELECTED_TO_COLUMN">
+      <label>Save Selection</label>
+    </object>
+    <object class="wxMenuItem" name="ID_COPY_IMAGE_TO_CLIPBOARD">
+      <label>Copy Image To Clipboard</label>
+    </object>
+    <label>Options</label>
+  </object>
   <object class="wxMenu" name="ID_MAP_MOVIE_VIEW_MENU_OPTIONS">
     <object class="wxMenu" name="ID_MENU">
       <label>Color</label>
@@ -1198,39 +1138,99 @@
     </object>
     <label>Options</label>
   </object>
-  <object class="wxMenu" name="ID_PCP_VIEW_MENU_OPTIONS">
-    <label>Options</label>
+  <object class="wxMenu" name="ID_PCP_NEW_PLOT_VIEW_MENU_OPTIONS">
+    <object class="wxMenu" name="ID_MENU">
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_THEMELESS">
+        <label>Themeless</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_QUANTILE">
+        <label>Quantile</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_PERCENTILE">
+        <label>Percentile</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenu" name="ID_MENU">
+        <object class="wxMenuItem" name="ID_MAPANALYSIS_HINGE_15">
+          <label>Hinge=1.5</label>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_MAPANALYSIS_HINGE_30">
+          <label>Hinge=3.0</label>
+          <checkable>1</checkable>
+        </object>
+        <label>Boxplot Theme</label>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_STDDEV">
+        <label>Standard Deviation</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_UNIQUE_VALUES">
+        <label>Unique Values</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_NATURAL_BREAKS">
+        <label>Natural Breaks</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_EQUAL_INTERVALS">
+        <label>Equal Intervals</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_SAVE_CATEGORIES">
+        <label>Save Categories</label>
+      </object>
+      <label>Classification Themes</label>
+    </object>
+    <object class="wxMenuItem" name="ID_SAVE_CATEGORIES">
+      <label>Save Categories</label>
+    </object>
+    <object class="separator"/>
     <object class="wxMenuItem" name="ID_VIEW_STANDARDIZED_DATA">
       <label>View Standardized Data</label>
+      <checkable>1</checkable>
     </object>
     <object class="wxMenuItem" name="ID_VIEW_ORIGINAL_DATA">
       <label>View Original Data</label>
+      <checkable>1</checkable>
+      <checked>1</checked>
+    </object>
+    <object class="wxMenuItem" name="ID_DISPLAY_STATISTICS">
+      <label>Display Statistics</label>
+      <checkable>1</checkable>
+      <checked>0</checked>
+    </object>
+    <object class="wxMenuItem" name="ID_DISPLAY_STATUS_BAR">
+      <label>Show Status Bar</label>
+      <checkable>1</checkable>
+      <checked>1</checked>
     </object>
     <object class="separator"/>
-    <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
-      <label>Background Color</label>
+    <object class="wxMenu" name="ID_MENU">
+      <label>Selection Shape</label>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_RECT">
+        <label>Rectangle</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_CIRCLE">
+        <label>Circle</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_LINE">
+        <label>Line</label>
+        <checkable>1</checkable>
+      </object>
     </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_SAVE_CANVAS_IMAGE_AS">
-      <label>Save Image As</label>
-    </object>
-    <object class="wxMenuItem" name="ID_SAVE_SELECTED_TO_COLUMN">
-      <label>Save Selection</label>
-    </object>
-    <object class="wxMenuItem" name="ID_COPY_IMAGE_TO_CLIPBOARD">
-      <label>Copy Image To Clipboard</label>
-    </object>
-  </object>
-  <object class="wxMenu" name="ID_PCP_VIEW_MENU_CONTEXT">
-    <object class="wxMenuItem" name="ID_VIEW_STANDARDIZED_DATA">
-      <label>View Standardized Data</label>
-    </object>
-    <object class="wxMenuItem" name="ID_VIEW_ORIGINAL_DATA">
-      <label>View Original Data</label>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
-      <label>Background</label>
+    <object class="wxMenu" name="ID_MENU">
+      <label>Color</label>
+      <object class="wxMenuItem" name="ID_HIGHLIGHT_COLOR">
+        <label>Highlight Color</label>
+      </object>
+      <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
+        <label>Background Color</label>
+      </object>
     </object>
     <object class="separator"/>
     <object class="wxMenuItem" name="ID_SAVE_CANVAS_IMAGE_AS">
@@ -1290,19 +1290,19 @@
       <checkable>1</checkable>
       <checked>1</checked>
     </object>
+    <object class="wxMenuItem" name="ID_DISPLAY_STATUS_BAR">
+      <label>Show Status Bar</label>
+      <checkable>1</checkable>
+      <checked>1</checked>
+    </object>
     <object class="separator"/>
     <object class="wxMenu" name="ID_MENU">
       <label>Color</label>
       <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_COLOR">
-        <label>Outline Color</label>
-      </object>
-      <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_VISIBLE">
-        <label>Outlines Visible</label>
-        <checkable>1</checkable>
-        <checked>1</checked>
+        <label>Regression Line Color</label>
       </object>
       <object class="wxMenuItem" name="ID_SELECTABLE_FILL_COLOR">
-        <label>Selectable Fill Color</label>
+        <label>Point Color</label>
       </object>
       <object class="wxMenuItem" name="ID_HIGHLIGHT_COLOR">
         <label>Highlight Color</label>
@@ -1322,6 +1322,116 @@
     <object class="wxMenuItem" name="ID_COPY_IMAGE_TO_CLIPBOARD">
       <label>Copy Image To Clipboard</label>
     </object>
+  </object>
+  <object class="wxMenu" name="ID_BUBBLE_CHART_VIEW_MENU_OPTIONS">
+    <object class="wxMenu" name="ID_MENU">
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_THEMELESS">
+        <label>Themeless</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_QUANTILE">
+        <label>Quantile</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_PERCENTILE">
+        <label>Percentile</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenu" name="ID_MENU">
+        <object class="wxMenuItem" name="ID_MAPANALYSIS_HINGE_15">
+          <label>Hinge=1.5</label>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_MAPANALYSIS_HINGE_30">
+          <label>Hinge=3.0</label>
+          <checkable>1</checkable>
+        </object>
+        <label>Boxplot Theme</label>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_STDDEV">
+        <label>Standard Deviation</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_UNIQUE_VALUES">
+        <label>Unique Values</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_NATURAL_BREAKS">
+        <label>Natural Breaks</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_MAPANALYSIS_EQUAL_INTERVALS">
+        <label>Equal Intervals</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_SAVE_CATEGORIES">
+        <label>Save Categories</label>
+      </object>
+      <label>Classification Themes</label>
+    </object>
+    <object class="wxMenuItem" name="ID_SAVE_CATEGORIES">
+      <label>Save Categories</label>
+    </object>
+    <object class="separator"/>
+    <object class="wxMenu" name="ID_MENU">
+      <label>Selection Shape</label>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_RECT">
+        <label>Rectangle</label>
+        <checkable>1</checkable>
+        <checked>1</checked>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_CIRCLE">
+        <label>Circle</label>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECT_WITH_LINE">
+        <label>Line</label>
+        <checkable>1</checkable>
+      </object>
+    </object>
+    <object class="wxMenuItem" name="ID_VIEW_STANDARDIZED_DATA">
+      <label>View Standardized Data</label>
+      <checkable>1</checkable>
+    </object>
+    <object class="wxMenuItem" name="ID_VIEW_ORIGINAL_DATA">
+      <label>View Original Data</label>
+      <checkable>1</checkable>
+      <checked>1</checked>
+    </object>
+    <object class="wxMenuItem" name="ID_SHOW_AXES_THROUGH_ORIGIN">
+      <label>Show Axes Through Origin</label>
+      <checkable>1</checkable>
+      <checked>1</checked>
+    </object>
+    <object class="separator"/>
+    <object class="wxMenu" name="ID_MENU">
+      <label>Color</label>
+      <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_COLOR">
+        <label>Outline Color</label>
+      </object>
+      <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_VISIBLE">
+        <label>Outlines Visible</label>
+        <checkable>1</checkable>
+        <checked>1</checked>
+      </object>
+      <object class="wxMenuItem" name="ID_HIGHLIGHT_COLOR">
+        <label>Highlight Color</label>
+      </object>
+      <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
+        <label>Background Color</label>
+      </object>
+    </object>
+    <object class="separator"/>
+    <object class="wxMenuItem" name="ID_SAVE_CANVAS_IMAGE_AS">
+      <label>Save Image As</label>
+    </object>
+    <object class="wxMenuItem" name="ID_SAVE_SELECTED_TO_COLUMN">
+      <label>Save Selection</label>
+    </object>
+    <object class="wxMenuItem" name="ID_COPY_IMAGE_TO_CLIPBOARD">
+      <label>Copy Image To Clipboard</label>
+    </object>
+    <label>Options</label>
   </object>
   <object class="wxMenu" name="ID_SCATTER_PLOT_VIEW_MENU_OPTIONS">
     <label>Options</label>
@@ -1379,107 +1489,10 @@
     </object>
     <label>Options</label>
   </object>
-  <object class="wxMenu" name="ID_SCATTER_M_PLOT_VIEW_MENU_OPTIONS">
-    <label>Options</label>
-    <object class="wxMenuItem" name="ID_VIEW_REGRESSION_SELECTED_EXCLUDED">
-      <label>Exclude Selected</label>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Randomization</label>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_99PERMUTATION">
-        <label>99 Permutations</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_199PERMUTATION">
-        <label>199 Permutations</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_499PERMUTATION">
-        <label>499 Permutations</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_999PERMUTATION">
-        <label>999 Permutations</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_OTHER">
-        <label>Other (up to 49999)</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="wxMenuItem" name="ID_OPTION_ENVELOPESLOPES">
-      <label>Envelope Slopes</label>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
-      <label>Background Color</label>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_SAVE_MORANI">
-      <label>Save Results</label>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_SAVE_CANVAS_IMAGE_AS">
-      <label>Save Image As</label>
-    </object>
-    <object class="wxMenuItem" name="ID_SAVE_SELECTED_TO_COLUMN">
-      <label>Save Selection</label>
-    </object>
-    <object class="wxMenuItem" name="ID_COPY_IMAGE_TO_CLIPBOARD">
-      <label>Copy Image To Clipboard</label>
-    </object>
-  </object>
-  <object class="wxMenu" name="ID_SCATTER_M_PLOT_VIEW_MENU_CONTEXT">
-    <object class="wxMenuItem" name="ID_VIEW_REGRESSION_SELECTED_EXCLUDED">
-      <label>Exclude Selected</label>
-    </object>
-    <object class="wxMenu" name="ID_MENU">
-      <label>Randomization</label>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_99PERMUTATION">
-        <label>99 Permutations</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_199PERMUTATION">
-        <label>199 Permutations</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_499PERMUTATION">
-        <label>499 Permutations</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_999PERMUTATION">
-        <label>999 Permutations</label>
-        <checkable>1</checkable>
-      </object>
-      <object class="wxMenuItem" name="ID_OPTIONS_RANDOMIZATION_OTHER">
-        <label>Other (up to 49999)</label>
-        <checkable>1</checkable>
-      </object>
-    </object>
-    <object class="wxMenuItem" name="ID_OPTION_ENVELOPESLOPES">
-      <label>Envelope Slopes</label>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_CANVAS_BACKGROUND_COLOR">
-      <label>Background</label>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_SAVE_MORANI">
-      <label>Save Results</label>
-    </object>
-    <object class="separator"/>
-    <object class="wxMenuItem" name="ID_SAVE_CANVAS_IMAGE_AS">
-      <label>Save Image As</label>
-    </object>
-    <object class="wxMenuItem" name="ID_SAVE_SELECTED_TO_COLUMN">
-      <label>Save Selection</label>
-    </object>
-    <object class="wxMenuItem" name="ID_COPY_IMAGE_TO_CLIPBOARD">
-      <label>Copy Image To Clipboard</label>
-    </object>
-    <label>Options</label>
-  </object>
   <object class="wxMenu" name="ID_NEW_TABLE_VIEW_MENU_CONTEXT">
+    <object class="wxMenuItem" name="ID_SHOW_TIME_CHOOSER">
+      <label>Time Control</label>
+    </object>
     <object class="wxMenuItem" name="ID_NEW_TABLE_MOVE_SELECTED_TO_TOP">
       <label>Move Selected to Top</label>
     </object>
@@ -1497,23 +1510,23 @@
     </object>
     <object class="separator"/>
     <object class="wxMenuItem" name="ID_NEW_TABLE_FIELD_CALCULATION">
-      <label>Field Calculation</label>
+      <label>Variable Calculation</label>
     </object>
     <object class="wxMenuItem" name="ID_NEW_TABLE_ADD_COLUMN">
-      <label>Add Field</label>
+      <label>Add Variable</label>
     </object>
     <object class="wxMenuItem" name="ID_NEW_TABLE_DELETE_COLUMN">
-      <label>Delete Field</label>
+      <label>Delete Variable</label>
     </object>
     <object class="wxMenuItem" name="ID_NEW_TABLE_EDIT_FIELD_PROP">
-      <label>Edit Field Properties</label>
+      <label>Edit Variable Properties</label>
     </object>
     <object class="separator"/>
+    <object class="wxMenuItem" name="ID_SPACE_TIME_TOOL">
+      <label>Convert to Space-Time Project</label>
+    </object>
     <object class="wxMenuItem" name="ID_NEW_TABLE_MERGE_TABLE_DATA">
       <label>Merge Table Data</label>
-    </object>
-    <object class="wxMenuItem" name="ID_NEW_TABLE_SAVE">
-      <label>Save</label>
     </object>
     <label>Table</label>
   </object>
@@ -1559,9 +1572,6 @@
       <label>Fixed Aspect Ratio Mode</label>
       <checkable>1</checkable>
     </object>
-    <object class="wxMenuItem" name="ID_PRINT_CANVAS_STATE">
-      <label>Print Canvas State to Log File</label>
-    </object>
     <object class="wxMenu" name="ID_MENU">
       <label>Color</label>
       <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_COLOR">
@@ -1595,9 +1605,6 @@
     <label>Options</label>
   </object>
   <object class="wxMenu" name="ID_TEST_TABLE_VIEW_MENU_CONTEXT">
-    <object class="wxMenuItem" name="ID_PRINT_CANVAS_STATE">
-      <label>Print Canvas State to Log File</label>
-    </object>
     <object class="wxMenu" name="ID_MENU">
       <label>Color</label>
       <object class="wxMenuItem" name="ID_SELECTABLE_OUTLINE_COLOR">
@@ -1637,80 +1644,123 @@
     <label>Options</label>
   </object>
   <object class="wxMenu" name="ID_MAP_CHOICES">
-    <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_QUANTILE">
-      <label>Quantile</label>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_THEMELESS">
+      <label>Themeless Map</label>
+      <bitmap>ToolBarBitmaps_ThemelessMap.png</bitmap>
+    </object>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_CHOROPLETH_QUANTILE">
+      <label>Quantile Map</label>
       <bitmap>ToolBarBitmaps_25.png</bitmap>
     </object>
-    <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_PERCENTILE">
-      <label>Percentile</label>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_CHOROPLETH_PERCENTILE">
+      <label>Percentile Map</label>
       <bitmap>ToolBarBitmaps_26.png</bitmap>
     </object>
-    <object class="wxMenuItem" name="ID_MAP_HINGE_15">
-      <label>Hinge = 1.5</label>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_HINGE_15">
+      <label>Box Map, Hinge=1.5</label>
       <bitmap>ToolBarBitmaps_28.png</bitmap>
     </object>
-    <object class="wxMenuItem" name="ID_MAP_HINGE_30">
-      <label>Hinge = 3.0</label>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_HINGE_30">
+      <label>Box Map, Hinge=3.0</label>
       <bitmap>ToolBarBitmaps_29.png</bitmap>
     </object>
-    <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_STDDEV">
-      <label>Standard Deviation</label>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_CHOROPLETH_STDDEV">
+      <label>Standard Deviation Map</label>
       <bitmap>ToolBarBitmaps_27.png</bitmap>
     </object>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_UNIQUE_VALUES">
+      <label>Unique Values Map</label>
+      <bitmap>ToolBarBitmaps_38.png</bitmap>
+    </object>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_NATURAL_BREAKS">
+      <label>Natural Breaks Map</label>
+      <bitmap>ToolBarBitmaps_39.png</bitmap>
+    </object>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_EQUAL_INTERVALS">
+      <label>Equal Intervals Map</label>
+      <bitmap>ToolBarBitmaps_40.png</bitmap>
+    </object>
     <object class="wxMenu" name="ID_MAP_SMOOTHING_CHOICES">
-      <object class="wxMenuItem" name="IDM_SMOOTH_RAWRATE">
+      <object class="wxMenuItem" name="ID_OPEN_RATES_SMOOTH_RAWRATE">
         <label>Raw Rate</label>
       </object>
-      <object class="wxMenuItem" name="IDM_SMOOTH_EXCESSRISK">
+      <object class="wxMenuItem" name="ID_OPEN_RATES_SMOOTH_EXCESSRISK">
         <label>Excess Risk</label>
       </object>
-      <object class="wxMenuItem" name="IDM_EMPERICAL_BAYES_SMOOTHER">
+      <object class="wxMenuItem" name="ID_OPEN_RATES_EMPIRICAL_BAYES_SMOOTHER">
         <label>Empirical Bayes</label>
       </object>
-      <object class="wxMenuItem" name="IDM_SPATIAL_RATE_SMOOTHER">
+      <object class="wxMenuItem" name="ID_OPEN_RATES_SPATIAL_RATE_SMOOTHER">
         <label>Spatial Rate</label>
       </object>
-      <object class="wxMenuItem" name="IDM_SPATIAL_EMPIRICAL_BAYES">
+      <object class="wxMenuItem" name="ID_OPEN_RATES_SPATIAL_EMPIRICAL_BAYES">
         <label>Spatial Empirical Bayes</label>
       </object>
-      <label>Smoothing</label>
+      <label>Rates-Calculated Maps</label>
     </object>
     <label>Options</label>
   </object>
   <object class="wxMenu" name="ID_MAP_CHOICES_NO_ICONS">
-    <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_QUANTILE">
-      <label>Quantile</label>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_THEMELESS">
+      <label>Themeless Map</label>
     </object>
-    <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_PERCENTILE">
-      <label>Percentile</label>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_CHOROPLETH_QUANTILE">
+      <label>Quantile Map</label>
     </object>
-    <object class="wxMenuItem" name="ID_MAP_HINGE_15">
-      <label>Hinge = 1.5</label>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_CHOROPLETH_PERCENTILE">
+      <label>Percentile Map</label>
     </object>
-    <object class="wxMenuItem" name="ID_MAP_HINGE_30">
-      <label>Hinge = 3.0</label>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_HINGE_15">
+      <label>Box Map, Hinge=1.5</label>
     </object>
-    <object class="wxMenuItem" name="ID_MAPANALYSIS_CHOROPLETH_STDDEV">
-      <label>Standard Deviation</label>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_HINGE_30">
+      <label>Box Map, Hinge=3.0</label>
+    </object>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_CHOROPLETH_STDDEV">
+      <label>Standard Deviation Map</label>
+    </object>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_UNIQUE_VALUES">
+      <label>Unique Values Map</label>
+    </object>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_NATURAL_BREAKS">
+      <label>Natural Breaks Map</label>
+    </object>
+    <object class="wxMenuItem" name="ID_OPEN_MAPANALYSIS_EQUAL_INTERVALS">
+      <label>Equal Intervals Map</label>
     </object>
     <object class="wxMenu" name="ID_MAP_SMOOTHING_CHOICES">
-      <object class="wxMenuItem" name="IDM_SMOOTH_RAWRATE">
+      <object class="wxMenuItem" name="ID_OPEN_RATES_SMOOTH_RAWRATE">
         <label>Raw Rate</label>
       </object>
-      <object class="wxMenuItem" name="IDM_SMOOTH_EXCESSRISK">
+      <object class="wxMenuItem" name="ID_OPEN_RATES_SMOOTH_EXCESSRISK">
         <label>Excess Risk</label>
       </object>
-      <object class="wxMenuItem" name="IDM_EMPERICAL_BAYES_SMOOTHER">
+      <object class="wxMenuItem" name="ID_OPEN_RATES_EMPIRICAL_BAYES_SMOOTHER">
         <label>Empirical Bayes</label>
       </object>
-      <object class="wxMenuItem" name="IDM_SPATIAL_RATE_SMOOTHER">
+      <object class="wxMenuItem" name="ID_OPEN_RATES_SPATIAL_RATE_SMOOTHER">
         <label>Spatial Rate</label>
       </object>
-      <object class="wxMenuItem" name="IDM_SPATIAL_EMPIRICAL_BAYES">
+      <object class="wxMenuItem" name="ID_OPEN_RATES_SPATIAL_EMPIRICAL_BAYES">
         <label>Spatial Empirical Bayes</label>
       </object>
-      <label>Smoothing</label>
+      <label>Rates-Calculated Maps</label>
     </object>
     <label>Options</label>
+  </object>
+  <object class="wxMenu" name="ID_OPEN_CHOICES_MENU">
+    <object class="wxMenuItem" name="ID_OPEN_SHAPE_FILE">
+      <label>Open Shapefile</label>
+    </object>
+    <object class="wxMenuItem" name="ID_OPEN_TABLE_ONLY">
+      <label>Open Table Only</label>
+    </object>
+    <object class="wxMenuItem" name="ID_OPEN_SPACE_TIME_SHAPEFILE">
+      <label>Open Space-Time Shapefile</label>
+    </object>
+    <object class="wxMenuItem" name="ID_OPEN_SPACE_TIME_TABLE_ONLY">
+      <label>Open Space-Time Table Only</label>
+    </object>
+    <label>Open Project</label>
   </object>
 </resource>

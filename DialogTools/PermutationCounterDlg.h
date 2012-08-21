@@ -29,14 +29,14 @@
 #define SYMBOL_CPERMUTATIONCOUNTERDLG_SIZE wxDefaultSize
 #define SYMBOL_CPERMUTATIONCOUNTERDLG_POSITION wxDefaultPosition
 
-class CPermutationCounterDlg: public wxDialog
+class PermutationCounterDlg: public wxDialog
 {    
-    DECLARE_CLASS( CPermutationCounterDlg )
+    DECLARE_CLASS( PermutationCounterDlg )
     DECLARE_EVENT_TABLE()
 
 public:
-    CPermutationCounterDlg( );
-    CPermutationCounterDlg( wxWindow* parent, wxWindowID id = -1,
+    PermutationCounterDlg( );
+    PermutationCounterDlg( wxWindow* parent, wxWindowID id = -1,
 						   const wxString& caption="Set Number of Permutation",
 						   const wxPoint& pos = wxDefaultPosition,
 						   const wxSize& size = wxDefaultSize,
@@ -50,10 +50,6 @@ public:
 
     void CreateControls();
     void OnOkClick( wxCommandEvent& event );
-
-    wxBitmap GetBitmapResource( const wxString& name );
-
-    wxIcon GetIconResource( const wxString& name );
 
     wxTextCtrl* m_number;
 	wxString s_int;

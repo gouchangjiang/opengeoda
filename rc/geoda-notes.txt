@@ -1,0 +1,1536 @@
+Tools menu changes:
+
+
+- Move Save items to File menu
+
+
+ID_SAVE_PROJECT
+ID_SAVE_AS_PROJECT
+
+
+ID_POINTS_FROM_TABLE "Points from Table"
+
+Bugs reported by Luc to be fixed/logged:
+
+July 9:
+Hi Mark:
+Here's a little thing I ran into last week. Not sure if this is Mac specific,
+since I don't test on other systems.
+I suspect there is a very simple fix, something having to do with the
+order of things.
+
+PCP in space-time, divider cannot be moved
+when dragging it to the right, it actually moves to the left and is stuck
+is not a problem for the pure spatial case
+happens *after* resizing, works fine when window first opens
+
+same thing happens for map, when resizing first,
+not other way around (move divider, then resize)
+
+July 2:
+Panning and zooming. I remember you telling me there were several loose
+ends. I just tested this in some detail and there are indeed a few issues.
+See below and also the attached screen shots. Basically what I did is select
+the zoom mode and center the magnifying glass on Hinsdale, CO (using nat.shp)
+twice. The second screen shot shows how the selection moves way west and
+does not actually zoom in. Have fun!
+Tomorrow, I'll tackle the space-time stuff in depth :-)
+L.
+
+In map: Panning mode distorts aspect ratio when panning vertically
+There seem to be some interaction issues in Panning/Zooming mode. With
+fixed aspect ratio off, panning doesn't seem to work. With fit to window
+mode on, panning doesn't work, even though it may be checked.
+
+Zooming doesn't seem to be focused correctly. The usual window selection 
+doesn't seem to work, or centering the magnifying glass on a particular
+location doesn't seem to work either. For example, when clicking with the
+magnifying glass focused on Hinsdale, CO (part of one of our demos), it
+zooms to the west, and does not include that county.
+
+See screen shots: with magnifying glass centered on Hinsdale, CO both times.
+
+Beta 39 fixes:
+FIXED: Fixed type in work "empirical"
+FIXED: Randomization psuedo p
+FIXED: Crash with LISA with EB Rates
+FIXED: Crash in Variable Properties Editor: ignore close event while
+       cell is being edited.  Make sure this works on Linux/Windows!
+FIXED: bug in Save Selection dialog.
+FIXED: Bubble Chart bubble size tweaked, but still doesn't apply
+global scaling over time.
+
+Beta 40 fixes:
+FIXED: Historgram: #selected updates when selection made from within
+Histogram
+FIXED: Scatterplot: range rectange in status bar correct when making
+selection
+FIXED: Maps: removed incorrect range rectange from status bar
+FIXED: Copy to Clipboard
+FIXED: Save as Scalable Vector Graphics (SVG)
+
+CAN'T REPRODUCE:
+July 9:
+very strange. i was trying to create a new variable for Columbus
+with the crime rates > 40. first i added a new variable.
+i used the select dialog to select all those
+< 40 and then inverted the selection. this proceeded to select all
+of them (i need to check this further). i assigned this to the new
+variable. then i deleted the variable and proceeded to add a new
+variable. at that point it crashed. i will try to replicate, but maybe
+you've run into this as well.
+i saw that there is a new beta waiting in the wings :-)
+L.
+
+
+CSV Export tool: IDD_EXPORT_CSV_DLG
+ID_EXPORT_TO_CSV_FILE
+
+CSV Import tool: IDD_IMPORT_CSV_DLG
+ID_IMPORT_FROM_CSV_FILE
+ID_CSV_HELP wxBitmapButton
+ID_IMPORT_CSV_TXT wxTextCtrl
+ID_IMPORT_CSV_BTN wxBitmapButton
+wxID_OK
+wxID_CANCEL
+
+Auto field detection:
+Are all valid numbers?
+If yes, then must determine int or float
+if int: how many units needed and are any negative?
+if float: how many decimal units needed and is negative?  And how many
+places after the decimal?
+
+Internationalization?  Ahh!
+
+Perhaps we could be very picky about import requirements, but then
+offer richer conversion string conversion services in the Table itself?
+
+Two options: CSV to DBF and  Import CSV into Table
+
+1. Ask for CSV file
+2. Attempt to parse entire file before proceeding: if an error
+occurs, then report line which caused a parsing error if possible.
+
+Development: log timing information!
+Initially: import all as strings.
+
+3. Otherwise, display first row of data for the user
+4. Ask user if first row are column headings or data
+5. If column headings, then must ensure that names are valid.
+We should make a function to assign valid names by truncating
+and adding numbers if needed.
+6. If first row is valid numbers, then automatically assign temporary names
+7. Must provide tool to detect numeric data and convert
+if possible.  Perhaps user can right-click on column and
+select: convert to numeric data?  If acceptable parameters
+can be found, then suggest these to the user.  If such
+parameters cannot be found, then show an error message
+displaying the record number and value that caused the
+problem.
+
+If a pair of record values that are incompatible.
+
+
+PCP:
+Could use dashed yellow lines to indicate selected.
+
+Histogram:
+
+Time-aware histogram.  Treat integers differently than doubles so that
+we have special support for looking at Weights.
+
+Can consider adding themes to Histogram bars: would show proportion of
+items in that theme category.  Would also need to show highlight
+proportions in a similar way.   How will selection work?
+
+When mouse is finally released after a dragging or brushing event, we
+should have a way to broadcast selection finished.  This could be sent
+as an ::update, and the event type would be "final refresh."  Canvases
+that require a final refresh (everything but maps), could then force a
+full redraw.
+
+Points and lines are being erased in a strange way.  Investigate this.
+
+Box Plot:
+
+Design to support multiple Box Plots in one window.
+1. Will have to put everything in one TemplateCanvas
+2. Possibly limit the number of time periods shown at once
+ according to the number of observations.
+3. TemplateCanvas::ResizeSelectableShps will work fine for resizing
+since it iterates over all selectable shapes.
+4. TemplateCanvas::UpdateSelectableOutlineColors works fine since
+it iterates over all selectable shapes
+5. TemplateCanvas::PaintShapes works fine
+6. TemplateCanvas::UpdateSelection(bool shiftdown, bool pointsel) calls
+TemplateCanvas::UpdateSelectionPoints or
+TemplateCanvas::UpdateSelectionCircles
+which both assume a one-to-one correspondance between selectable_shapes
+and observations.
+7. Same problem as above for TemplateCanvas::SelectAllInCategory
+8. Same problem for TemplateCanvas::NotifyObservables()
+9. Same problem for TemplateCanvas::DetermineMouseHoverObjects()
+10. Possibly same problem for void TemplateCanvas::UpdateStatusBar
+
+11. Only a very few functions assume a one-to-one correspondence,
+so might be reasonable to override these.
+
+If we allow multiple objects on screen at once, we could allow up to
+5.  A right-click menu could change number of box-plots showing.  We
+would then keep these synchronized with time-chooser.
+
+Which drawing functions need to be overridden?
+
+Probably want to override TemplateCanvas::update(HighlightState* o)
+and TemplateCanvas::DrawLayers() which is called by OnPaint
+
+Can reuse selectable_shps vector by multiplying it by the number
+of box plots on the screen at once.  ResizeSelectableShps will still
+work.
+
+Data management:  Can have time-variant variables with multiple time
+periods.  If we turn of sync-with-time then this only means that
+we will ignore TimeChooser updates.  However, it is critical that
+we retain data for all possible time periods.  There will be a
+variable for max_num_box_plots and we will try to display up to
+that many, centered around var_info[0].time
+
+We will only have one var_info.  LisaBoxPlot will have to define it's
+one var_info and override things as needed the same way LisaScatterPlot
+does.
+
+
+1) Add menu option to select number of BoxPlots to show.  Will be
+MAX_BOX_PLOTS by default.  Although, we might want this to be a
+smaller number.
+
+
+LISA:
+
+Actions that affect LisaCoordinator
+
+Notes on significance filter and related variables:
+
+int significance_filter; // 0: >0.05 1: 0.05, 2: 0.01, 3: 0.001, 4: 0.0001
+double significance_cutoff; // either 0.05, 0.01, 0.001 or 0.0001
+int permutations;
+double*	localMoran;		// The LISA: this never changes
+double* sigLocalMoran;	// The significances / pseudo p-vals: result of permutations
+int* sigCat; // The significance category.  Again, never changes, just
+a reflection of sigLocalMoran.  Only used in Save Lisa, so perhaps
+would be best to generate this on-the-fly.
+int* cluster; // not-sig=0 HH=1, LL=2, HL=3, LH=4, isolate=5, undef=6
+
+sigCat is generated from sigLocalMoran and significance_cutoff
+cluster is generated from CalcLisa.  How to do change cluster-> Note
+that cluster will never have a value of 0, values of 0 are only
+generated on-the-fly when saving Lisa results and when doing
+categorization according to significance_cutoff and sigLocalMoran values.
+
+1) User changes significance
+
+Actions:
+a. LisaMapFrame updates Options menu checkmarks for new significance
+b. LisaMapFrame notifies LisaCoordinator
+c. LisaCoordinator changes significance_filter
+d. LisaCoordinator notifies all LisaMapFrames that sig level has
+changed.  Each LisaMapFrame must update categories to reflect new
+significances
+
+2) User changes permutation
+a. LisaMapFrame notifies LisaCoordinator
+b. LisaCoordinator does new permutation
+c. LisaCoordinator notifies all LisaMapFrames
+d. Each LisaMapFrame updates its title and updates its categories
+
+3) User enables/disables global time sync for a bivariate variable
+a. LisaMapFrame updates Options menu checkmarks for changed variable
+b. LisaMapFrame notifies LisaCoordinator
+c. LisaCoordinator calls VarInfoAttributeChange on self and then
+recalculates all data	int significance_filter; // 0: >0.05 1: 0.05, 2: 0.01, 3: 0.001, 4: 0.0001
+	double significance_cutoff; // either 0.05, 0.01, 0.001 or
+	0.0001
+
+d. LisaCoordinator notifies all LisaMapFrames that everything has
+changed. Each LisaMapFrame must update categories to reflect new
+permutation and variables.
+
+In all three of the above cases, LisaCoordiantor::notifyObservers() is
+called and when this is called, the Lisa Map should just go ahead and
+do the following:
+1) Update title
+2) Completely regenerate categories and map legend
+
+Note: Time Chooser has no direct effect on LisaCoordinator
+
+Actions that only affect LisaMapCanvas/LisaMapFrame
+
+When Time Chooser time changes:
+a. update is called for each LisaMapFrame
+b. each LisaMapFrame must decide if time needs to be updated and if so
+changed time correctly, change Title to reflect new time, and tell
+TemplateCanvas to show a new time slice and redraw maps.
+
+
+Design:
+
+Data:
+
+MapNewCanvas:
+
+	int num_obs;
+	int num_time_vals;
+	std::vector<d_array_type> data;
+	std::vector<GeoDa::dbl_int_pair_vec_type> cat_var_sorted;
+	
+	int ref_var_index;
+	std::vector<GeoDaVarInfo> var_info;
+	bool is_any_time_variant;
+	bool is_any_sync_with_global_time;
+	std::vector<bool> map_valid;
+	std::vector<wxString> map_error_message;
+	
+	bool full_map_redraw_needed;
+
+	PopulateCanvas only calls
+	CreateSelShpsFromProject(selectable_shps, project) when
+	full_map_redraw_needed is true.
+
+	Because GetisOrd can have as many as 8 maps, we don't want to
+ 	have 8 copies of std::vector<d_array_type> data, and perhaps
+ 	not even std::vector<GeoDa::dbl_int_pair_vec_type>
+ 	cat_var_sorted.  We need both around because cat_var_sorted
+	contains possibly smoothed data which is then needed for
+ 	SaveRates.  Also, would say that needed for mouse hover ops.
+	For LISA, we can save LISA values, categories and p-vals.
+	It will therefore make sense to at least save the p-vals and
+ 	LISA values.  The categories can be retrieved from
+ 	std::vector<CategoryVec> categories in TemplateCanvas.
+
+	What about BoxPlot and ScatterPlot for LISA?  These plot the
+	LISA vales (ie the lagged original values).  These should also
+	stay synced.  If LisaCoordinator will keep track of
+	everything, then we will coordinate time synching amongst all
+	linked views.  So, we need to make update function intellegent
+	enough to look for either a change in significance filter, or
+ 	also a change of variables.
+
+	Note: the LisaCoordinator will ignore time changes since it
+	will always calculate over all time periods.  Note, for
+	ScatterPlot LISA, will have no options to sync variables with
+	global time or not.
+
+TemplateCanvas:
+
+	HighlightState* highlight_state;
+	std::list<MyShape*> background_shps;
+	std::vector<MyShape*> selectable_shps;
+	SelectableShpType selectable_shps_type;
+	std::list<MyShape*> foreground_shps;
+	bool use_category_brushes;
+	bool draw_sel_shps_by_z_val;
+	std::vector<i_array_type> z_val_order;
+	std::vector<CategoryVec> categories;
+	int curr_canvas_tm_step;
+	int canvas_tm_steps;
+
+
+
+1. For Bivariate and Rate Standardized, can have situation where years
+don't match up and can switch between sync_with_global and not.  So,
+will need ability to recompute all LISA as needed.  In the future,
+might also want BoxPlot and ScatterPlot of LISA to be synched, but for
+now perhaps not.
+
+- Add checkmarks for Permutations.  No, show in title though.
+- Merge New Map options into New Lisa Map2
+
+For Scatter Plot and for Default Map theme,
+need to make Point Color / Selectable Fill Color update the category
+color.
+
+Done:
+- Finished implementing fast draw and erase routines for points and
+polygons on Mac.
+- Natural Breaks and Unique Value now use divirging color scheme
+- Divirging Color scheme updated from Color Brewer 2
+- Fixed problem with ScatterPlot scale for samll-magnitude varaibles.
+
+For each of the following, must handle:
+enum SelectableShpType { mixed, circles, points, rectangles,
+     polygons, polylines };
+MyPoint, MyCircle, MyPolygon, MyPolyLine
+initially: point, circle, polygon, perhaps polyline
+rectangles and mixed will use MyShape::paintSelf method
+
+First: polygons, then points.  Need to figure out high-performance
+point and polygon algorithms for maps (point and polygon) and 
+scatterplot.  How to show highlighting of points?
+
+Begin with Polygon routines.
+
+Polygon routines all assume no overlapping polygons.
+
+DrawSelectableShapes // draw all unhighlighted sel shapes
+DrawSelectableShapes_gc done for polygon
+DrawSelectableShapes_dc 
+
+called in DrawLayer0  -> draws unhighlighted shapes
+
+DrawHighlightedShapes  // draw all highlighted sel shapes
+DrawHighlightedShapes_gc done for polygon
+DrawHighlightedShapes_dc
+
+called in DrawLayer1
+
+DrawNewSelShapes // draw newly highlighted sel shapes
+DrawNewSelShapes_gc  -> done for polygons.
+DrawNewSelShapes_dc
+
+called by ::update for delta
+
+This one is tricky because we need to draw a small subset
+of the shapes.  Perhaps not so important to erase by
+color, but need to quickly figure out what color to
+draw each shape. This is done by looking up category
+in id_to_cat map in categories[time]
+
+EraseNewUnSelShapes  // draw newly unhighlighted sel shapes
+EraseNewUnSelShapes_gc  -> done for polygons.
+EraseNewUnSelShapes_dc
+
+called by ::update for delta
+
+Bubble Plot: CreateAndUpdateCategories: Carefully check case
+where a time-variant var is chosen for Bubble size and then
+sync with global time is turned off for that variable.
+
+Bubble Plot: display error message when cats_valid[i] is false.
+
+Beta 17 Changes:
+
+- Equal Intervals Theme added
+- Major improvements to Bubble Chart:
+  1. New Bubble Chart icon added to Toolbar
+  2. User chooses variable for bubble size and category (Std Dev initially)
+  3. Can change to _all_ other map themes by right-clicking / Options menu
+  4. Bubbles are rendered from largest to smallest always
+  5. Selected objects shown correctly on Bubble Chart (still not
+     finished for maps).
+  6. Bubble Chart legend and main titles shown correctly
+- Major new Bubble Chart Legend / Map Legend features
+  1. Clicking on a category selects all obs in that category.
+  2. shift-clicking on a category adds all obs in category to current selection
+  3. Individual category colors changed by right-clicking on category box
+- Ability to Save Categories to Table for Bubble Chart and Maps.  This
+  is a useful feature in conjunction with the new Unique Values theme.
+
+Beta 16 Changes:
+
+- Added Equal Intervals Theme: new toolbar icon and available as a theme
+  choice for Rates.
+- Natural Breaks theme added to Rates Themes options.
+- Map menu now launches new windows
+- Map themes can be changed in current map from Options or
+  right-click menu,
+- Added Themeless Map to all Map menus
+- Created new Toolbar icon for Themeless Map and added to
+  map toolbar dropdown menu (removed New Map toolbar icon)
+- Added Check Marks to Theme and Rates for New Map menus.
+- Implemented Add Mean Centers / Centroids to Table for New Map
+- Implemented "Save Selection" for New Maps
+- Implemented "Copy Image To Clipboard" for New Maps
+- Implemented "Save Rates".  Can save only one time period at a time
+  currently.  Probably reasonably to expect the user to use field calcs
+  to produce rate calculations over multiple time periods.
+
+
+Bubble Plot: add option for fixed bubble size over time.
+
+Bubble Plot: improve size algorithm
+
+- Improve Natural Breaks and offer ability to save categories.
+Actually, we should have ability to save categories from the
+Map Legend everywhere.  Could then choose Unique Value to display
+in the future.
+
+Save Categories: Part of canvas popup or legend popup?
+1. Click on a category selects all in that category
+2. Shift-click on category adds to current selection
+3. right click on categories is context-sensitive and gives option
+to change color for that category, or select all, or copy legend to
+clipboard
+
+- Add ability to select all in category by clicking on a category
+- right clicking will bring up option to change category color
+- as well as save categories as unique values: 1, 2, 3, 4
+- Show Axis Through Orign: does not result in a refresh.
+
+- Apply Standard Deviation theme to Bubble Chart and add map legend ->
+  must add a fall-back logic for when all values are equal.
+  if sd == 0, then just show one category -> current system works ok.
+- Force user to select color category and bubble size params for
+  Bubble Chart.
+- Finish New Map rendering routines
+- Implement point-within-polygon selection and hovering
+- Time-Chooser enable LISA
+- Time-Chooser enable Getis-Ord
+- Time-Chooser enable Moran's I
+- Begin Time-Aware Box Plot: for space-time, show up to 10 time
+  periods side-by-side.  Make number of time periods shown easy to
+  change and move window with Time Chooser.
+
+Later To Dos:
+
+- Scatter/Bubble plots: global scaling not done when data
+  standardized.  We would have to calculate data scales over all times
+  in advace for this to work.
+- Implement "Save Image As" -> No Image appearing. Must investigate
+- Investigating problems when panning while zoomed in on maps
+- User-Defined Map Categories
+
+
+DONE (beta 17)
+- Fixed bug in Standard Deviation Map
+- Classification Theme checkmarks are updated in Bubble Chart menus
+
+DONE (beta 16)
+- Added Equal Intervals Theme: new toolbar icon and available as a theme
+  choice for Rates.
+- Natural Breaks theme added to Rates Themes options.
+- Map menu now launches new windows
+- Map themes can be changed in current map from Options or
+  right-click menu,
+- Added Themeless Map to all Map menus
+- Created new Toolbar icon for Themeless Map and added to
+  map toolbar dropdown menu (removed New Map toolbar icon)
+- Added Check Marks to Theme and Rates for New Map menus.
+- Implemented Add Mean Centers / Centroids to Table for New Map
+- Implemented "Save Selection" for New Maps
+- Implement "Copy Image To Clipboard" for New Maps
+- Implement "Save Rates".  Can save only one time period at a time
+ currently.  Probably reasonably to expect the user to use field calcs
+ to produce rate calculations over multiple time periods.
+- Removed Print Canvas State to Log File debugging menu option
+
+Later:
+- Jenks natural breaks classification method: Try Simulated Annealing
+- Keep track of individual categories and neighbors, or at least
+  find a way to quickly evaluate the GVF when a single category break
+  is moved one position to the left or right.
+- Jenks idea: after doing a brute-force search, quickly finish off
+with a fast local-minimum search.  Simply try moving each break one
+position to the left or right until the GVF is no longer improved.
+- Also look into genetic algorithms
+
+Unique Value -> Unique Values
+Natural Break -> Natural Breaks
+
+DONE: (Beta 15)
+- 
+- Changed Smoothing labels to Rates  **DONE**
+- Remove Excess Risk map theme choices  **DONE**
+- Change Quantile to categorize by percentile values **DONE**
+- Implement Unique Value map New Map **DONE**
+- Implemented Natural Breaks map in New Map **DONE**
+
+1 class:
+everything  "middle class"
+
+2 classes:
+percentile breaks: 100/2
+<= 50%  "middle class"
+> 50%
+
+3 classes:
+percentile breaks: 100/3, 200/3
+< 33.3%
+>= 33.3% && <= 66.6%  "middle class"
+> 66.6%
+
+4 classes:
+percentile breaks: 100/4, 200/4, 300/4
+< 25%
+>= 25% && <= 50%  "middle class"
+> 50% && <= 75%
+> 75%
+
+5 classes:
+percentile breaks: 100/5, 200/5, 300/5, 400/5
+< 20%
+>= 20% && < 40%
+>= 40% && <= 60%  "middle class"
+> 60% && <= 80%
+> 80%
+
+6 classes:
+percentile breaks: 100/6, 200/6, 300/6, 400/6, 500/6
+< 16.7%
+>= 16.7& && < 33.3%
+>= 33.3% && <= 50%  "middle class"
+> 50% && <= 66.6%
+> 66.6% && <= 83.3%
+> 83.3%
+
+Must Dos for next release:
+
+1) Provide a GUI interface for creating a space-time shapefile
+
+2) Polish Time Chooser window and add movie control functions such as
+auto-play, pause, click to move forward / backward.  Time direction.
+
+3) Finish writing fast graphics rendering routines for all platorms
+(wxGraphicsContext on Mac and wxDC on Windows / Linux). Fix zooming/panning.
+
+4) Simple Space-time LISA / Getis Ord  (very similar to existing thematic
+maps initially, no use of space-time weights yet).  Comparative
+Statics?  Should this be a general thematic-map option?
+Thumnails: would be nice.
+
+5) Simple Space-time Moran's I Scatterplot
+
+
+6) Finish implementing all map menu options.
+
+7) Need to go through all functions to make sure works well with
+space-time.  Possibly disable when it doesn't.
+
+8) Bubble Chart?  Should we hide this for now, or what else should we
+do for a first week.  Could add a Legend if wanted. Very simple for
+first release.  Box Map. Also, show larger bubbles first.  Need to
+add an order-of-drawing number for this.  Also, need to reconsider
+how to do selection.  Probably have to force a full refresh whenever
+the selected objects change.
+
+Exclude from time chooser: Conditional Map, Map Movie, Cartogram.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Percentile using Linear interpolation between closest ranks:
+
+percent rank of n'th value (N values total):
+p_n = (100/N)*(n-1/2)
+eg N=5  and 15, 20, 35, 40, 50  denote v_1, v_2, v_3, v_4, v_5
+p_1 = 20*(1-0.5) = 10
+p_2 = 20*(2-0.5) = 30
+p_3 = 20*(3-0.5) = 50
+p_4 = 20*(4-0.5) = 70
+p_5 = 20*(5-0.5) = 90
+
+P = 1 -> P<p_1  so P(1) = v_1 = 15
+P = 2 -> P<p_1  so P(2) = v_1 = 15
+...
+P = 9 -> P<p_1  so P(9) = v_1 = 15
+P = 10 -> P=p_1 so P(10) = v_1 = 15
+P = 11 -> p_1 < P < p_2  so P(11) = lin interp between p_1 and p_2
+p_1 corresponds to P(10) = 15
+p_2 corresponds to P(30) = 20
+so P(11) is linear interp between P(10) and P(30) = 15.25
+P(12) is 15.5
+P(13) is 15.75
+P(14) is 16
+....
+P(30) is 20
+
+slope: (P(30)-P(10))/(30-10) = 5/20
+15 + ((11-10)/(30-10)) * (20-15) = 15.25
+15 + 5*((11-10)/100)*(20-15) = 15.25
+
+Say values are 10 10 10 20 20
+p_1 = 20*(1-0.5) = 10
+p_2 =              30
+p_3 =              50
+p_4 =              70
+p_5 =              90
+
+P=1 ->  1<p_1=10  so P(1) = p_1 = 10
+P=2 ->  P(2) = 10
+P=10    P(10) = 10
+P=11    p_1 = 10 < 11 < p_2 = 30
+P(11) = 10+5*((11-10)/100)*(10-10) = 10
+P(12) = 10
+P(13) = 10
+...
+P(30) = 10
+...
+P(50) = 10
+P(51) = 10.5
+P(52) = 11
+...
+P(71) = 19.5
+P(70) = 20
+...
+P(90) = 20
+...
+
+
+v_1 = 10, v_2 = 10, v_3 = 10, v_4 = 20, v_5 = 20
+
+
+We need values for P(1), P(10), P(50), P(90), P(99)
+If any of these categories have the same value, then classification
+not possible.
+
+
+To-Do: - Clicking on a single map item doesn't result in selection.
+- Connect up Hinge 1.5, Hinge 3.0 and Blank to menu.
+- Make all non-active options go nowhere for now.
+- Current Map menu makes no sense.  Clicking on one of these should
+ launch a new map.  Ability to change to a new map should be in
+ Options / Context menu, but existing variable choices should be used
+ when possible.  Perhaps, we should not be able to chance map theme
+ for existing map, but only number of categories and other options that
+ apply to each particular map.  Discuss with Luc and Julia on Friday.
+ 
+- Remember, buying a round of drinks for everybody at Cassy Moores.
+
+For all space-time variables:
+- want option to for each var to be fixed in time or synced.
+
+- for views that show a scale, want ability to either change scale for each
+  time period, or set scale based on all valid time periods.  Views where this
+  makes sense include: BoxPlot vertical scale, Scatter Plot x and y axes
+  and possibly bubble size in Bubble Plot.  Possibly circle size in Cartogram.
+  Horizontal scale in PCP. Scales in 3D scatter plot. Binning categories
+  in Conditional View.  Moran scatter plot scales.
+
+Idea: show map movie over multiple time periods.  Could show over all time
+periods automatically, or just pick two, three four etc.
+
+* Disable Save Copy for Space-Time:
+ID_NEW_TABLE_SAVE_COPY_OF_TABLE
+ID_NEW_TABLE_SAVE_COPY_OF_SHP_FILE
+
+ID_NEW_TABLE_MERGE_TABLE_DATA
+
+* Weights Creation
+- make weights creation read from active table (what about when using
+  weights creation in stand-alone?)  No different, just read in entire Table,
+  and possibly have multiple tables open.  *DONE*
+
+* improve Time Chooser Dialog
+* add year to Save To Table Dialog lists *DONE*
+* add year to Save Selection lists *DONE*
+* add year to Selection Tool lists *DONE*
+
+Bare minimum work needed to for space-time support:
+
+* Add time support to Table Selection dialog (moderate) *DONE*
+* Add time support to every place that can save to the Table (moderate) *DONE*
+* Add time support to Table: Add, Delete and Edit fields (major) *DONE*
+* Disable Merge dialog for Space-time (simple) *DONE*
+* Disable Time Choose for non Space-time (simple) *DONE*
+* Add time support to PCP variable selection dialog (moderate) *DONE*
+* Add time support to Regression dialog (moderate) *DONE*
+* Add time support to Field Calculation (major) *DONE*
+* Add time support to Weights Creation (major) *DONE*
+* Add ability to Save results to space-time DBFs (major) *DONE*
+* Update time in Save To Table and Selection Dialog (moderate) *DONE*
+
+Some work now finished for space-time support:
+* Table now internally supports time data
+* Added a Time Chooser dialog (although this only affects the Table
+currently)
+* Added a tool to convert DBF into space-time DBFs (command line right now)
+* Got rid of all global variables related to loading variables into
+dialogs
+  - this sort of code was everywhere and had to be completely cleaned
+  up in order to support time.  A big improvement, and only the old
+  brushing mechanism uses global variables still.
+* Created a unified variable selection dialog for 1 to 4 variables and
+  for space or space-time data.  Previously selected variables are
+  remembered everywhere.  Only Conditional Plot remains to be
+  converted.  This has eliminated several one-off variable selection
+  dialogs.
+* There are now 4 different options for opening a project:
+ - Shapefile
+ - Table Only
+ - Space-time Shapefile
+ - Space-time Table only
+* New Space-time dialogs finished and are intelligent about filling
+out default fields.  This will greatly simplify loading space-time
+data files in general.
+
+SQL notes:
+Structured Query Languge
+
+CREATE DATABASE bikedb
+  WITH ENCODING='UTF8'
+       OWNER=postgres
+       CONNECTION LIMIT=-1;
+
+COMMENT ON DATABASE bikedb
+  IS 'Test DB for storing inventorying bikes';
+
+Ideas to understand:
+1) What is a DB?
+Ans: - a db consists of one or more tables.
+- tables contains records (rows) with data.
+2) How to retrieve data?
+3) How to insert records?
+4) How to modify a record?
+- a record is a row of a table
+5) What is a table vs a DB?
+My guess: a table is a schema for DB records?  This defines which
+fields will be in a record?
+6) What is a schema?
+7) What is a stored procedure?
+8) What is a view?
+9) What is RDBMS?
+Ans: - Relational Database Management System.  It is the basis for SQL
+and all modern DB systems.
+- Data in RDBMS stored in DB objects called tables
+- Table is a collection of related data entires and consists of
+columns and rows.
+10) ACID? Ans: Atomicity, Consistency, Isolation, Durability
+
+Some common major commands:
+SELECT
+Eg, SELECT * FROM bike_db will select all the records in the "bike_db"
+table.
+Note: many SQL dbs require a ';' at the end of each line.  This is
+also a way to execute several statements in a single call to the db
+server.
+
+ UPDATE, DELETE, INSERT, WHERE
+
+SQL commands: Two parts: Data Manipulation Language (DML)
+SELECT - extracts data
+UPDATE - updates data
+DELETE - deletes data
+INSERT INTO - inserts new data
+
+Data Definition Language: permits tables to be created or deleted.
+Defines indexes (keys), specifies links between tables, and imposes
+constraints between tables.
+
+CREATE DATABASE - creates a new db
+ALTER DATABASE - modifies a db
+CREATE TABLE - creates a new table in a db
+ALTER TABLE - modifies a table
+DROP TABLE - deletes a table
+CREATE INDEX - creates an index (search key)
+DROP INDEX - deletes an index
+
+PostGIS: layers have a Geometry Column
+
+
+High Level Observer Classes:
+
+HighlightStateObserver: anybody intereted in watching
+the current set of highlighted objects inherits from this
+
+FramesManagerObserver: Any top-level dialog or frame
+associated with a project needs to inherit from this
+so that they can get closed when the project is
+closing.
+
+
+
+New design for support of large polygon files:
+
+Design goals:
+1) Minimize the number of polygon drawing operations during selection
+and brushing.  Our tests have shown that this is by far the biggest
+performance bottleneck.  Our experiments were able to obtain the
+following drawing times when drawing 500k simple diamand polygon
+outlines:
+
+OSX using wxGraphicsContext: 600 ms
+Windows XP using wxDC: 200 ms
+GTK (Ubuntu) using wxDC: 350 ms
+
+This is already a very slow response time for the user.  We will
+likely want to introduce some way of interupting screen updates
+during brushing to keep things responsive for the user.  Also,
+wxMemoryDC with Blit must be used for Windows XP.  wxDC is
+unacceptably slow on OSX, while wxGraphicsContext is unacteptably
+slow on Windows and GTK.
+
+Design idea:
+Need to run some tests to see how fast we can composite a
+background image, highlighted shapes, and a selection rectangle.
+
+During a brushing operation, there is a relatively small
+number of polygons at the edges of the drawing tool that
+are transitioning from selected to unselected. For any
+display where we can make the assumption that objects do
+not overlap each other (maps, cartogram), we can avoid
+redrawing all of the highlighted shapes at every step by
+drawing over top of newly unhighlighted shapes.  We might
+even consider doing this for all displays during brushing
+even though this means still-highlighted objects could
+become hidden behind unhighlighted objects: we could then
+update the image properly during idle time.
+
+For Scatter Plot, here's some of the things we'll need to store:
+1) 2 arrays of raw data in doubles
+2) 2 arrays of point objects, scaled and translated for current display
+dimensions
+Note: regarding highlights: highlighted object lists should come
+from HighlightState rather than everybody storing their own
+local copy.  Should consider keeping a set of highlighted ids for
+fast lookup and fast iteration for drawing all highlighted
+3) A background object bitmap sized to the current screen.
+  Items in the background object bitmap should include:
+  - axis scales, axis lines, possibly the title
+  - all selecatble objects drawn in an unhighlighted state
+4) A set of highlight ids for quick highlight redraw during brushing
+5) A set of foreground objects to that change frequently during
+  brushing or that need to appear on top of the data points
+6) A composited bitmap of background + highlight objects + foreground
+objects that will be blited to the display whenever a paint event
+occurs.
+
+Could support two modes:
+  1. delta-update where objects can be erased
+  2. full highlight object redraw where all highlighted
+    objects are redrawn whenever there is a change
+    to the current set of highlighted objects
+
+So, three bitmaps?
+1: background objects + unhighlighted obs
+2: 1 + highlighted objs
+3: 2 + foreground objs
+4: will simply paint rectangle selection / popup windows on top of 3
+as needed, so no 4rth bitmap needed.
+
+Summary of code and libaries used by OpenGeoDa
+
+So, our Project should manage the following:
+1) All top-level frames so at least the Update function will know what
+to update.  Need to think on this some more
+2) Table
+3) Selection
+4) SHP file, DBF names
+5) Weights
+6) Default Variables
+7) Lisa related variables
+8) Other compatible SHP files and DBF files.
+
+MyFrame will be a singleton with multiple projects.
+
+I'm concerned about the potential for TemplateFrames being
+closed after the project has been deleted.  Perhaps it would be
+better for there to be a project manager that assigns project_ids
+serially.  It would be OK if we were to never even delete old projects
+from the project list, or it would be OK if the project was deleted,
+but then some of it's frames go deleted afterwards.
+
+So, we could have a global variable in MyFrame called next_project_id.
+We could then have each TempleteFrame remember its project_id so that
+it could request the TemplateFrame manager to delete its reference
+from the project.
+
+How about a ProjectManager class that generates new projects and
+assigns them unique ids.  These unique ids would then be used by the
+TemplateFrameManager to manage TemplateFrames.
+
+A Project instance contains all of the non-wx resources while
+the TemplateFrameManager would be useful for broadcasting updates to
+all other TemplateFrames (eventually this will be handled by
+HighlightState instances).
+
+OnOpenTable passes in project_p, but project_p has not yet been
+initialized.  Hopefully the TableViewFrame does not actually
+dereference project_p.  Must check this out!
+
+TemplateFrameManager::Add(TemplateFrame* tf, int project_id pid)
+TemplateFrameManager::Delete(TemplateFrame* tf, int project_id pid)
+
+UpdateAll(project_id pid)
+DeleteAll(project_id pid)
+
+A dictonary of wxLists?
+<boost/unordered_map.hpp> 
+typedef boost::unordered_map<int, wxList*> list_map;
+list_map x; 
+x[1] = new wxList;
+x[2] = new wxList;
+x[3] = new wxList;
+
+x[1]->Add(tf1);
+x[1]->Delete(tf2);
+
+BOOST_FOREACH(map::value_type i, x) {
+    std::cout<<i.first<<","<<i.second<<"\n";
+}
+
+// Inventory of Global Variables
+
+// wxFileName::GetFullPath() returns everything
+gCompleteFileName = ifn.GetFullPath();  // in MyFrame::OnProjectOpen
+
+extern bool isTableOpen;
+extern GridCtrlStatusType g_pGridCtrl_status;
+
+extern MyFrame *frame;
+
+extern Selection gSelection;
+extern GeoDaEventType gEvent;
+extern int gObservation;
+
+wxString gWeightTitle = wxEmptyString;
+
+extern bool m_VarDefault;
+extern wxString m_gVar1;
+extern wxString m_gVar2;
+extern wxString m_gVar3;
+
+extern double *m_gX;
+extern double *m_gY;
+
+int g_LisaCounterRegister = 0; // serial number counter for LISA maps
+int gLisaID;  // global variable for synchronising LISA maps
+int gPermutation = 499; // default LISA permutation
+int gSignificanceFilter = 1;  // default 0.05 significance
+int* gSignificancy = NULL;
+double*	gDSignificancy = NULL;
+/** gCluster: classification for each observation into LISA significance
+ clusters: not-significant=0 (>0.05) HH=1, LL=2, HL=3, LH=4 */
+int* gCluster = NULL;
+
+Sort of global:
+bool MyFrame::projectOpen = false;  // MyFrame::IsProjectOpen()
+bool MyFrame::AnyTemplateFramesOpen();
+
+
+
+LISA maps state variables:
+
+In the LisaMapView.h file:
+	bool	ClusterMap, SignificantMap;  // obvious meaning
+	int	LisaID;
+	int 	TemplateCanvas::LisaMapFrameSignificanceFilter;
+	int	SignificanceFilter;
+	int 	m_permutation;  // corresponds to gPermutation
+	int*	Significancy;
+	double*	DSignificancy;
+	int*	Cluster;
+	
+	std::vector<double> m_dLM;  // localMoran vector
+
+	double*	m_data1;
+	double*	m_data2;
+
+	bool    isMoranEBRate; // true if EB Rate
+	bool	isMultivariateLISA; // true if Bivariate LISA
+	wxString lisaFieldTitle;  // AREA w/ CRIME  for example
+	static int my_CurrentLisaCounter;  // for synchronizing LISA maps
+
+	bool bUpdateTitle;
+		
+	GalWeight*	gal_weights;  // pointer to gal weights
+	wxString	weightTitle;
+
+Global variables:
+
+extern int		g_LisaCounterRegister;  // counter serial number
+extern int		gLisaID;
+extern bool		gSignificanceFilter;  
+extern int		gPermutation; 
+extern int*		gSignificancy;  // needed for data sync?
+extern double*		gDSignificancy;  // needed for data sync?
+extern int*		gCluster;  // needed for data sync?
+
+extern Selection	gSelection;
+extern wxString		m_gVar1; 
+extern wxString		m_gVar2;
+extern double*		m_gY;
+extern double*		m_gX;
+extern int		gObservation;
+
+
+
+Large Shapefile for testing large weights files:
+geodude: /Volumes/GeoDa/Workspace/Julia/Seattle
+
+Dragging crud:
+
+Map out drawing calls for mapview with rectangle and compare to circle.
+
+mapview.h
+While rectangle dragging, calling TemplateCanvas::ClearFrame constantly.
+
+While circle dragging, calling MapCanvas::MapClearFrame constantly.
+
+gRegime is specific to each TemplateCanvas instance.  We also have
+btnDown, gSelect1, gSelect2 and ClickClock.
+
+enum SelectType { // (in TemplateCanvas.h)
+  NO_SELECT=0, RECT_SELECT=1, BRUSH_SELECT=2, LINE_SELECT=3
+}
+
+What does each SelectType mean?
+ NO_SELECT means nothing was selected?
+ RECT_SELECT means normal operation, no brushing
+ BRUSH_SELECT means in brushing mode
+
+
+
+Does gRegime control 
+
+In mapview.cpp, have sel_mode (member of MapCanvas)
+sel_mode is an int with possible values:
+SELECTION_RECT=0, SELECTION_LINE=1, SELECTION_CIRCLE=2
+work_mode is an int with possible values:
+MODE_SELECT=0, MODE_ZOOMIN=1, MODE_ZOOMOUT=2, MODE_PANNING=3
+
+
+
+GeoDaEventType gEvent
+enum GeoDaEventType {
+  NO_EVENTS, NEW_SELECTION, ADD_SELECTION, DEL_SELECTION }
+
+void MapCanvas::MapClearFrame() {
+    LOG_MSG("Entering MapCanvas::MapClearFrame");
+    wxClientDC dc(this);
+    PrepareDC(dc);
+    // OVERLAY CODE
+#if defined(__WXMAC__) // || defined(__WXGTK__)
+    wxDCOverlay overlaydc(canvas_overlay, &dc);
+    overlaydc.Clear();
+#else
+    dc.SetLogicalFunction(wxINVERT);
+#endif
+    dc.SetPen(*wxBLACK_PEN);
+
+    wxCoord radi;
+    LOG(sel_mode);
+    switch (sel_mode) {
+        case SELECTION_LINE:
+            dc.DrawLine(gSelect1, gSelect2);
+            break;
+        case SELECTION_CIRCLE:
+            dc.SetBrush(*wxTRANSPARENT_BRUSH);
+            radi = (int) GenUtils::distance(gSelect1, gSelect2);
+            dc.DrawCircle(gSelect1, radi);
+            break;
+    }
+    LOG_MSG("Exiting MapCanvas::MapClearFrame");
+}
+
+New Plan:
+
+Rewrite / modify ConditionalView.{h,cpp} so that it uses
+it's own home-brew wxGridSizer rather than wxGeneralSplitter.
+We should be able to figure out which functions from wxGeneralSplitter
+are being used in ConditionalView, and replace those functions by
+something that works eqivalently.  Conditionable is so embedded
+into each of MapMovieCanvas, ScatterPlot, Histogram, and BoxPlot that
+it will be better to just leave these as is.
+
+00, 01
+10, 11
+20, 21
+
+grid3x2 (formerly m_splitter):
+  00 = header0 = win_00_null
+  01 = header = win_01_hdr_or_null
+  10 = header1 = win_10_y_axis
+  11 = m_splitterMain = grid3x3
+  20 = header11 = win_20_null
+  21 = header3 = win_21_x_axis
+
+Use of wxGeneralSplitter by ConditionalView:
+
+CConditionalVariableXView  -> no references
+CConditionalVariableYView  -> no references
+CConditionalVariableNULLView  -> no references
+CConditionalVariableHeaderView  -> no references
+
+ConditionalViewFrame
+grid3x2 and grid3x3
+
+Document and relable:
+
+// either CConditionalVariableHeaderView or CConditionalVariableNULLView
+wxWindow* win_01_hdr_or_null; 
+CConditionalVariableNULLView* win_00_null;
+CConditionalVariableYView* win_10_y_axis;
+CConditionalVariableNULLView* win_20_null;
+CConditionalVariableXView* win_21_x_axis;
+
+grid3x3 gets the 9x9 breakup.
+10 is the Y axis control
+21 is the X axis control
+00 and 20 are probably "NULLView"
+01 will be the "HeaderView"
+
+grid3x2:  (all in ConditionalViewFrame constructor)
+   grid3x2 = new CondFrameWinMan(this,3,2);
+   grid3x3 = new CondFrameWinMan(grid3x2,3,3);
+
+   if(mViewType == 1) {
+      win_01_hdr_or_null = new CConditionalVariableHeaderView(grid3x2);
+   } else {
+      win_01_hdr_or_null = new CConditionalVariableNULLView(grid3x2);
+   }
+   win_00_null = new CConditionalVariableNULLView(grid3x2);
+   win_10_y_axis = new CConditionalVariableYView(grid3x2);
+   win_20_null = new CConditionalVariableNULLView(grid3x2);
+   win_21_x_axis = new CConditionalVariableXView(grid3x2);
+   grid3x2->SetWindow(win_00_null,        0, 0);
+   grid3x2->SetWindow(win_01_hdr_or_null, 0, 1);
+   grid3x2->SetWindow(win_10_y_axis,      1, 0);
+   grid3x2->SetWindow(grid3x3,            1, 1);
+   grid3x2->SetWindow(win_20_null,        2, 0);
+   grid3x2->SetWindow(win_21_x_axis,      2, 1);
+
+
+grid3x3:
+(in ConditionalViewFrame constructor)
+	new wxGeneralSplitterWindow(grid3x2,3,3);
+	wxWindow* win_tmp;
+	grid3x3->SetWindow(win_tmp, i/3, i%3);
+
+
+(in ConditionalViewFrame::UpdateViews())
+    switch(mViewType) {
+    case 1:
+    	 for(i=0; i<9; i++) {
+	 	  view1 = (MapMovieCanvas*) grid3x3->GetWindow(i/3, i%3);
+		  view1->UpdateCondition(flags);
+	}
+	break;
+	.... similar for all four cases
+(in ConditionalViewFrame::Update())
+    switch(mViewType) {
+    case 1:
+    	 for(i=0; i<9; i++) {
+    	     view1 = (MapMovieCanvas*) grid3x3->GetWindow(i/3, i%3);
+	     wxClientDC dc(view1);
+	     PrepareDC(dc);
+	     view1->Selection(&dc);
+    	 }
+    	 break;
+	.... similar for all four cases
+
+In summary:
+constructors (parent, rows, cols)
+SetWindow, GetWindow
+SetSashPartition
+AllowSashChangeX(false),
+AllowSashChangeY(false)
+
+That's it.
+Note: wxGeneralSplitter is a wxWindow.
+
+
+
+
+For the 2.9.1 realease of wxWidgets, on the Mac platform
+the functionality for
+wxRegion::wxRegion(size_t n, const wxPoint *points, wxPolygonFillMode
+WXUNUSED(fillStyle))
+has been commented out with an #ifdef macro so that
+an assert is thrown.  For now, we must manually comment
+the body of the function back in by changing the
+#ifdef 0 to #ifdef 1 on line 106 of src/osx/carbon/region.cpp
+For our purposes, things seem to work fine.
+
+Big Issues:
+* Windows: Try to use wxAutoBufferedPaintDC
+* Linux: Table totally unresponsive.  No updates.
+
+Note: wxDC <- wxMemoryDC <- wxBufferedDC <- wxBufferedPaintDC <-
+wxAutoBufferedPaintDC
+
+wxBufferedDC is typically associated with wxClientDC, if you want
+to use it in your EVT_PAINT handler, you should use wxBufferedPaintDC
+instead.
+
+Overview documentation for wxBufferedPaintDC:
+
+  This is a subclass of wxBufferedDC which can be used inside of
+  an EVT_PAINT() event handler to achieve double-buffered drawing.
+
+  Just use this class instead of wxPaintDC and make sure
+  wxWindow::SetBackgroundStyle() is called with wxBG_STYLE_CUSTOM
+  somewhere in the class initialization code, and that's all you
+  have to do to (mostly) avoid flicker. The only thing to watch
+  out for is that if you are using this class together with
+  wxScrolled, you probably do not want to call
+  wxScrolled::PrepareDC() on it as it already does this
+  internally for the real underlying wxPaintDC.
+
+
+The following classes are handling EVT_PAINT on their own:
+TestScrollWinCanvas -> calls TemplateCanvas::OnPaint
+TestMapCanvas -> calls TemplateCanvas::OnPaint
+CRandomizationDlg -> calls CRandomizationDlg::OnPaint
+C3DPlotCanvas -> calls C3DPlotCanvas::OnPaint
+ScatterNewPlotCanvas -> calls TemplateCanvas::OnPaint
+wxGridWindowEx (Table) -> calls wxGridWindowEx::OnPaint
+TemplateCanvas -> calls TemplateCanvas::OnPaint
+wxGeneralSplitter -> calls wxGeneralSplitter::OnPaint
+
+
+
+Classes that handle EVT_PAINT should call
+SetBackgroundStyle(wxBG_STYLE_CUSTOM) in their constructor.
+
+Convert all wxComboBox with wxCB_READONLY attribute set to wxChoice
+
+Convert wxComboBox::GetValue to 
+m_field->GetString(m_field->GetSelection())
+GetSelection() != wxNOT_FOUND
+Clear() -> OK, so long as not a wxComboBox with wxCB_READONLY set.
+
+Here's the list:
+
+20 instances:
+
+IDC_CURRENTUSED_W  pCB CSelectWeightDlg  OK
+IDC_KEYVAR m_X CAddCentroidsDlg  IDD_ADD_CENTROIDS OK
+IDC_KEYVAR CAddCentroidsDlg  IDD_ADD_MEANCENTERS OK
+IDC_FIELD CRangeSettingDlg m_field OK
+IDC_COMBO1 CDeleteColumnDlg m_field OK
+IDC_COMBO1 CAddColumnDlg m_field OK
+IDC_KEYVAR CDBF2SHPDlg m_X OK
+IDC_KEYVAR2 CDBF2SHPDlg m_Y OK
+IDC_KEYVAR CASC2SHPDlg m_X OK
+IDC_KEYVAR2 CASC2SHPDlg m_Y OK
+IDC_KEYVAR CSHP2ASCDlg m_X OK
+IDC_KEYVAR CJoinTableDlg m_field OK
+IDC_UNARY_OPERATOR CFieldCalcUniDlg m_op OK
+IDC_BINARY_OPERATOR CFieldCalcBinDlg m_op OK
+IDC_CURRENTUSED_W CFieldCalcLagDlg m_weight OK
+IDC_LAG_OPERAND CFieldCalcLagDlg m_var OK
+IDC_RATE_OPERATOR CFieldCalcRateDlg m_method OK
+IDC_RATE_WEIGHT CFieldCalcRateDlg m_weight OK
+IDC_RATE_OPERAND1 CFieldCalcRateDlg m_event OK
+IDC_RATE_OPERAND2 CFieldCalcRateDlg m_base OK
+
+
+
+Current issue: fix font sizes.
+Consider: try out test program.
+
+No need.  Perhaps can do with a simple canvas in main program.
+
+New Scatter Plot to-do:
+
+2. Fix small areas in bubble plot
+3. Add stats line(s) to top of window
+4. List x,y,z values while hovering over
+5. Set font sizes correctly for Windows and Linux
+* Semi-transparent bubbles?
+* Hide/show bubbles?
+* Override display alg so that can display bubbles sorted by Z?
+  Watch out for a performance hit.  Also, be careful of highlight
+  updates.
+
+Statistics Display design:
+
+- Handle infinite slope case by showing nothing?  Note that the
+scatterplot points are do not always represent the points on
+a function since there can be multiple values of y for the
+same value of x.
+- Show axis lines through (0,0), and perhaps make an option
+- provide some buffer for min/max observations on x/y axes.
+
+Hmm, seems that the first thing we want is to set up the menus!
+
+Pre-alpha to-do list:
+
+1. Fix Mac Circle/Line selection.
+2. Fix Windows selection.
+
+Idea: Remove option to select with Circles and Lines for now.  Can
+just comment out of menus. So, assuming we have just point and rectangle:
+
+In all windows, can do the following three things:
+Can select with:
+1. single clicks
+2. drag a rectangle shape
+3. hold down Cmd key and draw a rectangle for brushing.
+
+Notes: a) the shift key allows additional points to be added to current selection
+b) without the shift key, the current selection is cleared and new
+selection is made
+c) once the rectangle is created using CMD, then it becomes a new type
+of pointer for that window that is dragged around.  Whatever it intersects is
+automatically selected.
+
+Once brushing mode is entered, only another left click ends brushing mode.
+Note:we should allow a left or a right click, modified or not to end brushing
+mode.
+
+So, we could describe certain modes:
+1. Brushing / or normal select
+2. Panning
+3. Zoom In / Out.  Note: Zoom In is normally done with a single point
+click.  Could allow both rectangle select and point clicks.
+4. IDEA: Would be nice to add zoom in/out and scale icons just like
+Google Maps has.
+
+So, have to have shared global variable to keep track of set of
+selected objects.  But, brushing mode vs other mode doesn't matter
+since the brush is only local to the current window.  Still, might
+want to restrict frequency of updates to other windows while brushing
+is taking place.  Or, could just restrict update frequency in general.
+
+So: globally will have: Brushing Mode and Regular Mode
+Locally will have to keep track of various options based on which 
+subclass of TemplateCanvas we are talking about.
+All TemplateCanvas frames need the following:
+
+1. Brushing mode vs regular
+
+All MapCanvas frames need:
+
+1. Zoom In Mode
+2. Zoom Out Mode
+3. Panning Mode
+
+Selection notes:
+
+In mapview.h:
+
+const int SELECTION_RECT = 0;
+const int SELECTION_LINE = 1;
+const int SELECTION_CIRCLE = 2;
+
+const int MODE_SELECT = 0;
+const int MODE_ZOOMIN = 1;
+const int MODE_ZOOMOUT = 2;
+const int MODE_PANNING = 3;
+
+extern unsigned int g_pGridCtrl_status;
+extern Selection gSelection;
+extern int gObservation;
+extern double *m_gX, *m_gY;
+extern bool gObjectlinking;
+//extern wxGridEx* g_pGridCtrl;
+
+1. class gSelection is defined in shp2cnt.h.
+  - It is used in every file that has a class that inherits from TemplateCanvas
+     or MapCanvas and it appears as a single global object defined "extern
+     Selection gSelection"
+  - It is used as a globally shared object that keeps track of currently
+  selected points.
+
+2. In shp2cnt.cpp, there is a line:  GeoDaEventType gEvent = NO_EVENTS;
+  - It appears almost everywhere as "extern GeoDaEventType gEvent;"
+  - GeoDaEventType is defined in shp2cnt.h as:
+enum GeoDaEventType  {
+    NO_EVENTS,
+    NEW_SELECTION,
+    ADD_SELECTION,
+    DEL_SELECTION
+};
+
+3. In shp2cnt.h we have
+enum SelectType {         
+	// enumeration for the type of selection
+    NO_SELECT,
+    RECT_SELECT,
+    BRUSH_SELECT,
+	LINE_SELECT
+};
+  - But there is no global instance variable for this.  Instead, in
+  TemplateCanvas class, there is a public variable "SelectType gRegime" and this
+  is the ony instance of SelectType enum.  ToDo: move this definition into
+  TemplateCanvas.
+
+Let's try to understand what NO_SELECT actually does.  My theory is that we can
+get rid of it.  Comments related to this start with // MMMSelect 
+
+4. In OpenGeoDa.cpp, we have
+enum GridCtrlStatusType {
+	NEW_OPEN,
+	NEXT_OPEN
+};
+Which appears as a global variable defined in OpenGeoDa.h
+ unsigned in g_pGridCtrl_status = 0;
+  - g_pGridCtrl_status takes to values defined in OpenGeoDa.cpp:
+GridCtrlStatusType g_pGridCtrl_status = NEW_OPEN;
+
+Carefully map out how mouse selection works in each mode.
+Who uses TemplateCanvas?
+
+
+
+Class list:
+
+C3DPlotFrame
+BoxPlotFrame
+CartogramFrame
+ConditionalViewFrame
+HistFrame
+LisaBoxFrame (not inherited from BoxPlotFrame), but uses ID_BOXPLOT_OPTIONS_MENU
+         and IDR_CONTEXT_BOXPLOT
+LisaMapFrame (inherited from MapChild)
+MoranGFrame (bivariate Moran)
+MoranScatterPlotFrame (univariate Moran)
+MapChild
+MapMovieFrame
+PCPFrame
+ScatterPlotFrame
+TableViewFrame
+
+Frame Type List:
+
+IDR_MAPTPYE
+DONE! IDR_BOXTYPE,  IDR_CONTEXT_BOXTYPE,  BoxPlotFrame, ID_BOXTYPE_OPTIONS_MENU
+DONE! IDR_CARTOGRAM, IDR_CONTEXT_CARTOGRAM, CartogramViewFrame, ID_CARTOGRAM_OPTIONS_MENU
+IDR_GMSPL
+IDR_HISTTYPE
+IDR_LISAMAP
+IDR_MAPMOVIE
+IDR_MSPLTYPE
+IDR_MULTIBOX_TYPE
+IDR_SCATTERTYPE
+IDR_TABLESTYPE
+IDR_PCPTYPE
+
+Context Menu List:
+IDR_CONTEXT_MAPTYPE
+DONE! IDR_CONTEXT_BOXTYPE
+DONE! IDR_CONTEXT_CARTOGRAM
+IDR_CONTEXT_GMSPL          (General Moran Scatter Plot)
+IDR_CONTEXT_HISTTYPE
+IDR_CONTEXT_LISAMAP
+IDR_CONTEXT_MSPLTYPE  (univariate Moran Scatter Plot)
+IDR_CONTEXT_MULTIBOX_PLOT  (ConditionalViewFrame ?)
+IDR_CONTEXT_SCATTERTYPE
+IDR_CONTEXT_TABLESTYPE
+IDR_CONTEXT_PCPTYPE
+IDR_CONTEXT_REPORTTYPE  (Regression?)
+

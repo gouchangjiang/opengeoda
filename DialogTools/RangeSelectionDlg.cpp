@@ -18,17 +18,24 @@
  */
 
 #include <vector>
+#include <boost/random.hpp>
+#include <boost/random/uniform_01.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
 #include <wx/xrc/xmlres.h>
 #include <wx/msgdlg.h>
 #include <wx/valtext.h>
 #include "../GeoDaConst.h"
 #include "../Project.h"
+#include "../DataViewer/DataViewerAddColDlg.h"
 #include "../DataViewer/DbfGridTableBase.h"
 #include "../logger.h"
 #include "RangeSelectionDlg.h"
 
 BEGIN_EVENT_TABLE( RangeSelectionDlg, wxDialog )
 	EVT_CHOICE( XRCID("ID_FIELD_CHOICE"), RangeSelectionDlg::OnFieldChoice )
+	EVT_CHOICE( XRCID("ID_FIELD_CHOICE_TM"),
+			   RangeSelectionDlg::OnFieldChoiceTm )
 	EVT_TEXT( XRCID("ID_MIN_TEXT"), RangeSelectionDlg::OnRangeTextChange )
 	EVT_TEXT( XRCID("ID_MAX_TEXT"), RangeSelectionDlg::OnRangeTextChange )
     EVT_BUTTON( XRCID("ID_SEL_RANGE_BUTTON"),
@@ -37,8 +44,13 @@ BEGIN_EVENT_TABLE( RangeSelectionDlg, wxDialog )
 			   RangeSelectionDlg::OnSelUndefClick )
 	EVT_BUTTON( XRCID("ID_INVERT_SEL_BUTTON"),
 			   RangeSelectionDlg::OnInvertSelClick )
-	EVT_COMBOBOX( XRCID("ID_SAVE_FIELD_CB"), RangeSelectionDlg::OnSaveFieldCB )
-	EVT_TEXT( XRCID("ID_SAVE_FIELD_CB"), RangeSelectionDlg::OnSaveFieldCBtext )
+	EVT_BUTTON( XRCID("ID_RANDOM_SEL_BUTTON"),
+			   RangeSelectionDlg::OnRandomSelClick )
+	EVT_BUTTON( XRCID("ID_ADD_FIELD"), RangeSelectionDlg::OnAddField )
+	EVT_CHOICE( XRCID("ID_SAVE_FIELD_CHOICE"),
+			   RangeSelectionDlg::OnSaveFieldChoice )
+	EVT_CHOICE( XRCID("ID_SAVE_FIELD_CHOICE_TM"),
+			   RangeSelectionDlg::OnSaveFieldChoiceTm )
 	EVT_CHECKBOX( XRCID("ID_SEL_CHECK_BOX"), RangeSelectionDlg::OnSelCheckBox )
 	EVT_TEXT( XRCID("ID_SEL_VAL_TEXT"),
 			 RangeSelectionDlg::OnSelUnselTextChange )
@@ -58,14 +70,23 @@ RangeSelectionDlg::RangeSelectionDlg(Project* project_p, wxWindow* parent,
 current_sel_mcol(wxNOT_FOUND),
 m_field_choice(0), m_min_text(0), m_field_static_txt(0), m_field2_static_txt(0),
 m_max_text(0), m_sel_range_button(0), m_sel_undef_button(0),
-m_invert_sel_button(0), m_save_field_cb(0), m_sel_check_box(0),
+m_invert_sel_button(0), m_random_sel_button(0),
+m_save_field_choice(0), m_sel_check_box(0),
 m_sel_val_text(0), m_unsel_check_box(0), m_unsel_val_text(0),
-m_apply_save_button(0), m_all_init(false), m_selection_made(false)
+m_apply_save_button(0), m_all_init(false), m_selection_made(false),
+is_space_time(project_p->GetGridBase()->IsTimeVariant())
 {
 	SetParent(parent);
     CreateControls();
+	m_all_init = true;
 	SetTitle(title);
     Centre();
+	InitTime();
+	FillColIdMap();
+	InitField();
+	InitSaveField();
+	if (m_field_choice_tm) m_field_choice_tm->Disable();
+	if (m_save_field_choice_tm) m_save_field_choice_tm->Disable();
 }
 
 void RangeSelectionDlg::CreateControls()
@@ -75,6 +96,9 @@ void RangeSelectionDlg::CreateControls()
 	m_field_choice = wxDynamicCast(FindWindow(XRCID("ID_FIELD_CHOICE")),
 								   wxChoice);
 
+	m_field_choice_tm = wxDynamicCast(FindWindow(XRCID("ID_FIELD_CHOICE_TM")),
+								   wxChoice);
+	
 	m_min_text = wxDynamicCast(FindWindow(XRCID("ID_MIN_TEXT")),
 							   wxTextCtrl);
 	m_min_text->Clear();
@@ -103,8 +127,13 @@ void RangeSelectionDlg::CreateControls()
 	m_invert_sel_button = wxDynamicCast(
 						FindWindow(XRCID("ID_INVERT_SEL_BUTTON")), wxButton);
 	
-	m_save_field_cb = wxDynamicCast(FindWindow(XRCID("ID_SAVE_FIELD_CB")),
-									wxComboBox);
+	m_random_sel_button = wxDynamicCast(
+						FindWindow(XRCID("ID_RANDOM_SEL_BUTTON")), wxButton);
+	
+	m_save_field_choice =
+		wxDynamicCast(FindWindow(XRCID("ID_SAVE_FIELD_CHOICE")), wxChoice);
+	m_save_field_choice_tm =
+		wxDynamicCast(FindWindow(XRCID("ID_SAVE_FIELD_CHOICE_TM")), wxChoice);
 	
 	m_sel_check_box = wxDynamicCast(FindWindow(XRCID("ID_SEL_CHECK_BOX")),
 									wxCheckBox); 
@@ -126,18 +155,58 @@ void RangeSelectionDlg::CreateControls()
 	
 	m_apply_save_button = wxDynamicCast(
 		FindWindow(XRCID("ID_APPLY_SAVE_BUTTON")), wxButton);
-	m_all_init = true;
-	Init();
+	m_apply_save_button->Disable();
 }
 
-void RangeSelectionDlg::Init()
+void RangeSelectionDlg::InitTime()
 {
-	m_field_choice->Clear();
-	m_save_field_cb->Clear();
+	if (!is_space_time) return;
+	for (int t=0; t<grid_base->time_steps; t++) {
+		wxString tm;
+		tm << grid_base->time_ids[t];
+		m_field_choice_tm->Append(tm);
+		m_save_field_choice_tm->Append(tm);
+	}
+	m_field_choice_tm->SetSelection(0);
+	m_field_choice_tm->Disable();
+	m_save_field_choice_tm->SetSelection(0);
+	m_save_field_choice_tm->Disable();
+}
+
+void RangeSelectionDlg::FillColIdMap()
+{
+	col_id_map.clear();
 	grid_base->FillNumericColIdMap(col_id_map);
+}
+
+void RangeSelectionDlg::InitField()
+{
+	// assumes that FillColIdMap and InitTime has been called previously
+	InitField(m_field_choice, m_field_choice_tm);
+}
+
+void RangeSelectionDlg::InitSaveField()
+{
+	// assumes that FillColIdMap and InitTime has been called previously
+	InitField(m_save_field_choice, m_save_field_choice_tm);
+}	
+
+void RangeSelectionDlg::InitField(wxChoice* field, wxChoice* field_tm)
+{
+	// assumes that FillColIdMap and InitTime has been called previously
+	field->Clear();
+	
 	for (int i=0, iend=col_id_map.size(); i<iend; i++) {
-		m_field_choice->Append(grid_base->col_data[col_id_map[i]]->name);
-		m_save_field_cb->Append(grid_base->col_data[col_id_map[i]]->name);
+		int col = col_id_map[i];
+		DbfColContainer& cd = *grid_base->col_data[col];
+		if (field_tm && grid_base->IsColTimeVariant(col)) {
+			wxString t;
+			int t_sel = field_tm->GetSelection();
+			t << " (" << grid_base->time_ids[t_sel] << ")";
+			field->Append(cd.name + t);
+		} else {
+			field->Append(cd.name);
+		}
 	}
 }
 
@@ -149,6 +218,11 @@ void RangeSelectionDlg::CheckRangeButtonSettings()
 	bool valid_field = fc != wxNOT_FOUND;
 	if (valid_field) {
 		wxString fn = grid_base->col_data[col_id_map[fc]]->name;
+		if (grid_base->col_data[col_id_map[fc]]->time_steps > 1) {
+			wxString t;
+			t << grid_base->time_ids[m_field_choice_tm->GetSelection()];
+			fn << " (" << t << ")";
+		}
 		m_field_static_txt->SetLabelText(fn);
 		m_field2_static_txt->SetLabelText(fn);
 	} else {
@@ -180,7 +254,29 @@ void RangeSelectionDlg::CheckRangeButtonSettings()
 
 void RangeSelectionDlg::OnFieldChoice( wxCommandEvent& event )
 {
-	CheckRangeButtonSettings();	
+	EnableTimeField();
+	CheckRangeButtonSettings();
+}
+
+void RangeSelectionDlg::OnFieldChoiceTm( wxCommandEvent& event )
+{
+	if (!is_space_time) return;
+	
+	int prev_col = -1;
+	if (m_field_choice->GetSelection() != wxNOT_FOUND) {
+		prev_col = col_id_map[m_field_choice->GetSelection()];
+	}
+	
+	InitField();
+	
+	if (prev_col != -1) {
+		for (int i=0; i<col_id_map.size(); i++) {
+			if (prev_col == col_id_map[i]) {
+				m_field_choice->SetSelection(i);
+			}
+		}
+	}
+	CheckRangeButtonSettings();
 }
 
 void RangeSelectionDlg::OnRangeTextChange( wxCommandEvent& event )
@@ -199,6 +295,10 @@ void RangeSelectionDlg::OnSelRangeClick( wxCommandEvent& event )
 	int nuh_cnt = 0;
 	if (m_field_choice->GetSelection() == wxNOT_FOUND) return;
 	int mcol = col_id_map[m_field_choice->GetSelection()];
+	int f_tm = 0;
+	if (grid_base->col_data[mcol]->time_steps > 1) {
+		f_tm = m_field_choice_tm->GetSelection();
+	}
 	DbfColContainer& cd = *grid_base->col_data[mcol];
 	LOG(cd.name);
 	double min_dval = 0;
@@ -206,12 +306,12 @@ void RangeSelectionDlg::OnSelRangeClick( wxCommandEvent& event )
 	double max_dval = 1;
 	m_max_text->GetValue().ToDouble(&max_dval);
 	std::vector<bool> undefined;
-	cd.GetUndefined(undefined);
+	cd.GetUndefined(undefined, f_tm);
 	if (cd.type == GeoDaConst::long64_type) {
 		wxInt64 min_ival = ceil(min_dval);
 		wxInt64 max_ival = floor(max_dval);
 		std::vector<wxInt64> vec;
-		cd.GetVec(vec);
+		cd.GetVec(vec, f_tm);
 		for (int i=0, iend=grid_base->GetNumberRows(); i<iend; i++) {
 			if (!undefined[i] && min_ival <= vec[i] && vec[i] <= max_ival) {
 				if (!h[i]) nh[nh_cnt++]=i;
@@ -221,7 +321,7 @@ void RangeSelectionDlg::OnSelRangeClick( wxCommandEvent& event )
 		}
 	} else if (cd.type == GeoDaConst::double_type) {
 		std::vector<double> vec;
-		cd.GetVec(vec);
+		cd.GetVec(vec, f_tm);
 		for (int i=0, iend=grid_base->GetNumberRows(); i<iend; i++) {
 			if (!undefined[i] && min_dval <= vec[i] && vec[i] <= max_dval) {
 				if (!h[i]) nh[nh_cnt++]=i;
@@ -261,9 +361,13 @@ void RangeSelectionDlg::OnSelUndefClick( wxCommandEvent& event )
 	int nuh_cnt = 0;
 	if (m_field_choice->GetSelection() == wxNOT_FOUND) return;
 	int mcol = col_id_map[m_field_choice->GetSelection()];
+	int f_tm = 0;
+	if (grid_base->col_data[mcol]->time_steps > 1) {
+		f_tm = m_field_choice_tm->GetSelection();
+	}
 	DbfColContainer& cd = *grid_base->col_data[mcol];
 	std::vector<bool> undefined;
-	cd.GetUndefined(undefined);
+	cd.GetUndefined(undefined, f_tm);
 	for (int i=0, iend=h.size(); i<iend; i++) {
 		if (undefined[i]) nh[nh_cnt++] = i;
 	}
@@ -277,6 +381,36 @@ void RangeSelectionDlg::OnSelUndefClick( wxCommandEvent& event )
 	CheckApplySaveSettings();
 }
 
+void RangeSelectionDlg::OnRandomSelClick( wxCommandEvent& event )
+{
+	// Mersenne Twister random number generator, randomly seeded
+	// with current time in seconds since Jan 1 1970.
+	static boost::mt19937 rng(std::time(0));
+	static boost::uniform_01<boost::mt19937> X(rng);
+	
+	HighlightState& hs = *project->highlight_state;
+	std::vector<bool>& h = hs.GetHighlight();
+	std::vector<int>& nh = hs.GetNewlyHighlighted();
+	std::vector<int>& nuh = hs.GetNewlyUnhighlighted();
+	int nh_cnt = 0;
+	int nuh_cnt = 0;
+	int total_obs = h.size();
+	for (int i=0; i<total_obs; i++) {
+		bool sel = X() < 0.5;
+		if (sel && !h[i]) {
+			nh[nh_cnt++] = i;
+		} else if (!sel && h[i]) {
+			nuh[nuh_cnt++] = i;
+		}
+	}
+	hs.SetEventType(HighlightState::delta);
+	hs.SetTotalNewlyHighlighted(nh_cnt);
+	hs.SetTotalNewlyUnhighlighted(nuh_cnt);
+	hs.notifyObservers();
+	m_selection_made = true;
+	CheckApplySaveSettings();
+}
+
 void RangeSelectionDlg::OnInvertSelClick( wxCommandEvent& event )
 {
 	HighlightState& hs = *project->highlight_state;
@@ -286,13 +420,64 @@ void RangeSelectionDlg::OnInvertSelClick( wxCommandEvent& event )
 	CheckApplySaveSettings();
 }
 
-void RangeSelectionDlg::OnSaveFieldCB( wxCommandEvent& event )
+void RangeSelectionDlg::OnAddField( wxCommandEvent& event )
 {
+	int prev_field_col = -1;
+	if (m_field_choice->GetSelection() != wxNOT_FOUND) {
+		prev_field_col = col_id_map[m_field_choice->GetSelection()];
+	}
+	
+	DataViewerAddColDlg dlg(grid_base, this, false, true, "SELECT");
+	if (dlg.ShowModal() != wxID_OK) return;
+	int col = dlg.GetColId();
+	if (grid_base->GetColType(col) != GeoDaConst::long64_type &&
+		grid_base->GetColType(col) != GeoDaConst::double_type) return;
+	
+	FillColIdMap();
+	InitField();
+	InitSaveField();
+	
+	for (int i=0; i<col_id_map.size(); i++) {
+		if (prev_field_col == col_id_map[i]) {
+			m_field_choice->SetSelection(i);
+		}
+	}
+	
+	for (int i=0; i<col_id_map.size(); i++) {
+		if (col == col_id_map[i]) {
+			m_save_field_choice->SetSelection(i);
+		}
+	}
+	
+	EnableTimeField();
+	EnableTimeSaveField();
 	CheckApplySaveSettings();
 }
 
-void RangeSelectionDlg::OnSaveFieldCBtext( wxCommandEvent& event )
+void RangeSelectionDlg::OnSaveFieldChoice( wxCommandEvent& event )
 {
+	EnableTimeSaveField();
+	CheckApplySaveSettings();
+}
+
+void RangeSelectionDlg::OnSaveFieldChoiceTm( wxCommandEvent& event )
+{
+	if (!is_space_time) return;
+	
+	int prev_col = -1;
+	if (m_save_field_choice->GetSelection() != wxNOT_FOUND) {
+		prev_col = col_id_map[m_save_field_choice->GetSelection()];
+	}
+	
+	InitSaveField();
+	
+	if (prev_col != -1) {
+		for (int i=0; i<col_id_map.size(); i++) {
+			if (prev_col == col_id_map[i]) {
+				m_save_field_choice->SetSelection(i);
+			}
+		}
+	}
 	CheckApplySaveSettings();
 }
 
@@ -311,14 +496,33 @@ void RangeSelectionDlg::OnSelUnselTextChange( wxCommandEvent& event )
 	CheckApplySaveSettings();
 }
 
+void RangeSelectionDlg::EnableTimeField()
+{
+	if (!is_space_time) return;
+	if (m_field_choice->GetSelection() == wxNOT_FOUND) {
+		m_field_choice_tm->Disable();
+		return;
+	}
+	int col = col_id_map[m_field_choice->GetSelection()];
+	m_field_choice_tm->Enable(grid_base->IsColTimeVariant(col));
+}
+
+void RangeSelectionDlg::EnableTimeSaveField()
+{
+	if (!is_space_time) return;
+	if (m_save_field_choice->GetSelection() == wxNOT_FOUND) {
+		m_save_field_choice_tm->Disable();
+		return;
+	}
+	int col = col_id_map[m_save_field_choice->GetSelection()];
+	m_save_field_choice_tm->Enable(grid_base->IsColTimeVariant(col));
+}
+
 void RangeSelectionDlg::CheckApplySaveSettings()
 {
 	if (!m_all_init) return;
-	
-	wxString t = m_save_field_cb->GetValue().Upper();
-	t.Trim(false);
-	t.Trim(true);
-	bool target_field_empty = t.IsEmpty();
+
+	bool target_field_empty = m_save_field_choice->GetSelection()==wxNOT_FOUND;
 	
 	// Check that m_sel_val_text and m_unsel_val_text is valid.
 	// If not valid, set text color to red.
@@ -337,6 +541,7 @@ void RangeSelectionDlg::CheckApplySaveSettings()
 		style.SetTextColour(*(unsel_valid ? wxBLACK : wxRED));
 		m_unsel_val_text->SetStyle(0, unsel_text.length(), style);
 	}
+	
 	bool sel_checked = m_sel_check_box->GetValue() == 1;
 	bool unsel_checked = m_unsel_check_box->GetValue() == 1;
 	
@@ -353,56 +558,8 @@ void RangeSelectionDlg::CheckApplySaveSettings()
  checked for validity. */
 void RangeSelectionDlg::OnApplySaveClick( wxCommandEvent& event )
 {
-	wxString sf_name = m_save_field_cb->GetValue().Upper();
-	sf_name.Trim(false);
-	sf_name.Trim(true);
-	
-	wxString bad_name_msg_start = "\"";
-	wxString bad_name_msg_end = "\" is an invalid "
-	"field name.  A valid field name is between one and ten "
-	"characters long.  The first character must be alphabetic,"
-	" and the remaining characters can be either alphanumeric "
-	"or underscores.";
-	if (!DbfFileUtils::isValidFieldName(sf_name)) {
-		wxString msg = bad_name_msg_start + sf_name + bad_name_msg_end;
-		wxMessageDialog dlg(this, msg, "Error", wxOK | wxICON_ERROR );
-		dlg.ShowModal();
-		return;
-	}
-
-	int write_col = wxNOT_FOUND;
-	for (int i=0, iend=col_id_map.size();
-		 i<iend && write_col == wxNOT_FOUND; i++) {
-		if (grid_base->col_data[col_id_map[i]]->name == sf_name) {
-			write_col = col_id_map[i];
-		}
-	}
-	
-	bool new_col_added = false;
-	int cur_field_sel = m_field_choice->GetSelection();
-	if (write_col == wxNOT_FOUND) {
-		for (int i=0, iend=grid_base->GetNumberCols(); i<iend; i++) {
-			if (grid_base->col_data[i]->name == sf_name) {
-				wxString msg;
-				msg << "\"" << sf_name << "\" already exists in table, but ";
-				msg << "is not of numeric type.  Please choose an existing ";
-				msg << "numeric field, or chose a new field name.";
-				wxMessageDialog dlg(this, msg, "Error", wxOK | wxICON_ERROR );
-				dlg.ShowModal();
-				return;
-			}
-		}
+	int write_col = col_id_map[m_save_field_choice->GetSelection()];
 		
-		// We know that new field name is valid, so create a new field
-		// that will accomodate chosen value to write out.  The newly
-		// created field is of integral type with length of 7 to
-		// allow numbers up to 9 999 999 or as small as -999 999
-		write_col = grid_base->GetNumberCols();
-		grid_base->InsertCol(write_col, GeoDaConst::long64_type, sf_name,
-							 7, 0, 0, false, true);
-		new_col_added = true;
-	}
-	
 	bool sel_checked = m_sel_check_box->GetValue() == 1;
 	bool unsel_checked = m_unsel_check_box->GetValue() == 1;
 	
@@ -419,6 +576,12 @@ void RangeSelectionDlg::OnApplySaveClick( wxCommandEvent& event )
 		unsel_c_str.ToDouble(&unsel_c);
 	}
 	
+	int sf_tm = 0;
+	if (grid_base->col_data[write_col]->time_steps > 1 &&
+		m_save_field_choice_tm) {
+		sf_tm = m_save_field_choice_tm->GetSelection();
+	}
+	
 	std::vector<bool>& h = project->highlight_state->GetHighlight();
 	// write_col now refers to a valid field in grid base, so write out
 	// results to that field.
@@ -429,8 +592,8 @@ void RangeSelectionDlg::OnApplySaveClick( wxCommandEvent& event )
 		wxInt64 sel_c_i = sel_c;
 		wxInt64 unsel_c_i = unsel_c;
 		std::vector<wxInt64> t(grid_base->GetNumberRows());
-		cd.GetVec(t);
-		cd.GetUndefined(undefined);
+		cd.GetVec(t, sf_tm);
+		cd.GetUndefined(undefined, sf_tm);
 		if (sel_checked) {
 			for (int i=0; i<obs; i++) {
 				if (h[i]) {
@@ -447,12 +610,12 @@ void RangeSelectionDlg::OnApplySaveClick( wxCommandEvent& event )
 				}
 			}
 		}
-		cd.SetFromVec(t);
-		cd.SetUndefined(undefined);
+		cd.SetFromVec(t, sf_tm);
+		cd.SetUndefined(undefined, sf_tm);
 	} else if (cd.type == GeoDaConst::double_type) {
 		std::vector<double> t(grid_base->GetNumberRows());
-		cd.GetVec(t);
-		cd.GetUndefined(undefined);
+		cd.GetVec(t, sf_tm);
+		cd.GetUndefined(undefined, sf_tm);
 		if (sel_checked) {
 			for (int i=0; i<obs; i++) {
 				if (h[i]) {
@@ -469,8 +632,8 @@ void RangeSelectionDlg::OnApplySaveClick( wxCommandEvent& event )
 				}
 			}
 		}
-		cd.SetFromVec(t);
-		cd.SetUndefined(undefined);
+		cd.SetFromVec(t, sf_tm);
+		cd.SetUndefined(undefined, sf_tm);
 	} else {
 		wxString msg = "Chosen field is not a numeric type.  This is likely ";
 		msg << "a bug. Please report this.";
@@ -479,17 +642,7 @@ void RangeSelectionDlg::OnApplySaveClick( wxCommandEvent& event )
 		return;
 	}
 	
-	// if we just added a new column, reinitialize with the new
-	// column as a possible choice.
-	if (new_col_added) {
-		Init();
-		if (cur_field_sel != wxNOT_FOUND) {
-			m_field_choice->SetSelection(cur_field_sel);
-		}
-		m_save_field_cb->SetSelection(m_save_field_cb->GetCount()-1);
-	}
 	if (grid_base->GetView()) grid_base->GetView()->Refresh();
-	
 	wxString msg = "Values assigned to target field successfully.";
 	wxMessageDialog dlg(this, msg, "Success", wxOK | wxICON_INFORMATION );
 	dlg.ShowModal();

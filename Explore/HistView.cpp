@@ -30,21 +30,18 @@
 
 #include "../DialogTools/UserConfigDlg.h"
 #include "../ShapeOperations/shp.h"
+#include "../ShapeOperations/shp2cnt.h"
 #include "../OpenGeoDa.h"
 #include "../GenUtils.h"
 #include "../GeneralWxUtils.h"
 #include "ConditionalView.h"
 #include "../TemplateCanvas.h"
-#include "../mapview.h"
 #include "../logger.h"
 
 #include "HistView.h"
 
 extern	Selection gSelection;
 extern	GeoDaEventType	gEvent;
-extern	int gObservation;
-extern	wxString m_gVar1;
-extern	double* m_gX;
 extern MyFrame* frame;
  
 BEGIN_EVENT_TABLE(HistFrame, wxFrame)
@@ -63,7 +60,9 @@ END_EVENT_TABLE()
 // Hist Frame
 // ---------------------------------------------------------------------------
 
-HistFrame::HistFrame(wxFrame *parent, Project* project, const wxString& title,
+HistFrame::HistFrame(wxFrame *parent,
+					 double* v1, int num_obs, const wxString& v1_name,
+					 Project* project, const wxString& title,
 					 const wxPoint& pos, const wxSize& size,
 					 const long style, wxString hist_weight_file,
 					 long* hist_weight_freq)
@@ -74,7 +73,8 @@ HistFrame::HistFrame(wxFrame *parent, Project* project, const wxString& title,
 	
 	int width, height;
 	GetClientSize(&width, &height);
-	canvas = new HistCanvas(false, this, wxPoint(0, 0), wxSize(width, height),
+	canvas = new HistCanvas(false, this, v1, num_obs, v1_name,
+							wxPoint(0, 0), wxSize(width, height),
 							false, hist_weight_file, hist_weight_freq);
 	template_canvas = canvas;
 	template_canvas->template_frame = this;
@@ -154,19 +154,22 @@ void HistFrame::OnHistogramIntervals(wxCommandEvent& event)
 // ---------------------------------------------------------------------------
 
 // Define a constructor for my canvas
-HistCanvas::HistCanvas(bool ViewCC, wxWindow *parent, const wxPoint& pos,
+HistCanvas::HistCanvas(bool ViewCC, wxWindow *parent,
+					   double* v1, int num_obs_s, const wxString& v1_name,
+					   const wxPoint& pos,
 					   const wxSize& size, bool conditional_view,
 					   wxString hist_weight_file,
 					   long* hist_weight_freq)
-: TemplateCanvas(parent, pos, size), Conditionable(conditional_view)
+: TemplateCanvas(parent, pos, size), Conditionable(conditional_view, num_obs_s),
+num_obs(num_obs_s)
 {
 	LOG_MSG("Entering HistCanvas::HistCanvas");
 	m_ViewCC = ViewCC;
 	Ranges = 7;
-	RawData = new double[ gObservation+1 ];
-	Range = new unsigned char[ gObservation+1 ];
-	Grouping = new int[ gObservation+1 ];
-	if (!RawData || !Range || !Grouping)  gObservation = 0;
+	RawData = new double[ num_obs+1 ];
+	Range = new unsigned char[ num_obs+1 ];
+	Grouping = new int[ num_obs+1 ];
+	if (!RawData || !Range || !Grouping)  num_obs = 0;
 	
 	if (hist_weight_file != wxEmptyString) {
 		if (hist_weight_freq == 0) {
@@ -178,22 +181,22 @@ HistCanvas::HistCanvas(bool ViewCC, wxWindow *parent, const wxPoint& pos,
 		isWeightsHistogram = true;
 		FieldName = "Connectivity";
 		int numIsolates = 0;
-		for (int i=0; i<gObservation; i++) {
+		for (int i=0; i<num_obs; i++) {
 			if (hist_weight_freq[i] == 0) numIsolates++;
 			RawData[i] = (double) hist_weight_freq[i];
 		}
 		isolates.resize(numIsolates);
 		int cnt=0;
 		if (numIsolates > 0) {
-			for (int i=0; i<gObservation; i++) {
+			for (int i=0; i<num_obs; i++) {
 				if (hist_weight_freq[i] == 0) isolates[cnt++] = i;
 			}
 		}
 	} else {
 		intData = false;
 		isWeightsHistogram = false;
-		FieldName = m_gVar1;
-		for (int i=0; i<gObservation; i++) RawData[i] = m_gX[i];
+		FieldName = v1_name;
+		for (int i=0; i<num_obs; i++) RawData[i] = v1[i];
 	}
 	gSelection.Reset(false); // set Buffer not to empty
 
@@ -363,7 +366,7 @@ void HistCanvas::SelectByPoint(wxMouseEvent& event) {
                     }
                 }
 
-                CUserConfigDlg dlg(this);
+                UserConfigDlg dlg(this);
 
                 wxString str;
                 str << wxEmptyString;
@@ -474,7 +477,7 @@ void HistCanvas::Selection(wxDC* pDC)
 		case NEW_SELECTION :
 			LOG_MSG("gEvent == NEW_SELECTION");
 			for (rge= 0; rge < Ranges; ++rge) Selected[ rge ]= 0;
-			for (cnt=0 ; cnt < gObservation; cnt++) {
+			for (cnt=0 ; cnt < num_obs; cnt++) {
 				if(!conditionFlag[cnt]) continue;
 				
 				if (gSelection.selected(cnt))
@@ -570,7 +573,7 @@ void HistCanvas::OnLButtonDblClk(wxMouseEvent& event, wxPoint& point)
 {
 	gSelection.Reset(true);
 	gSelection.Invert();
-	for (int cnt= 0; cnt < gObservation; ++cnt) {
+	for (int cnt= 0; cnt < num_obs; ++cnt) {
 		if (gSelection.selected(cnt)) {
 			gSelection.Push(cnt);
 		}
@@ -809,7 +812,7 @@ void HistCanvas::UpdateBins()
 	}
 	
 	int rge = 0, bucket = 0;
-	for (cnt= 0; cnt < gObservation; ++cnt) {
+	for (cnt= 0; cnt < num_obs; ++cnt) {
 		for(bucket=0; bucket<Ranges; bucket++)
 		{
 			if( (RawData[cnt] < BreakVals[bucket+1] ) )
@@ -881,17 +884,17 @@ void HistCanvas::MakeHistoLegend(char ** Legend, double* BreakVals,
 			if (BreakVals[rge]<0) {
 				lgd[0]='\0';
 				strcat(lgd,"-");						 
-				ggcvt(a, 3, buf2);
+				GenUtils::ggcvt(a, 3, buf2);
 				strcat(lgd, buf2);
 			} else {
-				ggcvt(a, 3, lgd);
+				GenUtils::ggcvt(a, 3, lgd);
 			}
 
 			strcat(lgd, " : ");
 			
 			a = fabs(BreakVals[rge+1]);
 			if (BreakVals[rge+1]<0) strcat(lgd, "-");
-			ggcvt(a, 3, buf2);
+			GenUtils::ggcvt(a, 3, buf2);
 			strcat(lgd, buf2);
 
 			strcat(lgd, " (");
@@ -910,9 +913,9 @@ bool HistCanvas::Init()
 	LOG_MSG("Entering HistCanvas::Init()");
 	if (m_ViewCC) {
 		gcObs = 0;
-		for (int i=0; i<gObservation; i++) if (conditionFlag[i]) gcObs++;
+		for (int i=0; i<num_obs; i++) if (conditionFlag[i]) gcObs++;
 	} else {
-		gcObs = gObservation;
+		gcObs = num_obs;
 	}
 	CheckSize();
 	grouping();
@@ -927,7 +930,7 @@ bool HistCanvas::grouping()
 	LOG(intData);
 	minData= RawData[0], maxData= minData;
 	
-	for (int cnt= 0; cnt < gObservation; ++cnt) {
+	for (int cnt= 0; cnt < num_obs; ++cnt) {
 		if (RawData[cnt] < minData) {
 			minData = RawData[cnt];
 		} else if (RawData[cnt] > maxData) {
@@ -969,7 +972,7 @@ bool HistCanvas::grouping()
 		LegendItems[0]= new char [ Ranges * 32 ];
 	if (!Groups || !Counts || !Selected || !RangeColor
 		|| !LegendItems || !LegendItems[0]) { 
-		gObservation= 0;
+		num_obs= 0;
 		return false;
 	}
 	for (int cnt=0; cnt < Ranges; ++cnt) {
@@ -1024,40 +1027,26 @@ bool HistCanvas::grouping()
 
 void HistCanvas::HistogramIntervals() 
 {
-	CHistIntervalDlg dlg(this);
-	wxString text;
-	text << Ranges;
-	dlg.m_intervals->SetValue(text);
+	HistIntervalDlg dlg(1, Ranges, 100, this);
+	if (dlg.ShowModal() != wxID_OK) return;
 
-	if (dlg.ShowModal () == wxID_OK) {
-		wxString text;
-		text << dlg.m_intervals->GetValue();
-		if(!text.IsNumber()) {
-			wxMessageBox("Please type a number");
-			HistogramIntervals();
-			return;
-		}
-		
-		long val;
-		text.ToLong(&val);
-		Ranges = val;
-		SetRanges = true;
-		Init();
-		gSelection.Reset(false);  
-		Selection();
-		CheckSize();
-		LOG_MSG("Calling HistCanvas::Refresh()");
-		Refresh(true);
-		LOG_MSG("Finished calling HistCanvas::Refresh()");
-	}
+	Ranges = dlg.num_intervals;
+	SetRanges = true;
+	Init();
+	gSelection.Reset(false);  
+	Selection();
+	CheckSize();
+	LOG_MSG("Calling HistCanvas::Refresh()");
+	Refresh(true);
+	LOG_MSG("Finished calling HistCanvas::Refresh()");
 }
 
 
 wxColour HistCanvas::GetColor(float data, bool IntData)
 {
 	float col[3];
-	convert_rgb(((int)(220.0-220.0*data/Ranges))%360,
-				(float) 0.7, (float) 0.7, col);
+	GenUtils::convert_rgb(((int)(220.0-220.0*data/Ranges))%360,
+						  (float) 0.7, (float) 0.7, col);
 	wxColour color = wxColour((int)(col[0]*255),
 							  (int)(col[1]*255),(int)(col[2]*255));
 	return color;

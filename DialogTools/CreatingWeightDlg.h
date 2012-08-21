@@ -57,26 +57,23 @@ public:
     void OnDistanceMetricSelected(wxCommandEvent& event );
     void OnXSelected(wxCommandEvent& event );
     void OnYSelected(wxCommandEvent& event );
+	void OnXTmSelected(wxCommandEvent& event );
+    void OnYTmSelected(wxCommandEvent& event );
     void OnCRadioQueenSelected( wxCommandEvent& event );
     void OnCSpinOrderofcontiguityUpdated( wxSpinEvent& event );
     void OnCRadioRookSelected( wxCommandEvent& event );
     void OnCRadioDistanceSelected( wxCommandEvent& event );
-    void OnStandardizeClick( wxCommandEvent& event );
 	void OnCThresholdTextEdit( wxCommandEvent& event );
     void OnCThresholdSliderUpdated( wxCommandEvent& event );
-    void OnCRadioInvDistanceSelected( wxCommandEvent& event );
-    void OnCSpinPowerUpdated( wxSpinEvent& event );
     void OnCRadioKnnSelected( wxCommandEvent& event );
     void OnCRadioGeodaLSelected( wxCommandEvent& event );
     void OnCSpinKnnUpdated( wxSpinEvent& event );
-    void OnOkCreate1Click( wxCommandEvent& event );
-    void OnOkReset1Click( wxCommandEvent& event );
+    void OnCreateClick( wxCommandEvent& event );
+    void OnResetClick( wxCommandEvent& event );
     void OnCancelClick( wxCommandEvent& event );
 	bool CheckIfDbfSameAsInCurrentProject(const wxString& full_dbf_name);
-	bool CheckProjectTableSaved();
 
 	bool all_init;
-	wxString m_default_input_file;
     wxTextCtrl* m_inputfile;
     wxChoice* m_field;
     wxRadioButton* m_radio2;
@@ -85,15 +82,13 @@ public:
     wxRadioButton* m_radio1;
     wxCheckBox* m_include_lower;
     wxChoice* m_distance_metric;
-    wxCheckBox* m_standardize;  // for inverse distance
     wxChoice* m_X;
+	wxChoice* m_X_time;
     wxChoice* m_Y;
+	wxChoice* m_Y_time;
     wxRadioButton* m_radio3;
     wxTextCtrl* m_threshold;
     wxSlider* m_sliderdistance;
-    wxRadioButton* m_radio_inverse_distance; // for inverse distance
-    wxTextCtrl* m_power; // for inverse distance
-    wxSpinButton* m_spinpower; // for inverse distance
     wxRadioButton* m_radio4;
     wxCheckBox* m_radio9;
     wxTextCtrl* m_neighbors;
@@ -101,28 +96,33 @@ public:
 
 	Project* project; // can be NULL
 	
+	// true if input file matches dbf in memory
+	bool				m_is_current_project;
+	bool				m_is_space_time;
+	DbfGridTableBase*   grid_base;
+	// col_id_map[i] is a map from the i'th numeric item in the
+	// fields drop-down to the actual col_id_map.  Items
+	// in the fields dropdown are in the order displayed
+	// in wxGrid
+	std::vector<int> col_id_map;
+	
 	bool				m_is_point_shp_file;
 	int					m_radio;
-	int					m_iwfilesize;
-	bool				m_done;
+	int					m_num_obs;
 	double				m_thres_min; // minimum to avoid isolates
 	double				m_thres_max; // maxiumum to include everything
 	double				m_threshold_val;
 	double				m_thres_val_valid;
 	const double		m_thres_delta_factor;
 	
-	wxString			m_id;
-	wxString			ms_X;
-	wxString			ms_Y;
 	int					m_method;  // 1 == Euclidean Dist, 2 = Arc Dist
-	int					m_pos;
 	std::vector<double>	m_XCOO;
 	std::vector<double>	m_YCOO;
-	wxString			fn;
 
 	// updates the enable/disable state of the Create button based
 	// on the values of various other controls.
 	void UpdateCreateButtonState();
+	void UpdateTmSelEnableState();
 	void SetRadioBtnAndAssocWidgets(int radio);
 	void UpdateThresholdValues();
 	void ResetThresXandYCombo();
@@ -130,14 +130,16 @@ public:
 	void EnableContiguityRadioButtons(bool b);
 	void EnableDistanceRadioButtons(bool b);
 	void ClearRadioButtons();
-	void PumpingVariables();
+	void InitFields();
+	void UpdateFieldNamesTm();
 	bool CheckID(const wxString& id);
 	void OpenShapeFile();
     void OnReset();
 	bool IsSaveAsGwt(); // determine if save type will be GWT or GAL.
     bool Shp2GalProgress(GalElement *fu, GwtElement *gw,
 						 const wxString& ifn, const wxString& ofn,
-						 const wxString& idd, long Obs);
+						 const wxString& idd,
+						 const std::vector<wxInt64>& id_vec);
    
 	wxString s_int;
 	

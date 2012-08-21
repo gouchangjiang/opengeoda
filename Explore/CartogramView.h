@@ -26,7 +26,10 @@
 
 class CartogramCanvas : public TemplateCanvas {
 public:
-    CartogramCanvas(wxWindow *parent, const wxPoint& pos, const wxSize& size);
+    CartogramCanvas(wxWindow *parent,
+					double* v1, int num_obs, const wxString& v1_name,
+					Project* project,
+					const wxPoint& pos, const wxSize& size);
     virtual ~CartogramCanvas();
     virtual void OnDraw(wxDC& dc);
 
@@ -77,7 +80,7 @@ public:
     double xMin, xMax, yMin, yMax;
     bool m_HingeCheck15;
     bool m_HingeCheck30;
-    long obs;
+    int num_obs;
     int q[6];
 
     double map_to_people;
@@ -100,7 +103,8 @@ public:
     void get_point(int pointer, int axis);
 
     void AdjustHinge(double Hinge);
-
+	Project* project;
+	
 private:
     DECLARE_EVENT_TABLE()
 };
@@ -127,7 +131,9 @@ public:
     CartogramCanvas *canvas;
     CartogramLegend *legend;
 
-    CartogramFrame(wxFrame *parent, Project* project, const wxString& title,
+    CartogramFrame(wxFrame *parent,
+				   double* v1, int num_obs, const wxString& v1_name,
+				   Project* project, const wxString& title,
 				   const wxPoint& pos, const wxSize& size, const long style);
     virtual ~CartogramFrame();
 

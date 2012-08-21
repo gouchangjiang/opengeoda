@@ -185,7 +185,7 @@ GalElement* WeightUtils::ReadGwtAsGal(const wxString& fname,
 			dlg.ShowModal();
 			return 0;
 		}
-		if (grid_base->col_data[col]->type != GeoDaConst::long64_type) {
+		if (grid_base->GetColType(col) != GeoDaConst::long64_type) {
 			wxString msg = "Specified key value field \"";
 			msg << key_field << "\" on first line of weights file is";
 			msg << " not an integer type in the currently loaded DBF Table.";
@@ -392,7 +392,7 @@ GwtElement* WeightUtils::ReadGwt(const wxString& fname,
 			dlg.ShowModal();
 			return 0;
 		}
-		if (grid_base->col_data[col]->type != GeoDaConst::long64_type) {
+		if (grid_base->GetColType(col) != GeoDaConst::long64_type) {
 			wxString msg = "Specified key value field \"";
 			msg << key_field << "\" on first line of weights file is ";
 			msg << " not an integer type in the currently loaded DBF Table.";

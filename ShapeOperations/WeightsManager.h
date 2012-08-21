@@ -21,7 +21,7 @@
 #define __GEODA_WEIGHTS_MANAGER_H__
 
 #include <vector>
-class GeodaWeight;
+class GeoDaWeight;
 class GalWeight;
 class GwtWeight;
 class GalElement;
@@ -37,13 +37,13 @@ public:
 	virtual ~WeightsManager();
 	bool clean();
 	int GetNumObservations() { return observations; }
-	GeodaWeight* GetWeight(int pos);
-	GeodaWeight* GetCurrWeight();
+	GeoDaWeight* GetWeight(int pos);
+	GeoDaWeight* GetCurrWeight();
 	GalWeight* GetGalWeight(int pos);
 	GwtWeight* GetGwtWeight(int pos);
 	bool IsGalWeight(int pos);
 	bool IsGwtWeight(int pos);
-	bool AddWeightFile(GeodaWeight* weight, bool set_as_default = false);
+	bool AddWeightFile(GeoDaWeight* weight, bool set_as_default = false);
 	int GetNumWeights() { return num_weights; }
 	wxString GetWFilename(int pos);
 	int GetCurrWeightInd() { return current_weight; }
@@ -57,8 +57,8 @@ public:
 	bool IsWSymmetricValid(int pos);
 	void SetWSymmetricValid(int pos, bool valid);
 	
-	static bool CheckWeightSymmetry(GeodaWeight* w, ProgressDlg* p_dlg=0);
-	static void DumpWeight(GeodaWeight* w);
+	static bool CheckWeightSymmetry(GeoDaWeight* w, ProgressDlg* p_dlg=0);
+	static void DumpWeight(GeoDaWeight* w);
 	
 private:
 	static bool CheckGalSymmetry(GalWeight* w, ProgressDlg* p_dlg=0);
@@ -66,7 +66,7 @@ private:
 	static void DumpGal(GalWeight* w);
 	static void DumpGwt(GwtWeight* w);
 	
-	std::vector<GeodaWeight*> weights;
+	std::vector<GeoDaWeight*> weights;
 	int num_weights; // number of non-null weights
 	int current_weight; // current weight index, -1 indicates none
 	bool is_default_weight_set; // true if current_weight is to be

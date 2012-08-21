@@ -39,20 +39,20 @@ extern bool AddCentroidsDBF(wxString fname, wxString odbf, wxString keyname,
 							bool keytype, bool m_mean_center);
 extern long GetShpFileSize(const wxString& fname);
 
-IMPLEMENT_CLASS( CAddCentroidsDlg, wxDialog )
+IMPLEMENT_CLASS( AddCentroidsDlg, wxDialog )
 
-BEGIN_EVENT_TABLE( CAddCentroidsDlg, wxDialog )
-    EVT_BUTTON( XRCID("IDOK_ADD"), CAddCentroidsDlg::OnOkAddClick )
-    EVT_BUTTON( XRCID("IDC_OPEN_ISHAPE"), CAddCentroidsDlg::OnCOpenIshapeClick )
-    EVT_BUTTON( XRCID("IDCANCEL"), CAddCentroidsDlg::OnCancelClick )
-    EVT_BUTTON( XRCID("IDC_OPEN_ODBF"), CAddCentroidsDlg::OnCOpenOdbfClick )
+BEGIN_EVENT_TABLE( AddCentroidsDlg, wxDialog )
+    EVT_BUTTON( XRCID("IDOK_ADD"), AddCentroidsDlg::OnOkAddClick )
+    EVT_BUTTON( XRCID("IDC_OPEN_ISHAPE"), AddCentroidsDlg::OnCOpenIshapeClick )
+    EVT_BUTTON( XRCID("IDCANCEL"), AddCentroidsDlg::OnCancelClick )
+    EVT_BUTTON( XRCID("IDC_OPEN_ODBF"), AddCentroidsDlg::OnCOpenOdbfClick )
 END_EVENT_TABLE()
 
-CAddCentroidsDlg::CAddCentroidsDlg( )
+AddCentroidsDlg::AddCentroidsDlg( )
 {
 }
 
-CAddCentroidsDlg::CAddCentroidsDlg( bool mean_center, wxWindow* parent,
+AddCentroidsDlg::AddCentroidsDlg( bool mean_center, wxWindow* parent,
 								   wxWindowID id, const wxString& caption,
 								   const wxPoint& pos, const wxSize& size,
 								   long style )
@@ -67,7 +67,7 @@ CAddCentroidsDlg::CAddCentroidsDlg( bool mean_center, wxWindow* parent,
 
 }
 
-bool CAddCentroidsDlg::Create( wxWindow* parent, wxWindowID id,
+bool AddCentroidsDlg::Create( wxWindow* parent, wxWindowID id,
 							  const wxString& caption, const wxPoint& pos,
 							  const wxSize& size, long style )
 {
@@ -78,7 +78,7 @@ bool CAddCentroidsDlg::Create( wxWindow* parent, wxWindowID id,
 }
 
 
-void CAddCentroidsDlg::CreateControls()
+void AddCentroidsDlg::CreateControls()
 {    
 
 	if (m_mean_center)
@@ -95,7 +95,7 @@ void CAddCentroidsDlg::CreateControls()
 }
 
 
-void CAddCentroidsDlg::OnOkAddClick( wxCommandEvent& event )
+void AddCentroidsDlg::OnOkAddClick( wxCommandEvent& event )
 {
 	double		*key;
 	wxString	keyname;
@@ -160,7 +160,7 @@ void CAddCentroidsDlg::OnOkAddClick( wxCommandEvent& event )
 	event.Skip();
 }
 
-void CAddCentroidsDlg::OnCOpenIshapeClick( wxCommandEvent& event )
+void AddCentroidsDlg::OnCOpenIshapeClick( wxCommandEvent& event )
 {
     wxFileDialog dlg(this,
                     "Input Shp file",
@@ -222,14 +222,14 @@ void CAddCentroidsDlg::OnCOpenIshapeClick( wxCommandEvent& event )
 	}	
 }
 
-void CAddCentroidsDlg::OnCancelClick( wxCommandEvent& event )
+void AddCentroidsDlg::OnCancelClick( wxCommandEvent& event )
 {
 	event.Skip();
 	EndDialog(wxID_CANCEL);
 
 }
 
-void CAddCentroidsDlg::OnCOpenOdbfClick( wxCommandEvent& event )
+void AddCentroidsDlg::OnCOpenOdbfClick( wxCommandEvent& event )
 {
     wxFileDialog dlg
                  (
@@ -258,7 +258,7 @@ void CAddCentroidsDlg::OnCOpenOdbfClick( wxCommandEvent& event )
 }
 
 
-bool CAddCentroidsDlg::ShowToolTips()
+bool AddCentroidsDlg::ShowToolTips()
 {
     return true;
 }

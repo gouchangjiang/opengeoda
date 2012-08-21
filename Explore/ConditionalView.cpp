@@ -48,26 +48,39 @@ BEGIN_EVENT_TABLE(ConditionalViewFrame, wxFrame)
 	EVT_MENU(XRCID("wxID_CLOSE"), ConditionalViewFrame::OnMenuClose)
 END_EVENT_TABLE()
 
-inline void convert_hsv(float r, float g, float b, float* result);
 inline void convert_rgb(float x, float y, float z, float* result);
 
-extern Selection gSelection;
-extern int gObservation;
-extern wxString m_gVar1, m_gVar2;
-extern double *m_gX, *m_gY;
-extern wxString gCompleteFileName;
+MapSortElement::MapSortElement(double v, int i) {
+    value = v;
+    recordIndex = i;
+}
+
+bool MapSortElement::operator>(MapSortElement& a) {
+    return (value > a.value);
+}
+
+bool MapSortElement::operator<(MapSortElement& a) {
+    return (value < a.value);
+}
+
+MapSortElement& MapSortElement::operator=(const MapSortElement& a) {
+    value = a.value;
+    recordIndex = a.recordIndex;
+    return *this;
+}
 
 ConditionalViewFrame::ConditionalViewFrame(wxFrame *parent,
 										   Project* project,
-										   const wxString& cc1,
-										   const wxString& cc2,
-										   const wxString& cc3,
-										   const wxString& cc4,
+										   double* v1, const wxString& v1_name,
+										   double* v2, const wxString& v2_name,
+										   double* v3, const wxString& v3_name,
+										   double* v4, const wxString& v4_name,
 										   const wxString& title,
 										   const wxPoint& pos,
 										   const wxSize& size,
 										   const long style)
-	:TemplateFrame(parent, project, title, pos, size, style )
+: TemplateFrame(parent, project, title, pos, size, style ),
+num_obs(project->GetNumRecords())
 {
 	old_style = true;
 	my_children.Append(this);
@@ -77,42 +90,32 @@ ConditionalViewFrame::ConditionalViewFrame(wxFrame *parent,
 	switch(Conditionable::cViewType) {
 	case 1:
 		// SetMenuBar(wxXmlResource::Get()->
-		//    LoadMenuBar("ID_MAP_VIEW_MENU_OPTIONS"));
+		//    LoadMenuBar(""));
 		break;
 	case 2:
 		// SetMenuBar(wxXmlResource::Get()->
-		//    LoadMenuBar("IDR_BOXTYPE_OPTIONS_MENU"));
+		//    LoadMenuBar(""));
 		break;
 	case 3:
 		// SetMenuBar(wxXmlResource::Get()->
-		//    LoadMenuBar("IDR_HISTTYPE_OPTIONS_MENU"));
+		//    LoadMenuBar(""));
 		break;
 	case 4:
 		// SetMenuBar(wxXmlResource::Get()->
-		//    LoadMenuBar("IDR_SCATTERTYPE_OPTIONS_MENU"));
+		//    LoadMenuBar(""));
 		break;
 	default:
 		break;
 
 	}
 
-    flags = new int[gObservation];
-	RawDataX = new double[gObservation];
-	RawDataY = new double[gObservation];
-
-	int col1 = grid_base->FindColId(cc1);
-	int col2 = grid_base->FindColId(cc2); 
-	int col3 = grid_base->FindColId(cc3);
-	 // will return -1 if cc4 = "_dummy_name_" since not found.
-	int col4 = grid_base->FindColId(cc4);
-	
-	std::vector<double> data;
-
-	grid_base->col_data[col1]->GetVec(data);
-	for (int i=0, iend=data.size(); i<iend; i++) RawDataX[i] = data[i];
-
-	grid_base->col_data[col2]->GetVec(data);
-	for (int i=0, iend=data.size(); i<iend; i++) RawDataY[i] = data[i];
+    flags = new int[num_obs];
+	RawDataX = new double[num_obs];
+	RawDataY = new double[num_obs];
+	for (int i=0; i<num_obs; i++) {
+		RawDataX[i] = v1[i];
+		RawDataY[i] = v2[i];
+	}
 
 	xMin = RawDataX[0];
 	xMax = RawDataX[0];
@@ -151,31 +154,33 @@ ConditionalViewFrame::ConditionalViewFrame(wxFrame *parent,
 	const int middle_height = 200;
 	const int bottom_height = 80;
 
-	win_00_null = new CConditionalVariableNULLView(this, wxDefaultPosition,
+	win_00_null = new ConditionalVariableNULLView(this, wxDefaultPosition,
 												   wxSize(left_width,
 														  top_height));
 	if(mViewType == 1) {
 		win_01_hdr_or_null =
-		new CConditionalVariableHeaderView(this, grid_base,
-										   cc3, col3, wxDefaultPosition,
+		new ConditionalVariableHeaderView(this, grid_base,
+										   v3, v3_name, wxDefaultPosition,
 										   wxSize(right_width,
 												  top_height));
 	} else {
 		win_01_hdr_or_null =
-		new CConditionalVariableNULLView(this, wxDefaultPosition,
+		new ConditionalVariableNULLView(this, wxDefaultPosition,
 										 wxSize(right_width,
 												top_height));
 	}
-	win_10_y_axis = new CConditionalVariableYView(cc2, RawDataY,
-												  this, wxDefaultPosition,
+	win_10_y_axis = new ConditionalVariableYView(v2_name, RawDataY,
+												  this, num_obs,
+												  wxDefaultPosition,
 												  wxSize(left_width,
 														 middle_height));
 	// win_11 doesn't exist, but will be sizer_3x3
-	win_20_null = new CConditionalVariableNULLView(this, wxDefaultPosition,
+	win_20_null = new ConditionalVariableNULLView(this, wxDefaultPosition,
 												   wxSize(left_width,
 														  bottom_height));
-	win_21_x_axis = new CConditionalVariableXView(cc1, RawDataX,
-												  this, wxDefaultPosition,
+	win_21_x_axis = new ConditionalVariableXView(v1_name, RawDataX,
+												  this, num_obs,
+												  wxDefaultPosition,
 												  wxSize(right_width,
 														 bottom_height));
 
@@ -190,62 +195,47 @@ ConditionalViewFrame::ConditionalViewFrame(wxFrame *parent,
 	win_21_x_axis->xx[1] = x2;
 	win_21_x_axis->xx[2] = x3;
 	win_21_x_axis->xx[3] = x4;
-
-	
-	// overwrite m_gVar1, m_gX, m_gVar2 and m_gY for use by various
-	// canvas view constructors.	
-	m_gVar1 = cc3;
-	if (cc4 != "_dummy_name_") m_gVar2 = cc4;
-	
-	grid_base->col_data[col3]->GetVec(data);
-	for (int i=0, iend=data.size(); i<iend; i++) m_gX[i] = data[i];
-	
-	if (cc4 != "_dummy_name_") {
-		grid_base->col_data[col4]->GetVec(data);
-		for (int i=0, iend=data.size(); i<iend; i++) m_gY[i] = data[i];
-	}
-
+		
     switch(mViewType) {
 		case 1:
             for(int i=0; i<9; i++) {
 				Conditionable::cLocator = i+1;
-				TemplateCanvas* tc = new MapMovieCanvas(this,
-														wxPoint(0,0),
-														wxSize(70,70),
-														true);
+				TemplateCanvas* tc =
+					new MapMovieCanvas(this, num_obs,
+									   wxPoint(0,0), wxSize(70,70), true);
 				tc->SetSelectableOutlineVisible(false);
-				((MapMovieCanvas*) tc)->AddMap(gCompleteFileName);
+				((MapMovieCanvas*) tc)->AddMap(project->shp_fname.GetFullPath(),
+											   v3, v3_name);
 				win_array[i] = (wxWindow*) tc;
             }
             break;
 		case 2:
             for(int i=0; i<9; i++) {
 				Conditionable::cLocator = i+1;
-				TemplateCanvas* tc = new BoxPlotCanvas(this,
-													  wxPoint(0,0),
-													  wxSize(0,0),
-													  true);
+				TemplateCanvas* tc =
+					new BoxPlotCanvas(this,
+									  v3, num_obs, v3_name,
+									  wxPoint(0,0), wxSize(0,0), true);
 				win_array[i] = (wxWindow*) tc;
             }
             break;
 		case 3:
             for(int i=0; i<9; i++) {
 				Conditionable::cLocator = i+1;
-				TemplateCanvas* tc = new HistCanvas(true,
-													this,
-													wxPoint(0,0),
-													wxSize(0,0),
-													true);
+				TemplateCanvas* tc =
+					new HistCanvas(true, this,
+								   v3, num_obs, v3_name,
+								   wxPoint(0,0), wxSize(0,0), true);
 				win_array[i] = (wxWindow*) tc;
             }
             break;
 		case 4:
             for(int i=0; i<9; i++) {	
 				Conditionable::cLocator = i+1;
-				TemplateCanvas* tc = new ScatterPlotCanvas(this,
-														   wxPoint(0,0),
-														   wxSize(0,0),
-														   true);
+				TemplateCanvas* tc =
+					new ScatterPlotCanvas(this, v3, v4,
+										  num_obs, v3_name, v4_name,
+										  wxPoint(0,0), wxSize(0,0), true);
 				win_array[i] = (wxWindow*) tc;
             }
             break;
@@ -277,8 +267,30 @@ ConditionalViewFrame::ConditionalViewFrame(wxFrame *parent,
 	SetSizerAndFit(sizer_3x2);
 	
 	UpdateViews(); 
-	Show(true);
-	
+	Show(true);	
+}
+
+void ConditionalViewFrame::QuickSortFieldValT(MapSortElement* array,
+											  int low, int high)
+{
+	int i, j; 
+	SortT(&array[low], &array[(low+high)/2], &array[high]);	
+	if ((high - low) > 2) {
+		SwapT(&array[low + 1], &array[(low + high)/2]);	
+		i = low + 1;
+		j = high;
+		while (i < j) {
+			i++;
+			while (array[i] < array[low + 1]) i++;
+			j--;
+			while (array[j] > array[low + 1]) j--;
+			SwapT(&array[i], &array[j]);
+		}
+		SwapT(&array[i], &array[j]);
+		SwapT(&array[low + 1], &array[j]);
+		QuickSortFieldValT(array, low, j - 1);
+		QuickSortFieldValT(array, j + 1, high);
+	}
 }
 
 void ConditionalViewFrame::SortT(MapSortElement *i, MapSortElement *j,
@@ -286,11 +298,11 @@ void ConditionalViewFrame::SortT(MapSortElement *i, MapSortElement *j,
 {
 	if (*i > *j) {
 		SwapT (i, j);
-		if (*j > *k) SwapT (j, k);
-		if (*i > *j) SwapT (i, j);
+		if (*j > *k) SwapT(j, k);
+		if (*i > *j) SwapT(i, j);
 	} else  {
-		if (*j > *k) SwapT (j, k);
-		if (*i>*j) SwapT(i, j);
+		if (*j > *k) SwapT(j, k);
+		if (*i > *j) SwapT(i, j);
 	}
 }
 
@@ -302,43 +314,18 @@ void ConditionalViewFrame::SwapT(MapSortElement *x, MapSortElement *y)
 	*y = temp;
 }
 
-void ConditionalViewFrame::QuickSortFieldValT(MapSortElement* array,
-											  int low, int high)
-{
-	int i, j; 
-	SortT(&array[low], &array[(low+high)/2], &array[high]);	
-	if ((high - low) > 2) {
-		SwapT(&array[low+1], &array[(low+high)/2]);	
-		i = low + 1; j = high;
-		while (i < j) {
-			i++;
-			while(array[i] < array[low+1])
-				i++;
-			j--;
-			while (array[j] > array[low+1])
-				j--;
-			SwapT(&array[i],&array[j]);
-		}
-		SwapT(&array[i], &array[j]);
-		SwapT(&array[low+1], &array[j]);
-		QuickSortFieldValT(array, low, j-1);
-		QuickSortFieldValT(array, j+1, high);
-
-	}
-}
-
 void ConditionalViewFrame::XCategory()
 { 
 	int i;
 	MapSortElement* fieldValue; 
-	fieldValue    = new MapSortElement[gObservation+1];
+	fieldValue    = new MapSortElement[num_obs+1];
 
-	for(i=0;i<gObservation;i++) { 
+	for(i=0;i<num_obs;i++) { 
 		fieldValue[i].value = RawDataX[i]; 
 		fieldValue[i].recordIndex = i;
 	}
 		  
-	QuickSortFieldValT(fieldValue, 0, gObservation-1);
+	QuickSortFieldValT(fieldValue, 0, num_obs-1);
 
 	bool bUnique = false;
   
@@ -346,7 +333,7 @@ void ConditionalViewFrame::XCategory()
 	int numClasses = 1;
 	float uval[5];
 	uval[0] = fieldValue[0].value;
-	for(index = 0; index<gObservation-1; index++)
+	for(index = 0; index<num_obs-1; index++)
 	{
 		if(fieldValue[index].value != fieldValue[index+1].value)
 		{
@@ -391,14 +378,14 @@ void ConditionalViewFrame::YCategory()
 	int i;
 
 	MapSortElement* fieldValue; 
-	fieldValue    = new MapSortElement[gObservation+1];
+	fieldValue    = new MapSortElement[num_obs+1];
 
-	for(i=0;i<gObservation;i++) { 
+	for(i=0;i<num_obs;i++) { 
 		fieldValue[i].value = RawDataY[i]; 
 		fieldValue[i].recordIndex = i;
 	}
 
-	QuickSortFieldValT(fieldValue, 0, gObservation-1);
+	QuickSortFieldValT(fieldValue, 0, num_obs-1);
 
 	bool bUnique = false;
 
@@ -408,7 +395,7 @@ void ConditionalViewFrame::YCategory()
 	float uval[5];
 	uval[0] = fieldValue[0].value;
 
-	for(index = 0; index<gObservation-1; index++) {
+	for(index = 0; index<num_obs-1; index++) {
 		if(fieldValue[index].value != fieldValue[index+1].value) {
 			uval[numClasses] = fieldValue[index+1].value;
 			numClasses++;
@@ -458,7 +445,7 @@ ConditionalViewFrame::~ConditionalViewFrame()
  
 void ConditionalViewFrame::UpdateViews()
 {
-	for (int i=0; i<gObservation; i++) {  
+	for (int i=0; i<num_obs; i++) {  
 		int l,m;
 		l=-1; m=-1;
 		if (RawDataX[i] < x2) {
@@ -597,25 +584,26 @@ void ConditionalViewFrame::MapMenus()
 	//MMM: unfinished
 }
 
-BEGIN_EVENT_TABLE(CConditionalVariableXView, wxScrolledWindow)
-    EVT_MOUSE_EVENTS(CConditionalVariableXView::OnEvent)
-    EVT_SIZE(CConditionalVariableXView::OnSize)
+BEGIN_EVENT_TABLE(ConditionalVariableXView, wxScrolledWindow)
+    EVT_MOUSE_EVENTS(ConditionalVariableXView::OnEvent)
+    EVT_SIZE(ConditionalVariableXView::OnSize)
 END_EVENT_TABLE()
 
 
 	
 
-CConditionalVariableXView::CConditionalVariableXView(const wxString& varXname,
+ConditionalVariableXView::ConditionalVariableXView(const wxString& varXname,
 													 const double* xVals,
 													 wxWindow *parent,
+													 int num_obs_s,
 													 const wxPoint& pos,
 													 const wxSize& size)
-	: TemplateCanvas(parent, pos, size)
+	: TemplateCanvas(parent, pos, size), num_obs(num_obs_s)
 {
 
 	xMin = 1e20;
 	xMax = -1e20;
-	for(int i=0; i<gObservation; i++) {
+	for(int i=0; i<num_obs; i++) {
 		if(xMin > xVals[i])
 			xMin = 	xVals[i];
 		if(xMax < xVals[i])
@@ -641,12 +629,12 @@ CConditionalVariableXView::CConditionalVariableXView(const wxString& varXname,
     Refresh();
 }
 
-void CConditionalVariableXView::OnDraw(wxDC& dc)
+void ConditionalVariableXView::OnDraw(wxDC& dc)
 {
     DrawAxes(&dc);
     DrawLegend(&dc);
 }
-void CConditionalVariableXView::SetCuts()
+void ConditionalVariableXView::SetCuts()
 {
 	pFrame->x1 = xx[0];
 	pFrame->x2 = xx[1];
@@ -656,7 +644,7 @@ void CConditionalVariableXView::SetCuts()
     pFrame->UpdateViews();
 }
 
-void CConditionalVariableXView::CheckSize()
+void ConditionalVariableXView::CheckSize()
 {
 	
 	Bottom= 35;
@@ -689,7 +677,7 @@ void CConditionalVariableXView::CheckSize()
 	}
 }
 
-void CConditionalVariableXView::DrawLegend(wxDC *pDC)
+void ConditionalVariableXView::DrawLegend(wxDC *pDC)
 {
 	char  buf[64];  
 	double  scale= 1;
@@ -716,7 +704,7 @@ void CConditionalVariableXView::DrawLegend(wxDC *pDC)
 			
 			double a = xx[i];
 			if (xx[i]<0) a = fabs(a);
-			ggcvt(a, 4, buf);
+			GenUtils::ggcvt(a, 4, buf);
 			
 			len = strlen(buf);
 			if (buf[len-1] == '.')  buf[--len]= '\x0';
@@ -737,7 +725,7 @@ void CConditionalVariableXView::DrawLegend(wxDC *pDC)
 	}
 }
 
-void CConditionalVariableXView::DrawAxes(wxDC *pDC)
+void ConditionalVariableXView::DrawAxes(wxDC *pDC)
 {
 	wxColour color(128,128,0);
 	wxPen dPen;
@@ -763,7 +751,7 @@ void CConditionalVariableXView::DrawAxes(wxDC *pDC)
 	}
 }  
 
-void CConditionalVariableXView::DragLinePlot(wxPoint point)
+void ConditionalVariableXView::DragLinePlot(wxPoint point)
 {
 	if (gRegime == NO_SELECT) return;       
 	ClearLineFrame();
@@ -776,7 +764,7 @@ void CConditionalVariableXView::DragLinePlot(wxPoint point)
 	ClearLineFrame();    // draw the new one
 }
 
-inline void CConditionalVariableXView::ClearLineFrame()
+inline void ConditionalVariableXView::ClearLineFrame()
 {
     wxClientDC dc(this);
     PrepareDC(dc);
@@ -793,7 +781,7 @@ inline void CConditionalVariableXView::ClearLineFrame()
 	DrawCircles(&dc, gSelect1.x, gSelect1.y, 3, wxColour(0,0,0));
 }
 
-int CConditionalVariableXView::CheckHandle(wxPoint p)
+int ConditionalVariableXView::CheckHandle(wxPoint p)
 {
 	for(int i=1; i<3; i++) {
 		if( (pFrame->Xbin == 2) && (i == 2)) continue;
@@ -805,7 +793,7 @@ int CConditionalVariableXView::CheckHandle(wxPoint p)
 	return -1;
 }
 
-inline void CConditionalVariableXView::DrawCircles(wxDC *s, const int x,
+inline void ConditionalVariableXView::DrawCircles(wxDC *s, const int x,
 												   const int y,
 												   const double circleSize,
 												   const wxColour color)
@@ -816,7 +804,7 @@ inline void CConditionalVariableXView::DrawCircles(wxDC *s, const int x,
 	s->DrawCircle((int)x, (int)y, (int)circleSize);
 }
 
-void CConditionalVariableXView::OnEvent(wxMouseEvent& event)
+void ConditionalVariableXView::OnEvent(wxMouseEvent& event)
 {
     wxClientDC dc(this);
     PrepareDC(dc);
@@ -874,30 +862,31 @@ void CConditionalVariableXView::OnEvent(wxMouseEvent& event)
 	}
 }
 
-void CConditionalVariableXView::OnSize(wxSizeEvent& event)
+void ConditionalVariableXView::OnSize(wxSizeEvent& event)
 {
 	CheckSize();
     Refresh();
 	event.Skip();
 }
 
-BEGIN_EVENT_TABLE(CConditionalVariableYView, wxScrolledWindow)
-    EVT_MOUSE_EVENTS(CConditionalVariableYView::OnEvent)
-    EVT_SIZE(CConditionalVariableYView::OnSize)
+BEGIN_EVENT_TABLE(ConditionalVariableYView, wxScrolledWindow)
+    EVT_MOUSE_EVENTS(ConditionalVariableYView::OnEvent)
+    EVT_SIZE(ConditionalVariableYView::OnSize)
 END_EVENT_TABLE()
 	
 
-CConditionalVariableYView::CConditionalVariableYView(const wxString& varYname,
+ConditionalVariableYView::ConditionalVariableYView(const wxString& varYname,
 													 const double* yVals,
 													 wxWindow *parent,
+													 int num_obs_s,
 													 const wxPoint& pos,
 													 const wxSize& size)
-          :TemplateCanvas(parent, pos, size)
+: TemplateCanvas(parent, pos, size), num_obs(num_obs_s)
 {
 
 	yMin = 1e20;
 	yMax = -1e20;
-	for(int i=0; i<gObservation; i++) {
+	for(int i=0; i<num_obs; i++) {
 		if(yMin > yVals[i]) yMin = yVals[i];
 		if(yMax < yVals[i]) yMax = yVals[i];	
 	}
@@ -920,13 +909,13 @@ CConditionalVariableYView::CConditionalVariableYView(const wxString& varYname,
     Refresh();
 }
 
-void CConditionalVariableYView::OnDraw(wxDC& dc)
+void ConditionalVariableYView::OnDraw(wxDC& dc)
 {
     DrawAxes(&dc);
     DrawLegend(&dc);
 }
 
-void CConditionalVariableYView::SetCuts()
+void ConditionalVariableYView::SetCuts()
 {
 	pFrame->y1 = yy[3];
 	pFrame->y2 = yy[2];
@@ -937,7 +926,7 @@ void CConditionalVariableYView::SetCuts()
 
 }
 
-void CConditionalVariableYView::CheckSize()
+void ConditionalVariableYView::CheckSize()
 {
 	Left = 85;
 	
@@ -971,7 +960,7 @@ void CConditionalVariableYView::CheckSize()
 	}
 }
 
-void CConditionalVariableYView::DrawLegend(wxDC *pDC)
+void ConditionalVariableYView::DrawLegend(wxDC *pDC)
 {
 	char  buf[64];  
 	double    scale= 1;
@@ -998,7 +987,7 @@ void CConditionalVariableYView::DrawLegend(wxDC *pDC)
 			
 			double a = yy[i];
 			if (a <0) a = fabs(a);
-			ggcvt(a, 4, buf);
+			GenUtils::ggcvt(a, 4, buf);
 			
 			len = strlen(buf);
 			if (buf[len-1] == '.')  buf[--len]= '\x0';
@@ -1016,7 +1005,7 @@ void CConditionalVariableYView::DrawLegend(wxDC *pDC)
 	}
 }
 
-void CConditionalVariableYView::DrawAxes(wxDC *pDC)
+void ConditionalVariableYView::DrawAxes(wxDC *pDC)
 {
 	wxColour color(128,128,0);
 	wxPen dPen;
@@ -1039,7 +1028,7 @@ void CConditionalVariableYView::DrawAxes(wxDC *pDC)
 	}
 }
 
-void CConditionalVariableYView::DragLinePlot(wxPoint point)
+void ConditionalVariableYView::DragLinePlot(wxPoint point)
 {
    if (gRegime == NO_SELECT) return;       
    ClearLineFrame();
@@ -1052,7 +1041,7 @@ void CConditionalVariableYView::DragLinePlot(wxPoint point)
 	ClearLineFrame();                        // draw the new one
 }
 
-inline void CConditionalVariableYView::ClearLineFrame()
+inline void ConditionalVariableYView::ClearLineFrame()
 {
     wxClientDC dc(this);
     PrepareDC(dc);
@@ -1069,7 +1058,7 @@ inline void CConditionalVariableYView::ClearLineFrame()
 	DrawCircles(&dc, gSelect1.x, gSelect1.y, 3, wxColour(0,0,0));
 }
 
-int CConditionalVariableYView::CheckHandle(wxPoint p)
+int ConditionalVariableYView::CheckHandle(wxPoint p)
 {
 	for(int i=1; i<3; i++) {
 		if( (pFrame->Ybin == 2) && (i == 1)) continue;
@@ -1082,7 +1071,7 @@ int CConditionalVariableYView::CheckHandle(wxPoint p)
 	return -1;
 }
 
-inline void CConditionalVariableYView::DrawCircles(wxDC *s,
+inline void ConditionalVariableYView::DrawCircles(wxDC *s,
 												   const int x, const int y,
 												   const double circleSize,
 												   const wxColour color)
@@ -1093,7 +1082,7 @@ inline void CConditionalVariableYView::DrawCircles(wxDC *s,
 	s->DrawCircle((int)x, (int)y, (int)circleSize);
 }
 
-void CConditionalVariableYView::OnEvent(wxMouseEvent& event)
+void ConditionalVariableYView::OnEvent(wxMouseEvent& event)
 {
     wxClientDC dc(this);
     PrepareDC(dc);
@@ -1163,19 +1152,19 @@ void CConditionalVariableYView::OnEvent(wxMouseEvent& event)
 	}
 }
 
-void CConditionalVariableYView::OnSize(wxSizeEvent& event)
+void ConditionalVariableYView::OnSize(wxSizeEvent& event)
 {
 	CheckSize();
     Refresh();
 	event.Skip();
 }
 
-BEGIN_EVENT_TABLE(CConditionalVariableNULLView, wxScrolledWindow)
-	EVT_SIZE(CConditionalVariableNULLView::OnSize)
+BEGIN_EVENT_TABLE(ConditionalVariableNULLView, wxScrolledWindow)
+	EVT_SIZE(ConditionalVariableNULLView::OnSize)
 END_EVENT_TABLE()
 
 
-CConditionalVariableNULLView::CConditionalVariableNULLView(wxWindow *parent,
+ConditionalVariableNULLView::ConditionalVariableNULLView(wxWindow *parent,
 														   const wxPoint& pos,
 														   const wxSize& size)
           :TemplateCanvas(parent, pos, size)
@@ -1184,26 +1173,23 @@ CConditionalVariableNULLView::CConditionalVariableNULLView(wxWindow *parent,
 }
 
 
-BEGIN_EVENT_TABLE(CConditionalVariableHeaderView, wxScrolledWindow)
-    EVT_SIZE(CConditionalVariableHeaderView::OnSize)
+BEGIN_EVENT_TABLE(ConditionalVariableHeaderView, wxScrolledWindow)
+    EVT_SIZE(ConditionalVariableHeaderView::OnSize)
 END_EVENT_TABLE()
 
 
-CConditionalVariableHeaderView::CConditionalVariableHeaderView(
+ConditionalVariableHeaderView::ConditionalVariableHeaderView(
 						wxWindow *parent, DbfGridTableBase* grid_base,
-						const wxString& cc3, int cc3_col,
+						double* v3, const wxString& v3_name,
 						const wxPoint& pos, const wxSize& size)
-: TemplateCanvas(parent, pos, size)
+: TemplateCanvas(parent, pos, size), num_obs(grid_base->GetNumberRows())
 {
 	vMin = 1e20;
 	vMax = -1e20;
 
-	std::vector<double> data;
-	grid_base->col_data[cc3_col]->GetVec(data);
-	
-	for (int i=0, iend = data.size(); i<iend; i++) {
-		if (vMin > data[i]) vMin = data[i];
-		if (vMax < data[i]) vMax = data[i];	
+	for (int i=0, iend=grid_base->GetNumberRows(); i<iend; i++) {
+		if (vMin > v3[i]) vMin = v3[i];
+		if (vMax < v3[i]) vMax = v3[i];	
 	}
 
 	vv[0] = vMin;
@@ -1211,7 +1197,7 @@ CConditionalVariableHeaderView::CConditionalVariableHeaderView(
 	vv[1] = (vMax-vMin)/3.0 + vMin;
 	vv[2] = 2.0*(vMax-vMin)/3.0 + vMin;
 
-	var = cc3;
+	var = v3_name;
 
     SetBackgroundColour(*wxWHITE);
 
@@ -1219,7 +1205,7 @@ CConditionalVariableHeaderView::CConditionalVariableHeaderView(
     Refresh();
 }    
 
-void CConditionalVariableHeaderView::CheckSize()
+void ConditionalVariableHeaderView::CheckSize()
 {
 
 	Bottom= 35;
@@ -1252,7 +1238,7 @@ void CConditionalVariableHeaderView::CheckSize()
 	}
 }
 
-void CConditionalVariableHeaderView::OnSize(wxSizeEvent& event)
+void ConditionalVariableHeaderView::OnSize(wxSizeEvent& event)
 {
 	CheckSize();
     Refresh();
@@ -1260,7 +1246,7 @@ void CConditionalVariableHeaderView::OnSize(wxSizeEvent& event)
 }
 
 
-void CConditionalVariableHeaderView::DrawLegend(wxDC *pDC)
+void ConditionalVariableHeaderView::DrawLegend(wxDC *pDC)
 {
 	double scale= 1;
 	
@@ -1296,7 +1282,7 @@ void CConditionalVariableHeaderView::DrawLegend(wxDC *pDC)
 	}
 }
 
-void CConditionalVariableHeaderView::DrawAxes(wxDC *pDC)
+void ConditionalVariableHeaderView::DrawAxes(wxDC *pDC)
 {
 	wxColour color(128,128,0);
 	
@@ -1324,7 +1310,7 @@ void CConditionalVariableHeaderView::DrawAxes(wxDC *pDC)
 	
 }
 
-void CConditionalVariableHeaderView::OnDraw(wxDC& dc)
+void ConditionalVariableHeaderView::OnDraw(wxDC& dc)
 {
     DrawAxes(&dc);
     DrawLegend(&dc);

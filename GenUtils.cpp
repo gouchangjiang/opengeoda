@@ -17,19 +17,199 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "GenUtils.h"
-#include "GeoDaConst.h"
-#include <math.h>
 #include <cfloat>
-#include <limits>
-#include <boost/math/distributions/students_t.hpp>
-#include <sstream>
 #include <iomanip>
+#include <limits>
+#include <math.h>
+#include <sstream>
+#include <boost/math/distributions/students_t.hpp>
 #include <wx/dc.h>
+#include "GeoDaConst.h"
 #include "logger.h"
-
+#include "GenUtils.h"
 
 using namespace std;
+
+// Sets all Secondary Attributes in GeoDaVarInfo based on Primary Attributes.
+// This method must be called whenever a Primary attribute of any item in the
+// GeoDaVarInfo vector changes.
+int GeoDa::UpdateVarInfoSecondaryAttribs(std::vector<GeoDaVarInfo>& var_info)
+{
+	int num_vars = var_info.size();
+	int ref_var = -1;
+	for (int i=0; i<num_vars; i++) {
+		if (ref_var == -1 && var_info[i].sync_with_global_time) ref_var = i;
+		var_info[i].is_ref_variable = (i == ref_var);
+		// The following parameters are set to default values here
+		var_info[i].ref_time_offset = 0;
+		var_info[i].time_min = var_info[i].time;
+		var_info[i].time_max = var_info[i].time;
+		var_info[i].min_over_time = var_info[i].min[var_info[i].time];
+		var_info[i].max_over_time = var_info[i].max[var_info[i].time];
+	}
+	
+	if (ref_var == -1) return ref_var;
+	int ref_time = var_info[ref_var].time;
+	int min_time = ref_time;
+	int max_time = ref_time;
+	for (int i=0; i<num_vars; i++) {
+		if (var_info[i].sync_with_global_time) {
+			var_info[i].ref_time_offset = var_info[i].time - ref_time;
+			if (var_info[i].time < min_time) min_time = var_info[i].time;
+			if (var_info[i].time > max_time) max_time = var_info[i].time;
+		}
+	}
+	int global_max_time = var_info[ref_var].max.size()-1;
+	int min_ref_time = ref_time - min_time;
+	int max_ref_time = global_max_time - (max_time - ref_time);
+	for (int i=0; i<num_vars; i++) {
+		if (var_info[i].sync_with_global_time) {
+			var_info[i].time_min = min_ref_time + var_info[i].ref_time_offset;
+			var_info[i].time_max = max_ref_time + var_info[i].ref_time_offset;
+			for (int t=var_info[i].time_min; t<=var_info[i].time_max; t++) {
+				if (var_info[i].min[t] < var_info[i].min_over_time) {
+					var_info[i].min_over_time = var_info[i].min[t];
+				}
+				if (var_info[i].max[t] > var_info[i].max_over_time) {
+					var_info[i].max_over_time = var_info[i].max[t];
+				}
+			}
+		}
+	}
+	return ref_var;
+}
+
+void GeoDa::PrintVarInfoVector(std::vector<GeoDaVarInfo>& var_info)
+{
+	LOG_MSG("Entering GeoDa::PrintVarInfoVector");
+	LOG(var_info.size());
+	for (int i=0; i<var_info.size(); i++) {
+		LOG_MSG("Primary Attributes:");
+		LOG(var_info[i].name);
+		LOG(var_info[i].is_time_variant);
+		LOG(var_info[i].time);
+		for (int t=0; t<var_info[i].min.size(); t++) {
+			LOG(var_info[i].min[t]);
+			LOG(var_info[i].max[t]);
+		}
+		LOG(var_info[i].sync_with_global_time);
+		LOG(var_info[i].fixed_scale);
+		
+		LOG_MSG("Secondary Attributes:");
+		LOG(var_info[i].is_ref_variable);
+		LOG(var_info[i].ref_time_offset);
+		LOG(var_info[i].time_min);
+		LOG(var_info[i].time_max);
+		LOG(var_info[i].min_over_time);
+		LOG(var_info[i].max_over_time);
+		LOG_MSG("\n");
+	}
+	LOG_MSG("Exiting GeoDa::PrintVarInfoVector");
+}
+
+/** Use with std::sort for sorting in ascending order */
+bool GeoDa::dbl_int_pair_cmp_less(const dbl_int_pair_type& ind1,
+								  const dbl_int_pair_type& ind2)
+{
+	return ind1.first < ind2.first;
+}
+
+/** Use with std::sort for sorting in descending order */
+bool GeoDa::dbl_int_pair_cmp_greater(const dbl_int_pair_type& ind1,
+									 const dbl_int_pair_type& ind2)
+{
+	return ind1.first > ind2.first;
+}
+
+void HingeStats::CalculateHingeStats(
+							const std::vector<GeoDa::dbl_int_pair_type>& data)
+{
+	num_obs = data.size();
+	double N = num_obs;
+	is_even_num_obs = (num_obs % 2) == 0;
+	min_val = data[0].first;
+	max_val = data[num_obs-1].first;
+	Q2_ind = (N+1)/2.0 - 1;
+	if (is_even_num_obs) {
+		Q1_ind = (N+2)/4.0 - 1;
+		Q3_ind = (3*N+2)/4.0 - 1;
+	} else {
+		Q1_ind = (N+3)/4.0 - 1;
+		Q3_ind = (3*N+1)/4.0 - 1;
+	}
+	Q1 = (data[(int) floor(Q1_ind)].first +
+		  data[(int) ceil(Q1_ind)].first)/2.0;
+	Q2 = (data[(int) floor(Q2_ind)].first +
+		  data[(int) ceil(Q2_ind)].first)/2.0;
+	Q3 = (data[(int) floor(Q3_ind)].first +
+		  data[(int) ceil(Q3_ind)].first)/2.0;
+	IQR = Q3 - Q1;
+	extreme_lower_val_15 = Q1 - 1.5*IQR;
+	extreme_lower_val_30 = Q1 - 3.0*IQR;
+	extreme_upper_val_15 = Q3 + 1.5*IQR;
+	extreme_upper_val_30 = Q3 + 3.0*IQR;
+	min_IQR_ind = -1;
+	for (int i=0; i<num_obs; i++) {
+		if (data[i].first < Q1) min_IQR_ind = i;
+		else break;
+	}
+	if (min_IQR_ind < num_obs-1) min_IQR_ind++;
+	max_IQR_ind = num_obs;
+	for (int i=num_obs-1; i>=0; i--) {
+		if (data[i].first > Q3) max_IQR_ind = i;
+		else break;
+	}
+	if (max_IQR_ind > 0) max_IQR_ind--;
+}
+
+// Assume input v is sorted.  If not, can sort
+// with std::sort(v.begin(), v.end())
+// Testing: for v = {15, 20, 35, 40, 50},
+// percentile(1, v) = 15, percentile(10, v) = 15, percentile(11) = 15.25
+// percentile(50, v) = 35, percentile(89, v) = 49.5,
+// percentile(90, v) = 50, percentile(99, v) = 50
+double GeoDa::percentile(double x, const std::vector<double>& v)
+{
+	int N = v.size();
+	double Nd = (double) N;
+	double p_0 = (100.0/Nd) * (1.0-0.5);
+	double p_Nm1 = (100.0/Nd) * (Nd-0.5);
+	if (x <= p_0) return v[0];
+	if (x >= p_Nm1) return v[N-1];
+	
+	for (int i=1; i<N; i++) {
+		double p_i = (100.0/Nd) * ((((double) i)+1.0)-0.5);
+		if (x == p_i) return v[i];
+		if (x < p_i) {
+			double p_im1 = (100.0/Nd) * ((((double) i))-0.5);
+			return v[i-1] + Nd*((x-p_im1)/100.0)*(v[i]-v[i-1]);
+		}
+	}
+	return v[N-1]; // execution should never get here
+}
+
+// Same assumptions as above
+double GeoDa::percentile(double x, const GeoDa::dbl_int_pair_vec_type& v)
+{
+	int N = v.size();
+	double Nd = (double) N;
+	double p_0 = (100.0/Nd) * (1.0-0.5);
+	double p_Nm1 = (100.0/Nd) * (Nd-0.5);
+	if (x <= p_0) return v[0].first;
+	if (x >= p_Nm1) return v[N-1].first;
+	
+	for (int i=1; i<N; i++) {
+		double p_i = (100.0/Nd) * ((((double) i)+1.0)-0.5);
+		if (x == p_i) return v[i].first;
+		if (x < p_i) {
+			double p_im1 = (100.0/Nd) * ((((double) i))-0.5);
+			return v[i-1].first + Nd*((x-p_im1)/100.0)*(v[i].first
+														-v[i-1].first);
+		}
+	}
+	return v[N-1].first; // execution should never get here
+}
+
 
 SampleStatistics::SampleStatistics(const std::vector<double>& data)
 	: sample_size(0), min(0), max(0), mean(0),
@@ -52,6 +232,35 @@ void SampleStatistics::CalculateFromSample(const std::vector<double>& data)
 	double sum_squares = 0;
 	for (int i=0, iend = data.size(); i<iend; i++) {
 		sum_squares += data[i] * data[i];
+	}
+	
+	var_without_bessel = (sum_squares/n) - (mean*mean);
+	sd_without_bessel = sqrt(var_without_bessel);
+	
+	if (sample_size == 1) {
+		var_with_bessel = var_without_bessel;
+		sd_with_bessel = sd_without_bessel;
+	} else {
+		var_with_bessel = (n/(n-1)) * var_without_bessel;
+		sd_with_bessel = sqrt(var_with_bessel);
+	}
+}
+
+/** We assume that the data has been sorted in ascending order */
+void SampleStatistics::CalculateFromSample(
+							const std::vector<GeoDa::dbl_int_pair_type>& data)
+{
+	sample_size = data.size();
+	if (sample_size == 0) return;
+	
+	min = data[0].first;
+	max = data[sample_size-1].first;
+	mean = CalcMean(data);
+	
+	double n = sample_size;
+	double sum_squares = 0;
+	for (int i=0, iend = data.size(); i<iend; i++) {
+		sum_squares += data[i].first * data[i].first;
 	}
 	
 	var_without_bessel = (sum_squares/n) - (mean*mean);
@@ -91,7 +300,7 @@ double SampleStatistics::CalcMin(const std::vector<double>& data)
 
 double SampleStatistics::CalcMax(const std::vector<double>& data)
 {
-	double max = std::numeric_limits<double>::min();
+	double max = -std::numeric_limits<double>::max();
 	for (int i=0, iend=data.size(); i<iend; i++) {
 		if ( data[i] > max ) max = data[i];
 	}
@@ -108,6 +317,17 @@ double SampleStatistics::CalcMean(const std::vector<double>& data)
 	return total / (double) data.size();
 }
 
+double SampleStatistics::CalcMean(
+							const std::vector<GeoDa::dbl_int_pair_type>& data)
+{
+	if (data.size() == 0) return 0;
+	double total = 0;
+	for (int i=0, iend=data.size(); i<iend; i++) {
+		total += data[i].first;
+	}
+	return total / (double) data.size();
+}
+
 SimpleLinearRegression::SimpleLinearRegression(const std::vector<double>& X,
 											   const std::vector<double>& Y,
 											   double meanX, double meanY,
@@ -115,7 +335,8 @@ SimpleLinearRegression::SimpleLinearRegression(const std::vector<double>& X,
 	: covariance(0), correlation(0), alpha(0), beta(0), r_squared(0),
 	std_err_of_estimate(0), std_err_of_beta(0), std_err_of_alpha(0),
 	t_score_alpha(0), t_score_beta(0), p_value_alpha(0), p_value_beta(0),
-	valid(false), valid_correlation(false), valid_std_err(false)
+	valid(false), valid_correlation(false), valid_std_err(false),
+	error_sum_squares(0)
 {
 	CalculateRegression(X, Y, meanX, meanY, varX, varY);
 }
@@ -146,20 +367,23 @@ void SimpleLinearRegression::CalculateRegression(const std::vector<double>& X,
 		LOG(beta);
 	}
 	double SS_tot = varY*Y.size();
-	double SS_err = 0;
+	error_sum_squares = 0; // error_sum_squares = SS_err
 	double err=0;
 	for (int i=0, iend=Y.size(); i<iend; i++) {
 		err = Y[i] - (alpha + beta * X[i]);
-		SS_err += err * err;
+		error_sum_squares += err * err;
 	}
-	if (SS_err < 16*DBL_MIN) {
+	LOG(error_sum_squares);
+	if (error_sum_squares < 16*DBL_MIN) {
 		r_squared = 1;
 	} else {
-		r_squared = 1 - SS_err / SS_tot;
+		r_squared = 1 - error_sum_squares / SS_tot;
 	}
+	LOG(r_squared);
 	
 	if (Y.size()>2 && varX > 4*DBL_MIN) {
-		std_err_of_estimate = SS_err/(Y.size()-2); // SS_err/(n-k-1), k=1
+		// error_sum_squares/(n-k-1), k=1
+		std_err_of_estimate = error_sum_squares/(Y.size()-2); 
 		std_err_of_estimate = sqrt(std_err_of_estimate);
 		std_err_of_beta = std_err_of_estimate/sqrt(X.size()*varX);
 		double sum_x_squared = 0;
@@ -224,21 +448,23 @@ string SimpleLinearRegression::ToString()
 	ss << "valid = " << (valid ? "true" : "false") << endl;
 	ss << "valid_correlation = " << (valid_correlation ? "true" : "false")
 		<< endl;
+	ss << "error_sum_squares = " << error_sum_squares << endl;
 	return ss.str();
 }
 
-AxisScale::AxisScale(double data_min_s, double data_max_s)
+AxisScale::AxisScale(double data_min_s, double data_max_s, int ticks_s)
 : data_min(0), data_max(0), scale_min(0), scale_max(0),
-scale_range(0), tic_inc(0), p(0)
+scale_range(0), tic_inc(0), p(0), ticks(ticks_s)
 {
-	CalculateScale(data_min_s, data_max_s);
+	CalculateScale(data_min_s, data_max_s, ticks_s);
 }
 
 AxisScale::AxisScale(const AxisScale& s)
 : data_min(s.data_min), data_max(s.data_max),
 	scale_min(s.scale_min), scale_max(s.scale_max),
 	scale_range(s.scale_range), tic_inc(s.tic_inc), p(s.p),
-	tics(s.tics), tics_str(s.tics_str)
+	tics(s.tics), tics_str(s.tics_str), tics_str_show(s.tics_str_show),
+	ticks(s.ticks)
 {
 }
 
@@ -253,10 +479,13 @@ AxisScale& AxisScale::operator=(const AxisScale& s)
 	p = s.p;
 	tics = s.tics;
 	tics_str = s.tics_str;
+	tics_str_show = s.tics_str_show;
+	ticks = s.ticks;
 	return *this;
 }
 
-void AxisScale::CalculateScale(double data_min_s, double data_max_s)
+void AxisScale::CalculateScale(double data_min_s, double data_max_s,
+							   const int ticks)
 {
 	if (data_min_s <= data_max_s) {
 		data_min = data_min_s;
@@ -283,23 +512,25 @@ void AxisScale::CalculateScale(double data_min_s, double data_max_s)
 		scale_max = ceil(data_max / pow((double)10,p)) * pow((double)10,p);
 		scale_min = floor(data_min / pow((double)10,p)) * pow((double)10,p);
 		scale_range = scale_max - scale_min;
-		tic_inc = floor((scale_range / pow((double)10,p))/4)
+		tic_inc = floor((scale_range / pow((double)10,p))/ticks)
 			* pow((double)10,p);
-		if (scale_min + tic_inc*5 <= scale_max + 2*DBL_MIN) {
-			tics.resize(6);
-			tics_str.resize(6);
+		if (scale_min + tic_inc*(ticks+1) <= scale_max + 2*DBL_MIN) {
+			tics.resize(ticks+2);
+			tics_str.resize(ticks+2);
 		} else {
-			tics.resize(5);
-			tics_str.resize(5);
+			tics.resize(ticks+1);
+			tics_str.resize(ticks+1);
 		}
 		for (int i=0, iend=tics.size(); i<iend; i++) {
 			tics[i] = scale_min + i*tic_inc;
 		}
 	}
+	tics_str_show.resize(tics_str.size());
 	for (int i=0, iend=tics.size(); i<iend; i++) {
 		ostringstream ss;
 		ss << tics[i];
 		tics_str[i] = ss.str();
+		tics_str_show[i] = true;
 	}
 }
 
@@ -319,6 +550,74 @@ string AxisScale::ToString()
 	}
 	ss << "Exiting AxisScale::CalculateScale" << endl;
 	return ss.str();
+}
+
+
+/** convert input rectangle corners s1 and s2 into screen-coordinate corners */
+void GenUtils::StandardizeRect(const wxPoint& s1, const wxPoint& s2,
+							   wxPoint& lower_left, wxPoint& upper_right)
+{
+	lower_left = s1;
+	upper_right = s2;
+	if (lower_left.x > upper_right.x) {
+		GenUtils::swap<int>(lower_left.x, upper_right.x);
+	}
+	if (lower_left.y < upper_right.y) {
+		GenUtils::swap<int>(lower_left.y, upper_right.y);
+	}
+}
+
+/** assumes input corners are all screen-coordinate correct for
+ lower left and upper right corners */
+bool GenUtils::RectsIntersect(const wxPoint& r1_lower_left,
+							  const wxPoint& r1_upper_right,
+							  const wxPoint& r2_lower_left,
+							  const wxPoint& r2_upper_right)
+{
+	// return negation of all situations where rectangles
+	// do not intersect.
+	return (!((r1_lower_left.x > r2_upper_right.x) ||
+			  (r1_upper_right.x < r2_lower_left.x) ||
+			  (r1_lower_left.y < r2_upper_right.y) ||
+			  (r1_upper_right.y > r2_lower_left.y)));
+}
+
+bool GenUtils::CounterClockwise(const wxPoint& p1, const wxPoint& p2,
+								const wxPoint& p3)
+{
+	return ((p2.y-p1.y)*(p3.x-p2.x) < (p3.y-p2.y)*(p2.x-p1.x));
+}
+
+bool GenUtils::LineSegsIntersect(const wxPoint& l1_p1, const wxPoint& l1_p2,
+								 const wxPoint& l2_p1, const wxPoint& l2_p2)
+{
+	return ((CounterClockwise(l2_p1, l2_p2, l1_p1) !=
+			 CounterClockwise(l2_p1, l2_p2, l1_p2)) &&
+			(CounterClockwise(l1_p1, l1_p2, l2_p1) !=
+			 CounterClockwise(l1_p1, l1_p2, l2_p2)));
+}
+
+wxString GenUtils::DblToStr(double x, int precision)
+{
+	std::stringstream ss;
+	ss << std::setprecision(precision);
+	ss << x;
+	return wxString(ss.str().c_str(), wxConvUTF8);
+}
+
+wxString GenUtils::PtToStr(const wxPoint& p)
+{
+	std::stringstream ss;
+	ss << "(" << p.x << "," << p.y << ")";
+	return wxString(ss.str().c_str(), wxConvUTF8);
+}
+
+wxString GenUtils::PtToStr(const wxRealPoint& p)
+{
+	std::stringstream ss;
+	ss << std::setprecision(5);
+	ss << "(" << p.x << "," << p.y << ")";
+	return wxString(ss.str().c_str(), wxConvUTF8);
 }
 
 // NOTE: should take into account undefined values.
@@ -564,6 +863,43 @@ void GenUtils::longToString(const long d, char* Id, const int base)
 	return;
 }
 
+void GenUtils::ggcvt(double d, int n, char* str)
+{
+	int i = 0; // initial value
+	long j = (int) floor(d);
+	char r[2];
+	
+	if (d == 0) {
+		str[0] = '0';
+		str[1] = '\0';
+		return; }
+	if (n <= 0) {
+		str[0] = '\0';
+		return;
+	}
+	
+	r[1] = '\0';
+	if (d < 0) j = -1 * j;
+	d = fabs(d) - fabs((double)j);
+	GenUtils::longToString(j, str, 10);
+	strcat(str, ".");
+	if (j == 0) {
+		for (i = strlen(str) - 2; i < n; i++) {
+			d *= 10;
+			r[0] = (int)floor(d) + '0';
+			strcat(str, r);
+			d -= floor(d);
+		}
+	} else {
+		for (i = strlen(str) - 1; i < n; i++) {
+			d *= 10;
+			r[0] = (int)floor(d) + '0';
+			strcat(str, r);
+			d -= floor(d);
+		}
+	}
+}
+
 // Calculates Euclidean distance
 double GenUtils::distance(const wxRealPoint& p1, const wxRealPoint& p2)
 {
@@ -591,6 +927,45 @@ double GenUtils::distance(const wxPoint& p1, const wxPoint& p2)
 	double dx = p1.x - p2.x;
 	double dy = p1.y - p2.y;
 	return sqrt(dx*dx + dy*dy);
+}
+
+// Calculates Euclidean distance
+double GenUtils::distance_sqrd(const wxRealPoint& p1, const wxRealPoint& p2)
+{
+	double dx = p1.x - p2.x;
+	double dy = p1.y - p2.y;
+	return dx*dx + dy*dy;
+}
+
+double GenUtils::distance_sqrd(const wxRealPoint& p1, const wxPoint& p2)
+{
+	double dx = p1.x - p2.x;
+	double dy = p1.y - p2.y;
+	return dx*dx + dy*dy;
+}
+
+double GenUtils::distance_sqrd(const wxPoint& p1, const wxRealPoint& p2)
+{
+	double dx = p1.x - p2.x;
+	double dy = p1.y - p2.y;
+	return dx*dx + dy*dy;
+}
+
+double GenUtils::distance_sqrd(const wxPoint& p1, const wxPoint& p2)
+{
+	double dx = p1.x - p2.x;
+	double dy = p1.y - p2.y;
+	return dx*dx + dy*dy;
+}
+
+// calculates distance from point p0 to an infinite line passing through
+// points p1 and p2
+double GenUtils::pointToLineDist(const wxPoint& p0, const wxPoint& p1,
+								 const wxPoint& p2)
+{
+	double d_p1p2 = distance(p1, p2);
+	if (d_p1p2 <= 16*DBL_MIN) return distance(p0, p1);
+	return abs((p2.x-p1.x)*(p1.y-p0.y)-(p1.x-p0.x)*(p2.y-p1.y))/d_p1p2;
 }
 
 void GenUtils::DrawSmallCirc(wxDC* dc, int x, int y, int radius,
@@ -680,4 +1055,315 @@ bool GenUtils::isEmptyOrSpaces(const char *str)
 	// if the first not-space char is not the end of the string,
 	// return false.
 	return *str == '\0';
+}
+
+bool GenUtils::ExistsShpShxDbf(const wxFileName& fname, bool* shp_found,
+							   bool* shx_found, bool* dbf_found)
+{
+	wxFileName shp(fname);
+	shp.SetExt("shp");
+	wxFileName shx(fname);
+	shx.SetExt("shx");
+	wxFileName dbf(fname);
+	dbf.SetExt("dbf");
+	if (shp_found) *shp_found = shp.FileExists();
+	if (shx_found) *shx_found = shx.FileExists();
+	if (dbf_found) *dbf_found = dbf.FileExists();
+	return shp.FileExists() && shx.FileExists() && dbf.FileExists();
+}
+
+void GenUtils::PickColorSet(std::vector<wxColour>& color_vec,
+							short coltype, short ncolor, bool reversed)
+{
+	short colpos[11] = {0, 0, 1, 3, 6, 10, 15, 21, 28, 36, 45};
+	
+	wxColour Color1[56] = { //Sequential (colorblind safe)
+		wxColour(217, 95, 14),
+		
+		wxColour(254, 196, 79), wxColour(217, 95, 14),
+		
+        wxColour(255, 247, 188), wxColour(254, 196, 79),
+		wxColour(217, 95, 14),
+		
+        wxColour(255, 255, 212), wxColour(254, 217, 142),
+		wxColour(254, 153, 41), wxColour(204, 76, 2),
+		
+        wxColour(255, 255, 212), wxColour(254, 217, 142),
+		wxColour(254, 153, 41), wxColour(217, 95, 14),
+		wxColour(153, 52, 4),
+		
+        wxColour(255, 255, 212), wxColour(254, 227, 145),
+		wxColour(254, 196, 79), wxColour(254, 153, 41),
+		wxColour(217, 95, 14), wxColour(153, 52, 4),
+		
+        wxColour(255, 255, 212), wxColour(254, 227, 145),
+		wxColour(254, 196, 79), wxColour(254, 153, 41),
+		wxColour(236, 112, 20), wxColour(204, 76, 2),
+        wxColour(140, 45, 4),
+		
+        wxColour(255, 255, 229), wxColour(255, 247, 188),
+		wxColour(254, 227, 145), wxColour(254, 196, 79),
+		wxColour(254, 153, 41), wxColour(236, 112, 20),
+        wxColour(204, 76, 2), wxColour(140, 45, 4),
+		
+        wxColour(255, 255, 229), wxColour(255, 247, 188),
+		wxColour(254, 227, 145), wxColour(254, 196, 79),
+		wxColour(254, 153, 41), wxColour(236, 112, 20),
+        wxColour(204, 76, 2), wxColour(153, 52, 4),
+		wxColour(102, 37, 6),
+		
+        wxColour(255, 255, 229), wxColour(255, 247, 188),
+		wxColour(254, 227, 145), wxColour(254, 196, 79),
+		wxColour(254, 153, 41), wxColour(236, 112, 20),
+        wxColour(204, 76, 2), wxColour(153, 52, 4),
+		wxColour(102, 37, 6), wxColour(80, 17, 5)
+    };
+	
+    wxColour Color2[56] = { // Diverging (colorblind safe)
+		wxColour(103, 169, 207),
+		
+		wxColour(239, 138, 98), wxColour(103, 169, 207),
+		
+		wxColour(239, 138, 98), wxColour(247, 247, 247),
+		wxColour(103, 169, 207),
+		
+        wxColour(202, 0, 32), wxColour(244, 165, 130),
+		wxColour(146, 197, 222), wxColour(5, 113, 176),
+		
+        wxColour(202, 0, 32), wxColour(244, 165, 130),
+		wxColour(247, 247, 247), wxColour(146, 197, 222),
+		wxColour(5, 113, 176),
+		
+        wxColour(178, 24, 43), wxColour(239, 138, 98),
+		wxColour(253, 219, 199), wxColour(209, 229, 240),
+		wxColour(103, 169, 207), wxColour(33, 102, 172),
+		
+        wxColour(178, 24, 43), wxColour(239, 138, 98),
+		wxColour(253, 219, 199), wxColour(247, 247, 247),
+        wxColour(209, 229, 240), wxColour(103, 169, 207),
+		wxColour(33, 102, 172),
+		
+        wxColour(178, 24, 43), wxColour(214, 96, 77),
+		wxColour(244, 165, 130), wxColour(253, 219, 199),
+		wxColour(209, 229, 240), wxColour(146, 197, 222),
+		wxColour(67, 147, 195), wxColour(33, 102, 172),
+		
+        wxColour(178, 24, 43), wxColour(214, 96, 77),
+		wxColour(244, 165, 130), wxColour(253, 219, 199),
+		wxColour(247, 247, 247), wxColour(209, 229, 240),
+		wxColour(146, 197, 222), wxColour(67, 147, 195),
+		wxColour(33, 102, 172),
+		
+        wxColour(103, 0, 31), wxColour(178, 24, 43),
+		wxColour(214, 96, 77), wxColour(244, 165, 130),
+		wxColour(253, 219, 199), wxColour(209, 229, 240),
+		wxColour(146, 197, 222), wxColour(67, 147, 195),
+		wxColour(33, 102, 172), wxColour(5, 48, 97)
+    };
+	
+	wxColour Color3[56] = { // Qualitative (colorblind safe up to 4)
+		wxColour(31, 120, 180),
+		
+		wxColour(31, 120, 180), wxColour(51, 160, 44),
+		
+		wxColour(166, 206, 227), wxColour(31, 120, 180),
+		wxColour(178, 223, 138),
+		
+        wxColour(166, 206, 227), wxColour(31, 120, 180),
+		wxColour(178, 223, 138), wxColour(51, 160, 44),
+		
+		wxColour(166, 206, 227), wxColour(31, 120, 180),
+		wxColour(178, 223, 138), wxColour(51, 160, 44),
+		wxColour(251, 154, 153),
+				
+		wxColour(166, 206, 227), wxColour(31, 120, 180),
+		wxColour(178, 223, 138), wxColour(51, 160, 44),
+		wxColour(251, 154, 153), wxColour(227, 26, 28),
+		
+		wxColour(166, 206, 227), wxColour(31, 120, 180),
+		wxColour(178, 223, 138), wxColour(51, 160, 44),
+		wxColour(251, 154, 153), wxColour(227, 26, 28),
+		wxColour(253, 191, 111),
+		
+		wxColour(166, 206, 227), wxColour(31, 120, 180),
+		wxColour(178, 223, 138), wxColour(51, 160, 44),
+		wxColour(251, 154, 153), wxColour(227, 26, 28),
+		wxColour(253, 191, 111), wxColour(255, 127, 0),
+		
+		wxColour(166, 206, 227), wxColour(31, 120, 180),
+		wxColour(178, 223, 138), wxColour(51, 160, 44),
+		wxColour(251, 154, 153), wxColour(227, 26, 28),
+		wxColour(253, 191, 111), wxColour(255, 127, 0),
+		wxColour(202, 178, 214),
+		
+		wxColour(166, 206, 227), wxColour(31, 120, 180),
+		wxColour(178, 223, 138), wxColour(51, 160, 44),
+		wxColour(251, 154, 153), wxColour(227, 26, 28),
+		wxColour(253, 191, 111), wxColour(255, 127, 0),
+		wxColour(202, 178, 214), wxColour(106, 61, 154)
+    };
+	
+    color_vec.clear();
+    color_vec.resize(ncolor, *wxBLACK);
+
+    if (!reversed) {
+        switch (coltype) {
+            case 1:
+                for (int i = 0; i < ncolor; i++) {
+                    color_vec[i] = Color1[colpos[ncolor] + i];
+                }
+                break;
+            case 2:
+				for (int i = 0; i < ncolor; i++) {
+                    color_vec[i] = Color2[colpos[ncolor] + ncolor - i - 1];
+                }
+                break;
+			case 3:
+                for (int i = 0; i < ncolor; i++) {
+                    color_vec[i] = Color3[colpos[ncolor] + i];
+                }
+                break;
+            default:
+                break;
+        }
+    } else {
+        switch (coltype) {
+            case 1:
+                for (int i = 0; i < ncolor; i++) {
+                    color_vec[i] = Color1[colpos[ncolor] + ncolor - i - 1];
+                }
+                break;
+            case 2:
+                for (int i = 0; i < ncolor; i++) {
+                    color_vec[i] = Color2[colpos[ncolor] + i];
+                }
+                break;
+			case 3:
+                for (int i = 0; i < ncolor; i++) {
+                    color_vec[i] = Color3[colpos[ncolor] + ncolor - i - 1];
+                }
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+void GenUtils::PickBrightSet(std::vector<wxColour>& color_vec,
+							 short ncolor, bool reversed)
+{	
+    color_vec.clear();
+    color_vec.resize(ncolor, *wxBLACK);
+	
+    float col[3];
+    for (int i=0; i < ncolor; i++) {
+        if (!reversed) {
+            GenUtils::convert_rgb(0.0, 0.0,
+								  (float) 0.7 * (ncolor - i) / ncolor + 0.3,
+								  col);
+            color_vec[i] = wxColour(255 * col[0], 255 * col[1], 255 * col[2]);
+        } else {
+			GenUtils::convert_rgb(0.0, 0.0,
+								  (float) 0.7 * (i + 1) / ncolor + 0.3, col);
+            color_vec[i] = wxColour(255 * col[0], 255 * col[1], 255 * col[2]);
+        }
+    }
+}
+
+float GenUtils::tri_min(float r, float g, float b)
+{
+	if (r<g) {
+		if (r<b) return r;
+		return b;
+	} else {
+		if (g<b) return g;
+		return b;
+	}
+}
+
+float GenUtils::tri_max(float r, float g, float b)
+{
+	if (r>g) {
+		if (r>b) return r;
+		return b;
+	} else {
+		if (g>b) return g;
+		return b;
+	}
+}
+
+void GenUtils::convert_rgb(float x, float y, float z, float* result)
+{
+	float h;
+	float r=0, g=0, b=0;
+	float f, p, q, t;
+	int i;
+	
+	h = x;
+	if (y == 0.0) {
+		r = z;
+		g = z;
+		b = z;
+	} else {
+		if (h == 360.0) h = 0.0;
+		h /= 60.0;
+		i = (int) h;
+		f = h - i;
+		p = z * (1.0 - y);
+		q = z * (1.0 - (y * f));
+		t = z * (1.0 - y * (1.0 - f));
+		
+		switch(i) {
+			case 0:
+				r = z;  g = t;  b = p;
+				break;
+			case 1:
+				r = q;  g = z;  b = p;
+				break;
+			case 2:
+				r = p;  g = z;  b = t;
+				break;
+			case 3:
+				r = p;  g = q;  b = z;
+				break;
+			case 4:
+				r = t;  g = p;  b = z;
+				break;
+			case 5:
+				r = z;  g = p;  b = q;
+				break;
+			default:
+				r = 0.0; g = 0.0; b = 0.0;
+				break;
+		}
+	}
+	
+	result[0] = r;
+	result[1] = g;
+	result[2] = b;
+}
+
+void GenUtils::convert_hsv(float r, float g, float b, float* result)
+{
+	float min, max, delta;
+	min = GenUtils::tri_min(r, g, b);
+	max = GenUtils::tri_max(r, g, b);
+    result[2] = max;             // v
+	delta = max - min;
+	if ( max != 0 ) {
+		result[1] = delta / max;  // s
+	} else {
+		// r = g = b = 0         // s = 0, v is undefined
+		result[1] = 0;
+		result[0] = -1;
+		return;
+	}
+	if( r == max ) {
+		result[0] = ( g - b ) / delta;     // between yellow & magenta
+	} else if( g == max ) {
+		result[0] = 2 + ( b - r ) / delta; // between cyan & yellow
+	}
+	result[0] = 4 + ( r - g ) / delta; // between magenta & cyan
+	result[0] *= 60;                           // degrees
+	if( result[0] < 0 ) result[0] += 360;
 }

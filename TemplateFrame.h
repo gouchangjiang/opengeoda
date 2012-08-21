@@ -63,6 +63,7 @@ public:
 								 wxColour& ret_color,
 								 const wxString& title = "Choose A Color");
 	
+	void OnKeyEvent(wxKeyEvent& event);
 	virtual void ExportImage(TemplateCanvas* canvas, const wxString& type);
 	virtual void OnSaveCanvasImageAs(wxCommandEvent& event);
 	virtual void OnOldStyleCopyImageToClipboard(wxCommandEvent& event);
@@ -86,11 +87,23 @@ public:
 	virtual void OnPrintCanvasState(wxCommandEvent& event);
 	virtual void UpdateOptionMenuItems();
 	virtual void UpdateContextMenuItems(wxMenu* menu);
+	virtual void UpdateTitle() {};
+	virtual void OnTimeSyncVariable(int var_index);
+	virtual void OnFixedScaleVariable(int var_index);
+	virtual void OnPlotsPerView(int plots_per_view);
+	virtual void OnPlotsPerViewOther();
+	virtual void OnPlotsPerViewAll();
+	virtual bool IsStatusBarVisible() { return is_status_bar_visible; }
+	virtual void OnDisplayStatusBar(wxCommandEvent& event) {
+		DisplayStatusBar(!IsStatusBarVisible()); }
+	virtual void DisplayStatusBar(bool show);
+	virtual Project* GetProject() { return project; }
+	/** return value can be null */
+	virtual TemplateLegend* GetTemplateLegend() { return template_legend; }
 	
 	/** Implementation of FramesManagerObserver interface */
 	virtual void update(FramesManager* o);
 	
-	virtual Project* GetProject() { return project; }
 	static wxList my_children;
 private:
 	static TemplateFrame* activeFrame;
@@ -100,6 +113,7 @@ protected:
 	TemplateCanvas* template_canvas;
 	TemplateLegend* template_legend; // optional
 	FramesManager* frames_manager;
+	bool is_status_bar_visible;
 
 	DECLARE_CLASS(TemplateFrame)
 	DECLARE_EVENT_TABLE()

@@ -20,14 +20,11 @@
 #ifndef __GEODA_CENTER_3D_CONTROL_PAN_H__
 #define __GEODA_CENTER_3D_CONTROL_PAN_H__
 
-#ifdef __GNUG__
-#pragma interface "3DControlPan.cpp"
-#endif
+#include <wx/slider.h>
+#include <wx/tooltip.h>
+#include <wx/checkbox.h>
+#include <wx/stattext.h>
 
-
-/*!
- * C3DControlPan class declaration
- */
 class C3DPlotFrame;
 
 class C3DControlPan: public wxPanel
@@ -36,7 +33,6 @@ class C3DControlPan: public wxPanel
     DECLARE_EVENT_TABLE()
 
 public:
-    /// Constructors
     C3DControlPan( );
     C3DControlPan( wxWindow* parent, wxWindowID id = -1,
 				  const wxPoint& pos = wxDefaultPosition,
@@ -46,7 +42,6 @@ public:
 				  const wxString& y3d_l = "Y",
 				  const wxString& z3d_l = "Z" );
 
-    /// Creation
     bool Create( wxWindow* parent, wxWindowID id = -1,
 				const wxPoint& pos = wxDefaultPosition,
 				const wxSize& size = wxDefaultSize,
@@ -55,77 +50,22 @@ public:
 				const wxString& y3d_l = "Y",
 				const wxString& z3d_l = "Z" );
 
-    /// Creates the controls and sizers
     void CreateControls();
-
-////@begin C3DControlPan event handler declarations
-
-    /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for IDC_DATAPOINT
+	
+	void UpdateAxesLabels(const wxString& x, const wxString& y,
+						  const wxString& z);
     void OnCDatapointClick( wxCommandEvent& event );
-
-    /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for IDC_TOX
     void OnCToxClick( wxCommandEvent& event );
-
-    /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for IDC_TOY
     void OnCToyClick( wxCommandEvent& event );
-
-    /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for IDC_TOZ
     void OnCTozClick( wxCommandEvent& event );
-
-    /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for IDC_SELECT
     void OnCSelectClick( wxCommandEvent& event );
-
-    /// wxEVT_COMMAND_SLIDER_UPDATED event handler for IDC_SLXP
     void OnCSlxpUpdated( wxCommandEvent& event );
-
-    /// wxEVT_SCROLL event handler for IDC_SLXP
-    void OnCSlxpScroll( wxScrollEvent& event );
-
-    /// wxEVT_COMMAND_SLIDER_UPDATED event handler for IDC_SLXS
     void OnCSlxsUpdated( wxCommandEvent& event );
-
-    /// wxEVT_SCROLL event handler for IDC_SLXS
-    void OnCSlxsScroll( wxScrollEvent& event );
-
-    /// wxEVT_COMMAND_SLIDER_UPDATED event handler for IDC_SLYP
     void OnCSlypUpdated( wxCommandEvent& event );
-
-    /// wxEVT_SCROLL event handler for IDC_SLYP
-    void OnCSlypScroll( wxScrollEvent& event );
-
-    /// wxEVT_COMMAND_SLIDER_UPDATED event handler for IDC_SLYS
     void OnCSlysUpdated( wxCommandEvent& event );
-
-    /// wxEVT_SCROLL event handler for IDC_SLYS
-    void OnCSlysScroll( wxScrollEvent& event );
-
-    /// wxEVT_COMMAND_SLIDER_UPDATED event handler for IDC_SLZP
     void OnCSlzpUpdated( wxCommandEvent& event );
-
-    /// wxEVT_SCROLL event handler for IDC_SLZP
-    void OnCSlzpScroll( wxScrollEvent& event );
-
-    /// wxEVT_COMMAND_SLIDER_UPDATED event handler for IDC_SLZS
     void OnCSlzsUpdated( wxCommandEvent& event );
 
-    /// wxEVT_SCROLL event handler for IDC_SLZS
-    void OnCSlzsScroll( wxScrollEvent& event );
-
-////@end C3DControlPan event handler declarations
-
-////@begin C3DControlPan member function declarations
-
-    /// Retrieves bitmap resources
-    wxBitmap GetBitmapResource( const wxString& name );
-
-    /// Retrieves icon resources
-    wxIcon GetIconResource( const wxString& name );
-////@end C3DControlPan member function declarations
-
-    /// Should we show tooltips?
-    static bool ShowToolTips();
-
-////@begin C3DControlPan member variables
     wxCheckBox* m_data;
     wxCheckBox* m_prox;
     wxCheckBox* m_proy;
@@ -143,9 +83,9 @@ public:
     wxSlider* m_ys;
     wxSlider* m_zp;
     wxSlider* m_zs;
-////@end C3DControlPan member variables
-	C3DPlotFrame* pa;
+
+	C3DPlotFrame* template_frame;
 };
 
 #endif
-    // _3DCONTROLPAN_H_
+

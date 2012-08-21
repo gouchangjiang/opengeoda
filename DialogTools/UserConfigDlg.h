@@ -46,18 +46,18 @@
 #endif
 
 /*!
- * CUserConfigDlg class declaration
+ * UserConfigDlg class declaration
  */
 
-class CUserConfigDlg: public wxDialog
+class UserConfigDlg: public wxDialog
 {    
-    DECLARE_DYNAMIC_CLASS( CUserConfigDlg )
+    DECLARE_DYNAMIC_CLASS( UserConfigDlg )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
-    CUserConfigDlg( );
-    CUserConfigDlg( wxWindow* parent, wxWindowID id = SYMBOL_CUSERCONFIGDLG_IDNAME, const wxString& caption = SYMBOL_CUSERCONFIGDLG_TITLE, const wxPoint& pos = SYMBOL_CUSERCONFIGDLG_POSITION, const wxSize& size = SYMBOL_CUSERCONFIGDLG_SIZE, long style = SYMBOL_CUSERCONFIGDLG_STYLE );
+    UserConfigDlg( );
+    UserConfigDlg( wxWindow* parent, wxWindowID id = SYMBOL_CUSERCONFIGDLG_IDNAME, const wxString& caption = SYMBOL_CUSERCONFIGDLG_TITLE, const wxPoint& pos = SYMBOL_CUSERCONFIGDLG_POSITION, const wxSize& size = SYMBOL_CUSERCONFIGDLG_SIZE, long style = SYMBOL_CUSERCONFIGDLG_STYLE );
 
     /// Creation
     bool Create( wxWindow* parent, wxWindowID id = SYMBOL_CUSERCONFIGDLG_IDNAME, const wxString& caption = SYMBOL_CUSERCONFIGDLG_TITLE, const wxPoint& pos = SYMBOL_CUSERCONFIGDLG_POSITION, const wxSize& size = SYMBOL_CUSERCONFIGDLG_SIZE, long style = SYMBOL_CUSERCONFIGDLG_STYLE );
@@ -65,30 +65,30 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-////@begin CUserConfigDlg event handler declarations
+////@begin UserConfigDlg event handler declarations
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for wxID_OK
     void OnOkClick( wxCommandEvent& event );
 
-////@end CUserConfigDlg event handler declarations
+////@end UserConfigDlg event handler declarations
 
-////@begin CUserConfigDlg member function declarations
+////@begin UserConfigDlg member function declarations
 
     /// Retrieves bitmap resources
     wxBitmap GetBitmapResource( const wxString& name );
 
     /// Retrieves icon resources
     wxIcon GetIconResource( const wxString& name );
-////@end CUserConfigDlg member function declarations
+////@end UserConfigDlg member function declarations
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
-////@begin CUserConfigDlg member variables
+////@begin UserConfigDlg member variables
     wxStaticText* m_label;
     wxTextCtrl* m_min;
     wxTextCtrl* m_max;
-////@end CUserConfigDlg member variables
+////@end UserConfigDlg member variables
 
 	wxString s_int;
 	wxString s_int2;

@@ -49,8 +49,10 @@ public:
 
 	void OnAddColumnClick( wxCommandEvent& event );
     void OnLagResultUpdated( wxCommandEvent& event );
-    void OnCurrentusedWUpdated( wxCommandEvent& event );
+    void OnLagResultTmUpdated( wxCommandEvent& event );
+	void OnCurrentusedWUpdated( wxCommandEvent& event );
     void OnLagOperandUpdated( wxCommandEvent& event );
+	void OnLagOperandTmUpdated( wxCommandEvent& event );
 	void OnOpenWeightClick( wxCommandEvent& event );
 	
 	void UpdateOtherPanels();
@@ -65,9 +67,16 @@ public:
 	FieldNewCalcBinDlg* b_panel;
 	FieldNewCalcRateDlg* r_panel;
 	
+	bool IsTimeVariant(int col_id);
+	bool IsAllTime(int col_id, int tm_sel);
+	
+	bool all_init;
+	bool is_space_time;
     wxChoice* m_result;
+	wxChoice* m_result_tm;
     wxChoice* m_weight;
     wxChoice* m_var;
+	wxChoice* m_var_tm;
     wxTextCtrl* m_text;
 	Project* project;
 	WeightsManager* w_manager;
@@ -80,6 +89,7 @@ public:
 	
 	void Apply();
 	void InitFieldChoices();
+	void InitTime(wxChoice* time_list);
 
 	void Display();
 };

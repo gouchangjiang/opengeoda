@@ -22,13 +22,19 @@
 
 #include <wx/frame.h>
 #include <wx/grid.h>
+#include "../FramesManagerObserver.h"
 
 class DbfGridTableBase;
+class FramesManager;
 
-class DataViewerFrame : public wxFrame
+class DataViewerFrame : public wxFrame, public FramesManagerObserver
 {
 public:
-	DataViewerFrame(wxFrame *parent, const wxString& dbf_fname );
+	DataViewerFrame(wxFrame *parent, FramesManager* frames_manager,
+					const wxString& dbf_fname );
+	DataViewerFrame(wxFrame *parent, FramesManager* frames_manager,
+					const wxString& dbf_sp_fname, const wxString& dbf_tm_fname,
+					int sp_tbl_sp_col, int tm_tbl_sp_col, int tm_tbl_tm_col);
 	virtual ~DataViewerFrame();
 	
 	// Some Default File-menu options for when DataViewer
@@ -67,11 +73,20 @@ public:
 	void OnShowDbfInfo( wxCommandEvent& ev );
 	void OnEditFieldProperties( wxCommandEvent& ev );
 	void OnMergeTable( wxCommandEvent& ev );
-		
+	void OnChooseTimeStep( wxCommandEvent& ev );
+	void OnShowTimeChooser( wxCommandEvent& ev );
+
+	/** Implementation of FramesManagerObserver interface */
+	virtual void update(FramesManager* o);
+	
+protected:
+	FramesManager* frames_manager;
+	
 private:
 	wxGrid* grid;
 	DbfGridTableBase* grid_base;
 	wxString cur_dbf_fname;
+	wxString cur_dbf_tm_fname;
 	
 	DECLARE_EVENT_TABLE()
 };

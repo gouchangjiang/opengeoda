@@ -29,7 +29,7 @@
 namespace Shapefile {
 	
 	/**
-	 Shape files use only 32-bit signed integers and IEEE 64-bit
+	 Shapefiles use only 32-bit signed integers and IEEE 64-bit
 	 double-precision floating point numbers.  The wxWidgets typedef for int is
 	 a signed 32-bit integer and the typedef for double is garunteed to be a
 	 64-bit IEEE double.  We will therefore use these types whenever the ESRI
@@ -210,6 +210,14 @@ namespace Shapefile {
 	bool populateIndex(const std::string& fname, Index& index_s);
 	bool populateMain(const Index& index_s, const std::string& fname,
 					  Main& main_s);
+	
+	bool writeHeader(std::ofstream& out_file,
+					 const Shapefile::Header& header,
+					 std::string& err_msg);
+	bool writePointIndexFile(const std::string& fname, const Index& index,
+							 std::string& err_msg);
+	bool writePointMainFile(const std::string& fname, const Main& main,
+							std::string& err_msg);
 	
 	void printHeader(const Header& header, std::ostream& s, int indent=0);
 	void printIndex(const Index& index_s, std::ostream& s, int indent=0);

@@ -30,18 +30,18 @@
 #endif
 
 /*!
- * CBnd2ShpDlg class declaration
+ * Bnd2ShpDlg class declaration
  */
 
-class CBnd2ShpDlg: public wxDialog
+class Bnd2ShpDlg: public wxDialog
 {    
-    DECLARE_CLASS( CBnd2ShpDlg )
+    DECLARE_CLASS( Bnd2ShpDlg )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
-    CBnd2ShpDlg( );
-    CBnd2ShpDlg( wxWindow* parent, wxWindowID id = -1,
+    Bnd2ShpDlg( );
+    Bnd2ShpDlg( wxWindow* parent, wxWindowID id = -1,
 				const wxString& caption = "Convert Boundary to SHP",
 				const wxPoint& pos = wxDefaultPosition,
 				const wxSize& size = wxDefaultSize,
@@ -57,7 +57,7 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-////@begin CBnd2ShpDlg event handler declarations
+////@begin Bnd2ShpDlg event handler declarations
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_CREATE
     void OnCreateClick( wxCommandEvent& event );
@@ -72,10 +72,10 @@ public:
     void OnCancelClick( wxCommandEvent& event );
     static bool ShowToolTips();
 
-////@begin CBnd2ShpDlg member variables
+////@begin Bnd2ShpDlg member variables
     wxTextCtrl* m_inputfile;
     wxTextCtrl* m_outputfile;
-////@end CBnd2ShpDlg member variables
+////@end Bnd2ShpDlg member variables
 
 	wxString fn;
 };

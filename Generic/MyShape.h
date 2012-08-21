@@ -33,6 +33,8 @@
 #include <boost/geometry/geometries/point_xy.hpp>
 #include "../GenUtils.h"
 
+class MyPolygon;
+
 typedef boost::geometry::model::d2::point_xy<double> point_2d;
 
 struct MyScaleTrans {
@@ -66,44 +68,80 @@ struct MyScaleTrans {
 	double trans_y;	
 };
 
+namespace MyShapeAlgs {
+	void partsToCount(const std::vector<wxInt32>& parts,
+					  int total_points, int* count);
+	wxRealPoint calculateMeanCenter(MyPolygon* poly);
+	wxRealPoint calculateMeanCenter(int n, wxRealPoint* pts);
+	wxRealPoint calculateMeanCenter(const std::vector<Shapefile::Point>& pts);
+	wxRealPoint calculateCentroid(MyPolygon* poly);
+	wxRealPoint calculateCentroid(int n, wxRealPoint* pts);
+	wxRealPoint calculateCentroid(int n,
+								  const std::vector<Shapefile::Point>& pts);
+	double calculateArea(int n, wxRealPoint* pts);
+	double calculateArea(int n, const std::vector<Shapefile::Point>& pts);
+	void createCirclePolygon(const wxPoint& center, double radius,
+							 int num_points = 0,
+							 wxPoint* pnts_array = 0,
+							 int* pnts_array_size = 0);	
+	wxRegion createCircleRegion(const wxPoint& center, double radius,
+								int num_points = 0,
+								wxPoint* pnts_array = 0,
+								int* pnts_array_size = 0);
+	wxRegion createLineRegion(wxPoint a, wxPoint b);
+	bool pointInPolygon(const wxPoint& pt, int n, const wxPoint* pts);
+}
+
+struct MyShapeAttribs {
+	MyShapeAttribs() : brush(*wxBLUE_BRUSH), pen(*wxBLACK_PEN),
+		x_nudge(0), y_nudge(0) {}
+	MyShapeAttribs(const MyShapeAttribs& s);
+	MyShapeAttribs(const MyShapeAttribs* s);
+	virtual MyShapeAttribs& operator=(const MyShapeAttribs& s);
+	virtual ~MyShapeAttribs() {}
+	
+	wxBrush brush;
+	wxPen pen;
+	int x_nudge;
+	int y_nudge;
+};
 
 class MyShape {
 public:
 	MyShape();
 	MyShape(const MyShape& s);
-	virtual ~MyShape() {};
+	virtual ~MyShape();
 	virtual MyShape* clone() = 0;
 	virtual MyShape& operator=(const MyShape& s);
 	
-	wxPoint getCentroid() { return centroid; }
-	wxPoint getMeanCenter() { return mean_center; }
+	virtual wxPoint getCentroid() { return center; }
+	virtual wxPoint getMeanCenter() { return center; }
+	virtual wxRealPoint getCentroidOrig() { return center_o; }
+	virtual wxRealPoint getMeanCenterOrig() { return center_o; }
 	
-	virtual bool pointWithin(const wxPoint& pt) = 0;
-	virtual bool regionIntersect(const wxRegion& region) = 0;
+	virtual bool pointWithin(const wxPoint& pt) { return false; };
+	virtual bool regionIntersect(const wxRegion& region) { return false; };
 	virtual void applyScaleTrans(const MyScaleTrans& A);
 
 	virtual void paintSelf(wxDC& dc) = 0;
 	
-	static void partsToCount(const std::vector<wxInt32>& parts,
-							 int total_points,
-							 int* count);
-	static wxRealPoint calculateMeanCenter(int n, wxRealPoint* pts);
-	static wxRealPoint calculateMeanCenter(
-		const std::vector<Shapefile::Point>& pts);
-	static wxRegion createCircleRegion(const wxPoint& center, double radius,
-									   int num_points = 0,
-									   wxPoint* pnts_array = 0,
-									   int* pnts_array_size = 0);
-	static wxRegion createLineRegion(wxPoint a, wxPoint b);
 public:
-	wxBrush brush;
-	wxPen pen;
-	//int z;
+	// calls allocAttribs if needed, a convenience function.
+	virtual void setNudge(int x_nudge, int y_nudge);
+	virtual void setPen(wxPen pen);
+	virtual void setBrush(wxBrush brush);
+	const wxPen& getPen();
+	const wxBrush& getBrush();
+	int getXNudge();
+	int getYNudge();
+	wxPoint center;
+	// for selectable shapes, indicates which category shape belongs to
+	int category;
+//protected:
+	wxRealPoint center_o;
+	wxPoint bb_poly[5];
 protected:
-	wxPoint centroid;
-	wxRealPoint centroid_o;
-	wxPoint mean_center;
-	wxRealPoint mean_center_o;
+	MyShapeAttribs* attribs; // optional extra attributes
 };
 
 
@@ -111,16 +149,14 @@ class MyPoint: public MyShape {
 public:
 	MyPoint(const MyPoint& s); 
 	MyPoint(wxRealPoint point_o_s);
+	MyPoint(double x_orig, double y_orig);
 	virtual ~MyPoint() {}
 	virtual MyPoint* clone() { return new MyPoint(*this); }
 	
 	virtual bool pointWithin(const wxPoint& pt);
 	virtual bool regionIntersect(const wxRegion& r);
-	virtual void applyScaleTrans(const MyScaleTrans& A);
+	//virtual void applyScaleTrans(const MyScaleTrans& A);
 	virtual void paintSelf(wxDC& dc);
-public:
-	wxPoint point;
-	wxRealPoint point_o;
 };
 
 
@@ -136,11 +172,30 @@ public:
 	virtual void applyScaleTrans(const MyScaleTrans& A);
 	virtual void paintSelf(wxDC& dc);
 public:
-	wxPoint center;
+	//wxPoint center; // inherited from MyShape
 	double radius;
 protected:
-	wxRealPoint center_o;
+	//wxRealPoint center_o; // inherited from MyShape
 	double radius_o;
+};
+
+class MyRectangle: public MyShape {
+public:
+	MyRectangle(const MyRectangle& s);
+	MyRectangle(wxRealPoint lower_left_o_s, wxRealPoint upper_right_o_s);
+	virtual ~MyRectangle() {}
+	virtual MyRectangle* clone() { return new MyRectangle(*this); }
+	
+	virtual bool pointWithin(const wxPoint& pt);
+	virtual bool regionIntersect(const wxRegion& r);
+	virtual void applyScaleTrans(const MyScaleTrans& A);
+	virtual void paintSelf(wxDC& dc);
+public:
+	wxPoint lower_left;
+	wxPoint upper_right;
+protected:
+	wxRealPoint lower_left_o;
+	wxRealPoint upper_right_o;
 };
 
 
@@ -162,13 +217,15 @@ public:
 	wxPoint* points;
 	int n; // size of points array
 	int n_count; // size of count array
-	int* count; // index into various parts of points array
-	bool simple; // true iff polygon has no holes and just one part
-protected:
+	// Note: count array is different than PolygonContents::parts array
+	//   count stores the number of points in each polygon part
+	//   parts stores the index of the first point for each polygon
+	int* count;
+//protected:
 	// (pc == 0 && points_o !=0 ) || (pc != 0 && points_o ==0 )
 	Shapefile::PolygonContents* pc;
 	wxRealPoint* points_o;
-	wxRegion region;
+	//wxRegion region;
 };
 
 
@@ -194,12 +251,32 @@ public:
 	int n; // size of points array
 	int n_count; // size of count array
 	int* count; // index into various parts of points array
-	bool simple; // true iff polyline has just one part
 protected:
 	// (pc == 0 && points_o !=0 ) || (pc != 0 && points_o ==0 )
 	Shapefile::PolyLineContents* pc;
 	wxRealPoint* points_o;
-	wxRegion region;
+	//wxRegion region;
+};
+
+
+class MyRay: public MyShape {
+public:
+	MyRay(const MyRay& s);
+	MyRay(wxRealPoint center_o_s, double degs_rot_cc_from_horiz_s,
+		  int length_s);
+	virtual ~MyRay() {}
+	virtual MyRay* clone() { return new MyRay(*this); }
+	
+	virtual bool pointWithin(const wxPoint& pt);
+	virtual bool regionIntersect(const wxRegion& r);
+	virtual void applyScaleTrans(const MyScaleTrans& A);
+	virtual void paintSelf(wxDC& dc);
+public:
+	//wxPoint center; // inherited from MyShape
+	double degs_rot_cc_from_horiz;
+	int length; // lenght in pixels
+protected:
+	//wxRealPoint center_o; // inherited from MyShape
 };
 
 
@@ -218,8 +295,7 @@ public:
 	virtual ~MyText() {}
 	virtual MyText* clone() { return new MyText(*this); }
 	
-	virtual bool pointWithin(const wxPoint& pt) { return false; }
-	virtual bool regionIntersect(const wxRegion& r) { return false; }
+	virtual bool pointWithin(const wxPoint& pt);
 	virtual void applyScaleTrans(const MyScaleTrans& A);
 	virtual void paintSelf(wxDC& dc);
 	
@@ -236,10 +312,9 @@ public:
 	wxString text;
 	wxFont font;
 	wxRealPoint ref_pt;
-	int ref_pt_x_nudge; // number of pixels to nudge ref_pt in x dir.
-	int ref_pt_y_nudge; // number of pixels to nudge ref_pt in y dir.
 	HorizAlignment horiz_align;
 	VertAlignment vert_align;
+	bool hidden;
 protected:
 	double degs_rot_cc_from_horiz;
 	double degs_rot_cc_from_horiz_o;
@@ -268,12 +343,12 @@ public:
 	virtual ~MyTable() {}
 	virtual MyTable* clone() { return new MyTable(*this); }
 	
-	virtual bool pointWithin(const wxPoint& pt) { return false; }
-	virtual bool regionIntersect(const wxRegion& r) { return false; }
 	virtual void applyScaleTrans(const MyScaleTrans& A);
 	virtual void paintSelf(wxDC& dc);
+	virtual void GetSize(wxDC& dc, int& w, int& h);
 	
 public:
+	bool hidden;
 	std::vector<wxString> vals;
 	std::vector<CellAttrib> attributes;
 	wxFont font;
@@ -282,8 +357,6 @@ public:
 	int row_gap;
 	int col_gap;
 	wxRealPoint ref_pt;
-	int ref_pt_x_nudge; // number of pixels to nudge ref_pt in x dir.
-	int ref_pt_y_nudge; // number of pixels to nudge ref_pt in y dir.
 	MyText::HorizAlignment horiz_align;
 	MyText::VertAlignment vert_align;
 	MyText::HorizAlignment cell_h_align;
@@ -294,17 +367,14 @@ protected:
 
 class MyAxis: public MyShape {
 public:
-	MyAxis(const MyAxis& s)
-		: caption(s.caption), scale(s.scale), is_horizontal(s.is_horizontal),
-		caption_font(s.caption_font), font(s.font),
-		a(s.a), b(s.b), a_o(s.a_o), b_o(s.b_o) {}
+	MyAxis();
+	MyAxis(const MyAxis& s);
 	MyAxis(const wxString& caption_s, const AxisScale& s,
-		   const wxPoint& a_s, const wxPoint& b_s);
+		   const wxRealPoint& a_s, const wxRealPoint& b_s,
+		   int x_nudge = 0, int y_nudge = 0);
 	virtual ~MyAxis() {}
 	virtual MyAxis* clone() { return new MyAxis(*this); }
 	
-	virtual bool pointWithin(const wxPoint& pt) { return false; }
-	virtual bool regionIntersect(const wxRegion& r) { return false; }
 	virtual void applyScaleTrans(const MyScaleTrans& A);
 	virtual void paintSelf(wxDC& dc);
 	
@@ -315,15 +385,22 @@ public:
 	AxisScale scale;
 	wxPoint a, b;
 	wxString caption;
+	bool hidden;
 protected:
 	bool is_horizontal;
-	wxPoint a_o;
-	wxPoint b_o;
+	wxRealPoint a_o;
+	wxRealPoint b_o;
 	wxFont font;
 	wxFont caption_font;
 };
 
-
+class MySelRegion {
+public:
+	enum Type { rectangle, circle, line };
+	Type regionType;
+	int sel1;
+	int sel2;
+};
 
 /**
  This class is used for pointer comparisons between MyShape pointers.  If

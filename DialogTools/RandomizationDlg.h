@@ -20,29 +20,40 @@
 #ifndef __GEODA_CENTER_RANDOMIZATION_DLG_H__
 #define __GEODA_CENTER_RANDOMIZATION_DLG_H__
 
+#include <vector>
 #include "../ShapeOperations/Randik.h"
 
-class CRandomizationDlg: public wxDialog
+class GalElement;
+
+class RandomizationDlg: public wxDialog
 {    
-    DECLARE_CLASS( CRandomizationDlg )
+    DECLARE_CLASS( RandomizationDlg )
     DECLARE_EVENT_TABLE()
 
 public:
- 	CRandomizationDlg( int type, wxWindow* win,
-					  const int NumPermutations, const double Slope,
-					  wxWindow* parent, wxWindowID id = -1,
-					  const wxString& caption = "Randomization",
-					  const wxPoint& pos = wxDefaultPosition,
-					  const wxSize& my_size = wxDefaultSize,
-					  long style = wxCAPTION|wxSYSTEM_MENU);
-	virtual ~CRandomizationDlg();
+	RandomizationDlg( const std::vector<double>& raw_data1,
+					 const GalElement* W, int NumPermutations,
+					 wxWindow* parent, wxWindowID id = wxID_ANY,
+					 const wxString& caption = "Randomization",
+					 const wxPoint& pos = wxDefaultPosition,
+					 const wxSize& my_size = wxDefaultSize,
+					 long style = wxCAPTION|wxSYSTEM_MENU);
+	RandomizationDlg( const std::vector<double>& raw_data1,
+					 const std::vector<double>& raw_data2,
+					 const GalElement* W, int NumPermutations,
+					 wxWindow* parent, wxWindowID id = wxID_ANY,
+					 const wxString& caption = "Randomization",
+					 const wxPoint& pos = wxDefaultPosition,
+					 const wxSize& my_size = wxDefaultSize,
+					 long style = wxCAPTION|wxSYSTEM_MENU);
+	virtual ~RandomizationDlg();
     void CreateControls();
 	void Init();
+	void CalcMoran();
 
     void OnPaint( wxPaintEvent& event );
     void OnCloseClick( wxCommandEvent& event );
     void OnOkClick( wxCommandEvent& event );
-    static bool ShowToolTips();
     void CheckSize(const int width, const int height);
     void Paint(wxDC *dc);
 	void Draw(wxDC* dc);
@@ -50,36 +61,42 @@ public:
 					   const wxColour color);
 	
     void SinglePermute();
-	void RunPermutations(); 
+	void RunPermutations();
+	void RunRandomTrials();
 	void UpdateStatistics();
 	
-    int	    Width, Height, Left, Right, Top, Bottom;
+    int	Width, Height, Left, Right, Top, Bottom;
+	int num_obs;
     const int Permutations;
-    double* MoranI; // vector of Moran's I for every permutation experiment
+	// vector of Moran's I for every permutation experiment
+	std::vector<double> MoranI;
 
 	const double start, stop;
     double  range;
     int	    bins, minBin, maxBin;
     int	    binX, thresholdBin;
-    int*    freq;
+	std::vector<int> freq;
 	
-	const double Moran;
+	bool is_bivariate;
+	const GalElement* W;
+	std::vector<double> raw_data1;
+	std::vector<double> raw_data2;
+	double Moran;
 	double  MMean;
 	double  MSdev;
 	int     totFrequency;
-	int		signFrequency;
 	double  pseudo_p_val;
 	double  expected_val;
-
-	int type;
-    MoranScatterPlotCanvas* MoranPtr;
-    MoranGCanvas* MoranGPtr;
+	bool count_greater;
+	
+	int* perm;
+	long* theRands;
 	
     Randik  rng;
 	bool    experiment_run_once;
 
 private:
-	CRandomizationDlg() : start(-1), stop(1), Moran(0), Permutations(0) {}
+	RandomizationDlg() : start(-1), stop(1), Moran(0), Permutations(0) {}
 };
 
 #endif

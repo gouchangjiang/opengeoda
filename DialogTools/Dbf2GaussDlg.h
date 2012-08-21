@@ -20,18 +20,18 @@
 #ifndef __GEODA_CENTER_DBF_2_GAUSS_DLG_H__
 #define __GEODA_CENTER_DBF_2_GAUSS_DLG_H__
 
-class CDbf2GaussDlg: public wxDialog
+class Dbf2GaussDlg: public wxDialog
 {
     DECLARE_EVENT_TABLE()
 
 public:
-    CDbf2GaussDlg();
-    CDbf2GaussDlg( int option, wxWindow* parent, wxWindowID id = -1,
+    Dbf2GaussDlg();
+    Dbf2GaussDlg( int option, wxWindow* parent, wxWindowID id = -1,
 				  const wxString& caption = "Exporting Data",
 				  const wxPoint& pos = wxDefaultPosition,
 				  const wxSize& size = wxDefaultSize,
 				  long style = wxCAPTION|wxSYSTEM_MENU );
-    CDbf2GaussDlg( wxWindow* parent, wxWindowID id = -1,
+    Dbf2GaussDlg( wxWindow* parent, wxWindowID id = -1,
 				  const wxString& caption = "Exporting Data",
 				  const wxPoint& pos = wxDefaultPosition,
 				  const wxSize& size = wxDefaultSize,

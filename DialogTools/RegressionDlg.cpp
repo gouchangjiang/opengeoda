@@ -320,11 +320,13 @@ void RegressionDlg::OnRunClick( wxCommandEvent& event )
 	// dt and x is allocated, but never freed!
 	std::vector<double> vec(m_obs);
 	for ( i=0; i < m_independentlist->GetCount(); i++) {
-		int col = grid_base->FindColId(m_independentlist->GetString(i));
-		grid_base->col_data[col]->GetVec(vec);
-		for (int j=0; j<m_obs; j++) dt[i][j] = vec[j]; 
+		int col = name_to_id[m_independentlist->GetString(i)]; 
+		int tm = name_to_tm_id[m_independentlist->GetString(i)];
+		grid_base->col_data[col]->GetVec(vec, tm);
+		for (int j=0; j<m_obs; j++) dt[i][j] = vec[j];
 	}
-	grid_base->col_data[grid_base->FindColId(m_Yname)]->GetVec(vec);
+	grid_base->col_data[name_to_id[m_Yname]]->GetVec(vec,
+													 name_to_tm_id[m_Yname]);
 	for (int j=0; j<m_obs; j++) dt[sz][j] = vec[j];
 		
 	for (i = 0; i < sz + 1; i++) {
@@ -348,7 +350,7 @@ void RegressionDlg::OnRunClick( wxCommandEvent& event )
 
 	if (m_WeightCheck) {
 		const int op = m_choice->GetSelection();
-		GeodaWeight* w = w_manager->GetWeight(op);
+		GeoDaWeight* w = w_manager->GetWeight(op);
 		const GalElement* gal_weight = NULL;
 		if (w_manager->IsGalWeight(op)) {
 			gal_weight = w_manager->GetGalWeight(op)->gal;
@@ -528,8 +530,7 @@ void RegressionDlg::OnRunClick( wxCommandEvent& event )
 
 void RegressionDlg::OnViewResultsClick( wxCommandEvent& event )
 {
- 	if (m_OpenDump)
- 	{
+ 	if (m_OpenDump) {
  		printTail();
  		(*logFile).close();
 		MyFrame::theFrame->DisplayRegression(logReport);
@@ -538,11 +539,11 @@ void RegressionDlg::OnViewResultsClick( wxCommandEvent& event )
 
 void RegressionDlg::OnCListVarinDoubleClicked( wxCommandEvent& event )
 {
-	if (lastSelection==1)
+	if (lastSelection == 1) {
 		OnCButton1Click(event);
-	else
+	} else {
 		OnCButton2Click(event);
-
+	}
 }
 
 void RegressionDlg::OnCListVaroutDoubleClicked( wxCommandEvent& event )
@@ -552,25 +553,17 @@ void RegressionDlg::OnCListVaroutDoubleClicked( wxCommandEvent& event )
 
 void RegressionDlg::OnCButton1Click( wxCommandEvent& event )
 {
-	if(m_varlist->GetCount() > 0)
-	{
-		if(m_varlist->GetSelection() >= 0)
-		{
+	if (m_varlist->GetCount() > 0) {
+		if (m_varlist->GetSelection() >= 0) {
 			wxString temp = m_dependent->GetValue();
-			
 			m_dependent->SetValue(
 							m_varlist->GetString(m_varlist->GetSelection()));
 			m_varlist->Delete(m_varlist->GetSelection());
-
-			if (temp != wxEmptyString)
-				m_varlist->Append(temp);
-
+			if (temp != wxEmptyString) m_varlist->Append(temp);
 			b_done1 = b_done2 = b_done3 = false;
 			m_nCount = 0;
-
 			m_varlist->SetSelection(0);
 		}
-
 	}
 	lastSelection = 2;
 	EnablingItems();
@@ -578,17 +571,17 @@ void RegressionDlg::OnCButton1Click( wxCommandEvent& event )
 
 void RegressionDlg::OnCButton2Click( wxCommandEvent& event )
 {
-	if(m_varlist->GetCount() > 0) {
-		if(m_varlist->GetSelection() >= 0) {
+	if (m_varlist->GetCount() > 0) {
+		if (m_varlist->GetSelection() >= 0) {
 			int cur_sel = m_varlist->GetSelection();
 			m_independentlist->Append(m_varlist->GetString(cur_sel));
 			m_varlist->Delete(cur_sel);
-			if(cur_sel == m_varlist->GetCount())
+			if (cur_sel == m_varlist->GetCount()) {
 				cur_sel = m_varlist->GetCount()-1;
+			}
 			m_varlist->SetSelection(cur_sel);
 			b_done1 = b_done2 = b_done3 = false;
 			m_nCount = 0;
-
 		}
 	}
 	EnablingItems();
@@ -613,36 +606,29 @@ void RegressionDlg::OnCResetClick( wxCommandEvent& event )
 
 void RegressionDlg::OnCButton3Click( wxCommandEvent& event )
 {
-	if(m_independentlist->GetCount() > 0)
-	{
-		if(m_independentlist->GetSelection() >= 0)
-		{
+	if (m_independentlist->GetCount() > 0) {
+		if(m_independentlist->GetSelection() >= 0) {
 			int cur_sel = m_independentlist->GetSelection();
 			m_varlist->Append(m_independentlist->GetString(cur_sel));
 			m_independentlist->Delete(cur_sel);
-			if(cur_sel == m_independentlist->GetCount())
+			if (cur_sel == m_independentlist->GetCount()) {
 				cur_sel = m_independentlist->GetCount()-1;
+			}
 			m_independentlist->SetSelection(cur_sel);
 			m_nCount = 0;
-
 			b_done1 = b_done2 = b_done3 = false;
-
 		}
 	}
-
-	if(m_independentlist->GetCount() <= 0)
-		m_Run = false;
-
+	if(m_independentlist->GetCount() <= 0) m_Run = false;
 	EnablingItems();	
 }
 
 void RegressionDlg::OnCButton4Click( wxCommandEvent& event )
 {
-	for(unsigned int i=0; i<m_varlist->GetCount(); i++)
+	for (unsigned int i=0; i<m_varlist->GetCount(); i++) {
 		m_independentlist->Append(m_varlist->GetString(i));
-	
+	}
 	m_varlist->Clear();	
-
 	b_done1 = b_done2 = b_done3 = false;
 	m_nCount = 0;
 
@@ -652,10 +638,9 @@ void RegressionDlg::OnCButton4Click( wxCommandEvent& event )
 
 void RegressionDlg::OnCButton5Click( wxCommandEvent& event )
 {
-	for(unsigned int i=0; i<m_independentlist->GetCount(); i++)
+	for (unsigned int i=0; i<m_independentlist->GetCount(); i++) {
 		m_varlist->Append(m_independentlist->GetString(i));
-
-
+	}
 	m_independentlist->Clear();	
 	m_Run = false;
 	b_done1 = b_done2 = b_done3 = false;
@@ -795,9 +780,24 @@ void RegressionDlg::InitVariableList()
 	listb = NULL;
 
 	grid_base->FillNumericColIdMap(col_id_map);
-	for(int i=0, iend=col_id_map.size(); i<iend; i++) {
-		wxString name = grid_base->col_data[col_id_map[i]]->name;
-		m_varlist->Append(name);
+	name_to_id.clear(); // map to grid_base col id
+	name_to_tm_id.clear(); // map to corresponding time id
+	for (int i=0, iend=col_id_map.size(); i<iend; i++) {
+		int id = col_id_map[i];
+		wxString name = grid_base->col_data[id]->name.Upper();
+		if (grid_base->IsColTimeVariant(id)) {
+			for (int t=0; t<grid_base->col_data[id]->time_steps; t++) {
+				wxString nm = name;
+				nm << " (" << grid_base->time_ids[t] << ")";
+				name_to_id[nm] = id;
+				name_to_tm_id[nm] = t;
+				m_varlist->Append(nm);
+			}
+		} else {
+			name_to_id[name] = id;
+			name_to_tm_id[name] = 0;
+			m_varlist->Append(name);
+		}
 	}
 
 	y = NULL;

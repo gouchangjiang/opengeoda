@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Interface for Classes and types necessarily to handle shapefiles
+/* Interface for Classes and types necessarily to handle Shapefiles
 	(binary form) and associated Boundary files (ASCII format).
 */
 
@@ -43,8 +43,7 @@
 #include "../GenUtils.h"
 using namespace std;
 
-extern long ReadBig(ifstream &input);
-extern void ggcvt(double d, int n, char* str);
+long ReadBig(ifstream &input);
 
 #define SWAP(x, y, t) ((t) = (x), (x) = (y), (y) = (t))
 //void SWAP(char& x, char& y, char& t) { t = x; x = y; y = t; }
@@ -68,7 +67,7 @@ typedef int*       IntPtr;
 
 /**
  Ppoint
- Corresponds to BasePoint shapes in the shapefile.
+ Corresponds to BasePoint shapes in the Shapefile.
  */
 class Ppoint :  public virtual AbstractShape  
 {
@@ -97,7 +96,7 @@ class Ppoint :  public virtual AbstractShape
 /**
  MultiPoint - Multipoint Shape
  Class for shapes with multiple points.
- Corresponds to multipoint shape in the shapefile.
+ Corresponds to multipoint shape in the Shapefile.
   */
 class MultiPoint : public virtual AbstractShape  {
 public:
@@ -160,7 +159,7 @@ public :
 /**
  PolygonShape
  Class for Polygon shapes - corresponds to the Polygon shape
- in the shapefile.
+ in the Shapefile.
  */
 class PolygonShape : public virtual Shape {
  public:

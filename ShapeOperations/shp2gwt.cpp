@@ -18,7 +18,7 @@
  */
 
 /*
- Functions to create spatial weights (.gwt) from any shapefile.
+ Functions to create spatial weights (.gwt) from any Shapefile.
  */
 
 #include <wx/wxprec.h>
@@ -259,93 +259,10 @@ void Location::CheckParticle(PartitionGWT * Y,
 	}
 }
 
-
-
 extern long GetShpFileSize(const wxString& fname);
 
-bool ReadId(const wxString& fname, const wxString& field, long* id )  
-{
-    if (id == NULL) {
-        wxMessageBox("Error: id array of longs points to NULL.");
-        return false;
-    }
-	
-    DbfFileReader dbf_r(fname);
-    if (!dbf_r.isDbfReadSuccess()) {
-        wxMessageBox("Error: There was a problem reading the DBF file.");
-		return false;
-    }
-	
-    if (!dbf_r.isFieldExists(field)) {
-        wxString msg="Error: ID Variable " + field + " not found ";
-        msg+="in DBF file \"" + fname + "\".";
-        wxMessageBox(msg);
-		return false;
-    }
-	
-    DbfFieldDesc f_desc = dbf_r.getFieldDesc(field);
-    if (f_desc.type == 'C' || f_desc.decimals != 0) {
-        wxString msg="Error: ID Variable is not of type integer.";
-        wxMessageBox(msg);
-        return false;
-    }
-	
-    std::vector<wxInt64> id_vals(dbf_r.getNumRecords());
-    if (! dbf_r.getFieldValsLong(field, id_vals)) {
-        wxMessageBox("Error: could not read in ID Variable values.");
-        return false;
-    }
-	
-    for (int i=0, iend=id_vals.size(); i<iend; i++) {
-        id[i] = (long) id_vals[i];
-    }
-	
-    return true;
-}
-
-// read id from dbf file
-bool ReadData(const wxString& fname, char* varname, std::vector<double>& dt)
-{
-	long gObs = GetShpFileSize(fname);	
-	iDBF dbf( fname );
-	if (!dbf.IsConnectedToFile()) {
-		wxMessageBox("Error in opening the .dbf file!");
-		return false;
-	}
-	
-	const int column=dbf.FindField(wxString(varname));
-	if (column == GeoDaConst::EMPTY) return false;
-	
-	for (int cnt= 0; cnt < gObs; ++cnt)  {
-		while (dbf.Pos() != column) dbf.Read();
-		dbf.Read(dt.at(cnt));
-	}
-	return true;
-}
-
-// read id from dbf file, but with wxString for varname
-bool ReadData(const wxString& fname, const wxString& varname,
-			  std::vector<double>& dt)
-{
-	long gObs = GetShpFileSize(fname);	
-	iDBF dbf(fname);
-	if (!dbf.IsConnectedToFile()) {
-		wxMessageBox("Error in opening the .dbf file!");
-		return false;
-	}
-	
-	const int column = dbf.FindField(varname);
-	if (column == GeoDaConst::EMPTY) return false;
-	
-	for (int cnt= 0; cnt < gObs; ++cnt)  {
-		while (dbf.Pos() != column) dbf.Read();
-		dbf.Read(dt.at(cnt));
-	}
-	return true;
-}
-
-double ComputeMaxDistance(int Records, std::vector<double>& x,
-						  std::vector<double>& y, int methods) 
+double ComputeMaxDistance(int Records, const std::vector<double>& x,
+						  const std::vector<double>& y, int method) 
 {
 	
 	BasePoint minmax[2];
@@ -369,8 +286,9 @@ double ComputeMaxDistance(int Records, std::vector<double>& x,
 			minmax[0].setXY(minmax[0].x, centroid[rec].y);
 	}
 	
-	double dist = sqrt(geoda_sqr(minmax[1].x - minmax[0].x) + geoda_sqr(minmax[1].y - minmax[0].y));
-	if (methods == 2) {
+	double dist = sqrt(geoda_sqr(minmax[1].x - minmax[0].x)
+					   + geoda_sqr(minmax[1].y - minmax[0].y));
+	if (method == 2) {
 		// Arc Distance
 		dist = GenGeomAlgs::ComputeArcDist(minmax[0].x, minmax[0].y,
 										   minmax[1].x, minmax[1].y);
@@ -457,7 +375,7 @@ bool CreateSHPfromBoundary(wxString ifl, wxString otfl)
 {
 	// Open the Boundary file
 	ifstream ias;
-	ias.open(ifl.wx_str());
+	ias.open(ifl.mb_str());
 	int nRows;
 	char name[1000];
 	ias.getline(name,100);
@@ -512,11 +430,12 @@ bool CreateSHPfromBoundary(wxString ifl, wxString otfl)
 	double* x = new double[MAX_POINT];
 	double* y = new double[MAX_POINT];
 	
-	long polyid = 0, ID; int nPoint;
+	long polyid = 0, ID;
+	int nPoint;
 	for (long row = nRows; row >= 1; row--) 
 	{
 		ias.getline(name,100);
-		sscanf(name,"%d, %d",&ID, &nPoint);
+		sscanf(name,"%d, %d", &ID, &nPoint);
 		if (nPoint < 1)
 		{
 			wxString xx= wxString::Format("at polygon-%d",ID);
@@ -957,7 +876,7 @@ bool ComputeXY(const wxString& fname, long* nPoints,
 			   const wxString& boundingFileName)
 {
 	LOG_MSG("Entering ComputeXY ver 1");
-	// input:  an ESRI point/polygon shape file
+	// input:  an ESRI point/polygon Shapefile
 	// output: - nPoints, # of points
 	//         - vector of x, and y
 	//         - B, the bounding box
@@ -1056,7 +975,7 @@ bool ComputeXY(const wxString& fname, long* nPoints,
 			
 			if (mean_center || t.GetNumParts() > 1) {
 				if (mean_center && t.GetNumParts() > 1) {	
-					LOG_MSG("Warning: MeanCenter being returned rather than Centroid due to multi-part polygon");
+					//LOG_MSG("Warning: MeanCenter being returned rather than Centroid due to multi-part polygon");
 				}
 				centroid[rec] = t.MeanCenter();
 			}
@@ -1195,7 +1114,7 @@ bool ComputeXY(const wxString& fname, long* nPoints,
 			   myBox* B, bool mean_center)
 {
 	LOG_MSG("Entering ComputeXY ver 2");
-	// input:  an ESRI point/polygon shape file
+	// input:  an ESRI point/polygon Shapefile
 	// output: - nPoints, # of points
 	//         - vector of x, and y
 	//         - B, the bounding box
@@ -1284,7 +1203,7 @@ bool ComputeXY(const wxString& fname, long* nPoints,
 			
 			if (mean_center || t.GetNumParts() > 1) {
 				if (mean_center && t.GetNumParts() > 1) {	
-					LOG_MSG("Warning: MeanCenter being returned rather than Centroid due to multi-part polygon");
+					//LOG_MSG("Warning: MeanCenter being returned rather than Centroid due to multi-part polygon");
 				}
 				centroid[rec] = t.MeanCenter();
 			}
@@ -1416,17 +1335,19 @@ BasePoint * MakeCentroids(char *fname, long Records)
 	return centroid;
 }
 
-bool WriteGwt(
-			  const GwtElement *g, 
+bool WriteGwt(const GwtElement *g, 
 			  const wxString& ifname, 
 			  const wxString& ofname, 
-			  const wxString& idd, 
-			  const long Obs,
+			  const wxString& vname,
+			  const std::vector<wxInt64>& id_vec,
 			  const int degree_flag,
 			  bool geodaL)  
 {
-    if (g == NULL || ifname.IsEmpty() || ofname.IsEmpty() || idd.IsEmpty())
+    if (g == NULL || ifname.IsEmpty() || ofname.IsEmpty() || vname.IsEmpty()
+		|| id_vec.size() == 0) {
         return false;
+	}
+	int Obs = (int) id_vec.size();
 	
     wxFileName galfn(ofname);
     galfn.SetExt("gwt");
@@ -1436,31 +1357,21 @@ bool WriteGwt(
         return false;
     }
 	
-    long *ids = new long[Obs];
-    wxFileName dbf_name(ifname);
-    dbf_name.SetExt("dbf");
-    if (!ReadId(dbf_name.GetFullPath(), idd, ids)) {
-        if (ids) delete [] ids; ids = NULL;
-        return false;
-    }
-	
-    // IS; 24/8/08
     int degree_fl = geodaL ? 0 : degree_flag ;
     wxFileName local(ifname);
     std::string local_name(local.GetName().mb_str(wxConvUTF8));
     out << degree_fl << " " << Obs << " " << local_name;
-    out << " " << idd.mb_str() << endl;
+    out << " " << vname.mb_str() << endl;
     
     for (int i=0; i < Obs; i++) {
         for (long nbr= 0; nbr < g[i].Size(); ++nbr) {
             GwtNeighbor  current= g[i].elt(nbr);
             double w = current.weight;
-            out << ids[i] << ' ' << ids[current.nbx]
-			<< ' ' << setprecision(9) << setw(18) << w << '\n';
+            out << id_vec[i] << ' ' << id_vec[current.nbx];
+			out << ' ' << setprecision(9) << setw(18) << w << '\n';
         }
     }
 	
-    if (ids) delete [] ids; ids = NULL;
     return true;
 }
 
@@ -1604,9 +1515,11 @@ GwtElement* shp2gwt(int Obs,
 	for (part= 0; part < gx; ++part)  
 	{      // processing all elements along (part, y)
 		included= 0;
-		for (curr= gX.first(part); curr != GeoDaConst::EMPTY; curr= gX.tail(curr), ++included)
+		for (curr= gX.first(part); curr != GeoDaConst::EMPTY;
+			 curr= gX.tail(curr), ++included)
 			A->include( curr, Center.y_range(curr, method) );
-		for (curr= gX.first(part); curr != GeoDaConst::EMPTY; curr= gX.tail(curr))  
+		for (curr= gX.first(part); curr != GeoDaConst::EMPTY;
+			 curr= gX.tail(curr))  
 		{
 			long cell= A->Where( Center.y_range(curr, method) );
 			Center.setCurrent(curr);
@@ -1628,10 +1541,11 @@ GwtElement* shp2gwt(int Obs,
 		};
 		if (part > 0 && included > 0)  
 		{
-			if (4*included > gy)         // it's less expensive to reset all cells in the partition
+			if (4*included > gy) // it's less expensive to reset all cells in the partition
 				B->reset();
-			else                         // it's less expensive to reset only used cells
-				for(curr= gX.first(part); curr != GeoDaConst::EMPTY; curr= gX.tail(curr))
+			else               // it's less expensive to reset only used cells
+				for(curr= gX.first(part); curr != GeoDaConst::EMPTY;
+					curr= gX.tail(curr))
 					B->reset(Center.y_range(curr, method));
 		};
 		swap(A, B); // swap A and B -- sweep by; now A is empty, B contains current line
@@ -1736,38 +1650,11 @@ GwtElement* inv2gwt(int Obs,
 }
 
 #include "../kNN/ANN.h"			// ANN declarations
-GwtElement *DynKNN(const wxString& infl, int k, long obs,
-				   int method, char *v1, char *v2, bool mean_center)
+GwtElement* DynKNN(const std::vector<double>& x, const std::vector<double>& y,
+				   int k, int method)
 {
-	if (obs	< 3	|| infl.IsEmpty() || k < 1 || k > obs)
-		return NULL;
-	
-	long nPoints; myBox* B=new myBox;
-	nPoints = obs;
-	
-	std::vector<double> x(nPoints);
-	std::vector<double> y(nPoints);
-	
-	if (v1 != NULL && v2 != NULL) 
-	{
-		if (!ReadData(infl, v1, x)) return NULL;
-		if (!ReadData(infl, v2, y)) return NULL;
-	}
-	else if (v1 != NULL)
-	{
-		if (!ComputeXY(infl, &nPoints, x, y, B, mean_center))
-			return NULL;
-		if (!ReadData(infl, v1, x)) return NULL;
-	}
-	else if (v2 != NULL)
-	{
-		if (!ComputeXY(infl, &nPoints, x, y, B, mean_center))
-			return NULL;
-		if (!ReadData(infl, v2, y)) return NULL;
-	}
-	else
-		if (!ComputeXY(infl, &nPoints, x, y, B, mean_center))
-			return NULL;
+	int obs = x.size();
+	if (obs	< 3 || k < 1 || k > obs || x.size() != y.size()) return NULL;
 	
 	int		dim		= 2;		// dimension
 	ANNpointArray	data_pts;		// data points
@@ -1783,7 +1670,7 @@ GwtElement *DynKNN(const wxString& infl, int k, long obs,
 	query_pt	= annAllocPt(dim);			// allocate query point
 	data_pts	= annAllocPts(obs, dim);	// allocate data points
 	nn_idx		= new ANNidx[k];			// allocate near neigh indices
-	dists			= new ANNdist[k];			// allocate near neighbor dists
+	dists		= new ANNdist[k];			// allocate near neighbor dists
 	int i = 0;
 	for (i=0;i<obs; i++) {
 		data_pts[i][0] = x.at(i);
@@ -1806,34 +1693,15 @@ GwtElement *DynKNN(const wxString& infl, int k, long obs,
 	return gwt;
 }
 
-double ComputeCutOffPoint(const wxString& infl, 
-						  long obs, 
-						  int method, 
-						  const wxString& t_v1, 
-						  const wxString& t_v2, 
-						  std::vector<double>& x, 
-						  std::vector<double>& y,
+
+double ComputeCutOffPoint(const std::vector<double>& x,
+						  const std::vector<double>& y,
+						  int method, // 1 == Euclidean Dist, 2== Arc Dist
 						  bool mean_center)
 {
-	if (obs < 3 || infl.IsEmpty()) return 0.0;
-	
-	long nPoints; myBox* B=new myBox;
-	nPoints = obs;
-	int i = 0;
-	
-	if (!t_v1.IsEmpty() && !t_v2.IsEmpty()) {
-		if (!ReadData(infl, t_v1, x)) return 0;
-		if (!ReadData(infl, t_v2, y)) return 0;
-	} else if (!t_v1.IsEmpty()) {
-		if (!ComputeXY(infl, &nPoints, x, y, B, mean_center)) return 0;
-		if (!ReadData(infl, t_v1, x)) return 0;
-	} else if (!t_v2.IsEmpty()) {
-		if (!ComputeXY(infl, &nPoints, x, y, B, mean_center)) return 0;
-		if (!ReadData(infl, t_v2, y)) return 0;
-	} else {
-		if (!ComputeXY(infl, &nPoints, x, y, B, mean_center)) return 0;
-	}
-	
+	int obs = x.size();
+	if (obs < 3 || x.size() != y.size()) return 0.0;
+		
 	int	dim	= 2;		// dimension
 	ANNpointArray	data_pts;		// data points
 	ANNpoint		query_pt;		// query point
@@ -1847,19 +1715,19 @@ double ComputeCutOffPoint(const wxString& infl,
 	nn_idx	 = new ANNidx[k];			// allocate near neigh indices
 	dists	 = new ANNdist[k];			// allocate near neighbor dists
 	
-	for (i=0; i<obs; i++) {
+	for (int i=0; i<obs; i++) {
 		data_pts[i][0] = x[i];
 		data_pts[i][1] = y[i];
 	}
 	
-	the_tree = new ANNkd_tree(data_pts,obs,dim);
+	the_tree = new ANNkd_tree(data_pts, obs, dim);
 	
-	the_tree->annkSearch(data_pts[0], k, nn_idx, dists,0.0, method);
+	the_tree->annkSearch(data_pts[0], k, nn_idx, dists, 0.0, method);
 	double minDist = sqrt(dists[1]);
 	
 	int p1 = 0, p2 = 1;
-	for (i=1; i<obs; i++) {
-		the_tree->annkSearch(data_pts[i], k, nn_idx, dists,0.0, method);
+	for (int i=1; i<obs; i++) {
+		the_tree->annkSearch(data_pts[i], k, nn_idx, dists, 0.0, method);
 		if (minDist <  sqrt(dists[1])) {
 			minDist = sqrt(dists[1]);
 			p1 = i;
@@ -1877,244 +1745,5 @@ double ComputeCutOffPoint(const wxString& infl,
 	delete the_tree;
 	
 	return minDist;
-}
-
-#include <map>
-
-GwtElement* ReadTxtGwt(const char *fname, long gObs,
-					   const wxString& full_dbf_name)  
-{
-	char    fn[256];
-	strcpy(fn, fname);
-	const int   lengthName= strlen(fn);
-	fn[ lengthName ] = '\x0';         // cut out the extension. "shp"
-	
-	ifstream    ifl(fname, ios::in);
-	if (ifl.fail()) {
-		wxMessageBox("Error: Could not open file");
-		return NULL;
-	}
-	
-	long obs;
-	int file_type;
-	ifl >> file_type;
-	
-	wxString unique_id_msg;
-	unique_id_msg = "Warning, your weights file relies on record order ";
-	unique_id_msg += "rather than an ID Variable.  Please consider ";
-	unique_id_msg += "generating a new weights file that uses an ID ";
-	unique_id_msg += "Variable.";	
-	// YT
-	// Note that the type flags of gwt files can not be values except 0, 1, 2 and -2.
-	
-	// Reading direct Indices
-	if ((file_type != 0) && (file_type != 1) &&
-		(file_type != 2) && (file_type != -2)) 
-	{  // type is # of observation
-		wxMessageBox(unique_id_msg);
-		if (file_type == gObs) 
-		{
-			GwtElement *mx = new GwtElement [ gObs ];
-			long id1, id2, temp; double dist; int size;
-			GwtNeighbor *elt = new GwtNeighbor[gObs];
-			int cnt = 0;
-			ifl >> id1 >> id2 >> dist;
-			if (id1 > gObs || id2 > gObs)
-			{
-				wxMessageBox("Error: Some of indices are \n"
-							 "larger than # of records");
-				return NULL;
-			}
-			
-			while (!ifl.eof()) 
-			{
-				temp = id1;
-				size = 0;
-				while (temp==id1 && !ifl.eof()) 
-				{
-					elt[size].nbx = id2-1;
-					elt[size].weight = dist;
-					ifl >> id1 >> id2 >> dist;
-					size++;
-					if (id1 > gObs || id2 > gObs)
-					{
-						wxMessageBox("Error: Some of indices are \n"
-									 "larger than # of records!");
-						return NULL;
-					}
-				}
-				
-				for (;cnt < temp-1;cnt++) 
-				{
-					mx[cnt].alloc(0);
-					//					mx[cnt].nbrs = -1;
-					mx[cnt].nbrs = 0;
-				}
-				
-				mx[temp-1].alloc(size);
-				for (int i=0; i<size;i++) mx[temp-1].Push(elt[i]);
-				mx[temp-1].nbrs = size;
-				cnt = temp;
-			}
-			delete [] elt;
-			elt = NULL;
-			return mx;
-		}
-		else
-		{
-			wxMessageBox("Error: Could not open file");
-			return NULL;
-		}
-	}
-	
-	char flname[GeoDaConst::FileNameLen], varname[40];
-	ifl >> obs >> flname >> varname;
-	
-	if (obs != gObs) 
-	{
-		wxMessageBox("Error: Number of observations in weights file doesn't "
-					 "match currently chosen DBF file.");
-		return NULL; 
-	}
-	
-	// Reading direct Indices, with var = rec_num
-	wxString s = wxString::Format("%s",varname);
-	if (s == "rec_num") 
-	{
-		wxMessageBox(unique_id_msg);
-		
-		GwtElement *mx = new GwtElement [ gObs ];
-		long id1, id2, temp; double dist; int size;
-		GwtNeighbor *elt = new GwtNeighbor[gObs];
-		int cnt=0;
-		ifl >> id1 >> id2 >> dist;
-		if (id1 > gObs || id2 > gObs)
-		{
-			wxMessageBox("Error: Some of indices are \n"
-						 "larger than # of records!");
-			return NULL;
-		}
-		
-		while (!ifl.eof()) 
-		{
-			temp = id1;
-			size = 0;
-			while (temp==id1 && !ifl.eof()) 
-			{
-				elt[size].nbx = id2-1;
-				elt[size].weight = dist;
-				ifl >> id1 >> id2 >> dist;
-				size++;
-				if (id1 > gObs || id2 > gObs)
-				{
-					wxMessageBox("Error: Some of indices are \n"
-								 "larger than # of records");
-					return NULL;
-				}
-			}
-			for (;cnt < temp-1;cnt++) {
-				mx[cnt].alloc(0);
-				//					mx[cnt].nbrs = -1;
-				mx[cnt].nbrs = 0;
-			}
-			
-			mx[temp-1].alloc(size);
-			for (int i=0; i<size;i++) mx[temp-1].Push(elt[i]);
-			mx[temp-1].nbrs = size;
-			cnt = temp;
-		}
-		delete [] elt;
-		elt = NULL;
-		return mx;
-	}
-	
-	long* id = new long[gObs];
-	
-	if (!ReadId(full_dbf_name, wxString(varname), id)) 
-	{
-		wxString msg = "Error: Variable name ";
-		msg += wxString(varname);
-		msg += " doesn't exist, \nsee the 1st line of your GWT file";
-		wxMessageBox(msg);
-		return NULL;
-	}
-	
-	
-	// Reading indirect Indices, the vae index is varname
-	using namespace std;
-	typedef map<long, long, less<long> > IDtoPkey;
-	IDtoPkey theIDMap;
-	
-	for (int i=0;i<gObs; i++) 
-	{
-		theIDMap.insert(IDtoPkey::value_type((long) id[i], i));
-	}
-	
-	GwtElement *mx	= new GwtElement [gObs];
-	GwtNeighbor *elt = new GwtNeighbor [gObs];
-	int			cnt=0;
-	double	dist; 
-	int			size;
-	long		myID1 = -1, myID2 = -1;
-	long		id1, id2, temp, myTemp; 
-	
-	IDtoPkey::iterator theIDIterator;
-	
-	for (cnt = 0;cnt < gObs;cnt++) 
-	{
-		mx[cnt].alloc(0);
-		//		mx[cnt].nbrs = -1;
-		mx[cnt].nbrs = 0;
-	}
-	
-	
-	// Read ist record
-	// Map the ID into record_number
-	ifl >> id1 >> id2 >> dist;
-	myID1 = myID2 = -1;
-	
-	theIDIterator = theIDMap.find(id1);
-	if(theIDIterator != theIDMap.end()) 
-		myID1 = (*theIDIterator).second;
-	theIDIterator = theIDMap.find(id2);
-	if(theIDIterator != theIDMap.end()) 
-		myID2 = (*theIDIterator).second;
-	
-	while (!ifl.eof()) 
-	{
-		temp = id1;
-		myTemp = myID1;
-		size = 0;
-		while (temp==id1 && !ifl.eof()) 
-		{
-			elt[size].nbx = myID2;
-			elt[size].weight = dist;
-			
-			ifl >> id1 >> id2 >> dist;
-			size++;
-			
-			myID1 = myID2 = -1;
-			theIDIterator = theIDMap.find(id1);
-			if(theIDIterator != theIDMap.end()) 
-				myID1 = (*theIDIterator).second;
-			
-			theIDIterator = theIDMap.find(id2);
-			if(theIDIterator != theIDMap.end()) 
-				myID2 = (*theIDIterator).second;
-		}
-		
-		mx[myTemp].alloc(size);
-		for (int i=0; i<size;i++) mx[myTemp].Push(elt[i]);
-		mx[myTemp].nbrs = size;
-	}
-	
-	delete [] elt;
-	elt = NULL;
-	
-	delete [] id;
-	id = NULL;
-	theIDMap.erase(theIDMap.begin(), theIDMap.end());
-	return mx;
-	
 }
 

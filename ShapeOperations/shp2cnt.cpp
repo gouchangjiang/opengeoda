@@ -18,7 +18,7 @@
  */
 
 /*
- Functions to create a contiguity file (.gal) from polygon coverage (shapefile).
+ Functions to create a contiguity file (.gal) from polygon coverage (Shapefile).
  */
 #include <wx/wxprec.h>
 
@@ -174,7 +174,7 @@ void PartitionM::remove(const int del)  {
 
 
 
-// # of records in the shapefile == dimesion of the weights matrix
+// # of records in the Shapefile == dimesion of the weights matrix
 static long         gRecords= 0;
 // locations of the polygon records in the shp file
 static long *       gOffset= NULL;
@@ -254,22 +254,6 @@ long GetShpFileSize(const wxString& fname)
     return n;
 }
 
-
-bool ExistsShpShxDbf(const wxFileName& fname, bool* shp_found,
-					 bool* shx_found, bool* dbf_found)
-{
-	wxFileName shp(fname);
-	shp.SetExt("shp");
-	wxFileName shx(fname);
-	shx.SetExt("shx");
-	wxFileName dbf(fname);
-	dbf.SetExt("dbf");
-	if (shp_found) *shp_found = shp.FileExists();
-	if (shx_found) *shx_found = shx.FileExists();
-	if (dbf_found) *dbf_found = dbf.FileExists();
-	return shp.FileExists() && shx.FileExists() && dbf.FileExists();
-}
-
 void ReadBoxes(const wxString& fname)  
 {
 	iShapeFile   shp(fname, "shp");
@@ -321,32 +305,6 @@ void ReadBoxes(const wxString& fname)
 		gBigBox += gBox[rec];                // make sure BigBox covers all boxes
 	};
 	return;
-}
-
-
-bool ReadId(const wxString& fname, const wxString& id, long* ids, long gObs)  
-{
-	if (ids == NULL || fname.empty() ||	id.empty())  
-		return false;
-	
-	iDBF dbf(fname);
-	if (!dbf.IsConnectedToFile())	{
-		wxMessageBox("Error in opening the .dbf file!");
-		return false;
-	}
-	
-	wxString my_id = id;
-	my_id.MakeUpper();
-	
-	const int column= dbf.FindField(my_id);
-	if (column < 0) return false;
-	
-	for (int cnt= 0; cnt < gObs; ++cnt) {
-		while (dbf.Pos() != column) dbf.Read();
-		dbf.Read(ids[cnt]);
-	}
-	
-	return true;
 }
 
 // tests if two boxes intersect each other
@@ -490,35 +448,18 @@ GalElement * MakeFull(GalElement *half)
 };
 
 
-
-void WriteGal(const GalElement *full, const char *fname, const int criteria)  
-{
-    char    fn[256];
-	const long c = criteria;
-	const long r = gRecords;
-	
-    strcpy(fn, fname);
-    strcat(fn, ".wts");
-    ofstream    bin(fn, ios::binary);
-    Write(bin, (long) 0);
-    Write(bin, c);
-    Write(bin, r);
-    for (long cnt = 0; cnt < gRecords; ++cnt)
-		full[cnt].Write(bin);
-    return;
-}
-
 bool SaveGal(const GalElement *full, 
 			 const wxString& ifname, 
 			 const wxString& ofname, 
-			 const wxString& vname, 
-			 const long Obs)
+			 const wxString& vname,
+			 const std::vector<wxInt64>& id_vec)
 {
 	LOG_MSG("Entering SaveGal, (5 args)");
-	if (full == NULL  || 
-		ifname.empty() ||
-		ofname.empty() ) 
+	if (full == NULL  || ifname.empty() || ofname.empty() ||
+		vname.empty() || id_vec.size() == 0) {
 		return false;
+	}
+	int Obs = (int) id_vec.size();
 	
 	wxString fn = ifname;
 	wxString fngal = ofname;
@@ -527,73 +468,28 @@ bool SaveGal(const GalElement *full,
 	fn = fn.substr(0,fn.length()-4);
 	fngal = fngal.substr(0,fngal.length()-4);
 	
-	long *ids = NULL;
-	
-	if (!vname.empty()) {
-		ids = new long [Obs];
-		if (!ReadId(fn, vname, ids, Obs)) {
-			if (ids) delete [] ids;
-			ids = NULL;
-		}
-	}
-	
 	fngal += ".gal";
-	ofstream    out(fngal.wx_str());
+	ofstream out(fngal.mb_str());
 	
 	wxString local = GenUtils::GetTheFileTitle(fn);
-	
 	LOG_MSG(local);
-	if (ids != NULL) {
-		out << "0 " << Obs << " " << local.c_str();
-		out << " " << vname.c_str() << endl;
-	}
-	else 
-		out << Obs << endl;
+	
+	out << "0 " << Obs << " " << local.c_str();
+	out << " " << vname.c_str() << endl;
 	
 	for (int cnt= 0; cnt < Obs; ++cnt) {
-		if (ids != NULL) 
-			out << ids[cnt];
-		else 
-			out << cnt+1;
-		
+		out << id_vec[cnt];
 		out << " " << full[cnt].Size() << endl;
 		for (int cp= full[cnt].Size(); --cp >= 0;) {
-			if (ids) 
-				out << ids[full[cnt].elt(cp)];
-			else 
-				out << full[cnt].elt(cp)+1;
-			
+			out << id_vec[full[cnt].elt(cp)];			
 			if (cp > 0) out << " ";
 		}
 		out << endl;
 	}
-	
-	if (ids != NULL) 
-		delete [] ids;
-	ids = NULL;
-	
+
 	LOG_MSG("Exiting SaveGal, (5 args)");
 	return true;
 }
-
-
-
-GalElement * ReadGal(const char *fname, const int criteria)  
-{
-	char  fn[256];
-	strcpy(fn, fname);
-	strcat(fn, ".wts");
-	ifstream  bin(fn, ios::binary);
-	if (bin.fail())  return NULL;             // weights file does not exist
-	if (Read(bin) != 0) return NULL;          // it is not a contiguity file
-	if (Read(bin) != criteria) return NULL;   // different crierion of contiguity
-	long dim= Read(bin);
-	GalElement * mx= new GalElement [ dim ];
-	for (long cnt = 0; cnt < dim; ++cnt)
-		mx[cnt].Read(bin);
-	return mx;
-}
-
 
 GalElement* shp2gal(const wxString& fname, int criteria, bool save)  
 {
@@ -758,170 +654,6 @@ GalElement *HOContiguity(const int p, long obs, GalElement *W, bool Lag)
 	return HO;
 }
 
-#include <map>
-
-GalElement* ReadTxtGal(const char *fname, long gObs,
-					   const wxString& full_dbf_name)  
-{
-	ifstream    ifl(fname, ios::in);
-	if (ifl.fail()) {
-		wxMessageBox("Error: Could not open file");
-		return NULL;
-	}
-	
-	wxString unique_id_msg;
-	unique_id_msg = "Warning, your weights file relies on record order ";
-	unique_id_msg += "rather than an ID Variable.  Please consider ";
-	unique_id_msg += "generating a new weights file that uses an ID ";
-	unique_id_msg += "Variable.";
-	long type; long obs=0;
-	ifl >> type;
-	
-	// Reading direct Indices
-	if (type > 1) {  // type is # of observation
-		wxMessageBox(unique_id_msg);
-		if (type == gObs) 
-		{
-			
-			GalElement *mx = new GalElement [ gObs ];
-			
-			obs = type;
-			//==
-			long id, dim, mydt;
-			
-			for (long cnt = 0; cnt < obs; cnt++) 
-			{
-				
-				ifl >> id >> dim;
-				long * dt = new long[dim];
-				
-				if (dim < 0 || dim > obs-1)
-				{
-					wxMessageBox("Error: Invalid # of neighbors");
-					ifl.close();
-					delete [] mx;
-					mx = NULL;
-					return NULL;
-				}
-				
-				for (int i=0;i< dim;i++) 
-				{
-					
-					ifl >> mydt;
-					dt[i] = mydt-1;
-				}
-				
-				if (mx[cnt].ReadTxt(dim, dt, obs) == -1)
-				{
-					delete [] dt;
-					dt = NULL;
-					wxMessageBox("Error: The neighbor index is out of bound");
-					return NULL;
-				}
-				delete [] dt;
-				dt = NULL;
-			}
-			return mx;
-		}
-		else
-		{
-			wxMessageBox("Error: Could not open file.");
-			ifl.close();
-		}
-		return NULL;
-	} 
-	
-	char flname[GeoDaConst::FileNameLen], varname[40];
-	ifl >> obs >> flname >> varname;
-		
-	if (obs != gObs) 
-	{
-		wxMessageBox("Error: Number of observations in weights file doesn't "
-					 "match currently chosen DBF file.");
-		return NULL; 
-	}
-	
-	// Reading direct Indices, with var = rec_num
-	wxString s = wxString::Format("%s",varname);
-	if (s == "rec_num")
-	{
-		wxMessageBox(unique_id_msg);
-		GalElement *mx = new GalElement [ gObs ];
-		obs = type;
-		for (long cnt = 0; cnt < obs; cnt++) 
-		{
-			if (mx[cnt].ReadTxt(ifl, obs) == -1)
-			{
-				wxMessageBox("1615:The Neighbor index is out of bound!");
-				return NULL;
-			}
-		}
-		return mx;
-	}
-	
-	long* id = new long[gObs];
-	
-	if (!ReadId(full_dbf_name, varname, id, gObs)) 
-	{
-		wxString msg = "Variable name ";
-		msg = msg + wxString::Format("%s",varname) + ":";
-		msg = msg + " is unknown, \nsee the 1st line of your gal file";
-		wxMessageBox(msg);
-		return NULL;
-	}
-	
-	// Reading indirect Indices, the vae index is varname
-	using namespace std;
-	typedef map<long, long, less<long> > IDtoPkey;
-	IDtoPkey theIDMap;
-	
-	for (int i=0;i<gObs; i++) 
-	{
-		theIDMap.insert(IDtoPkey::value_type((long) id[i], i));
-	}
-	
-	GalElement *mx = new GalElement [ gObs ];
-	long *dt = new long[gObs];
-	int dim=0;
-	
-	IDtoPkey::iterator theIDIterator;
-	for (long cnt = 0; cnt < obs; cnt++) 
-	{
-		long id; int dim; 
-		long mydt, myID = -1;
-		ifl >> id >> dim;
-		
-		if (dim < 0 || dim > obs-1)
-		{
-			wxMessageBox("Error: Number of neighbors is too big");
-			return NULL;
-		}
-		
-		for (int i=0;i< dim;i++) 
-		{
-			ifl >> mydt;
-			theIDIterator = theIDMap.find(mydt);
-			if(theIDIterator != theIDMap.end()) 
-				myID = (*theIDIterator).second;
-			dt[i] = myID;
-		}
-		if (mx[cnt].ReadTxt(dim, dt, obs) == -1)
-		{
-			wxMessageBox("Error: The neighbor index is out of bounds");
-			return NULL;
-		}
-		
-	}
-	
-	//ifl.clrlock();
-	ifl.close();
-	
-	delete [] id;
-	id = NULL;
-	theIDMap.erase(theIDMap.begin(), theIDMap.end());
-	return mx;
-}
-
 void DevFromMean(int nObs, DataPoint* RawData)
 {
 	double sum = 0;
@@ -1017,42 +749,8 @@ bool StandardizeData(int nObs, double* RawData)
 	return true;
 }
 
-bool CheckDataValidity(int obs, double* xx)  
-{
-	int cnt;
-	double        sum= 0;
-	
-	double *x = new double[obs+1];
-	// Standardized X
-	for (cnt= 0; cnt < obs; ++cnt) {
-		x[cnt] = xx[cnt];
-		sum += x[cnt];
-	}
-	
-	const double meanX = sum / obs;
-	
-	if (meanX != 0) {
-		// remove the mean
-		for (cnt= 0; cnt < obs; ++cnt)
-			x[cnt] -= meanX;
-	}
-	
-	sum= 0;                   // accumulate the sum of squares
-	
-	for (cnt= 0; cnt < obs; ++cnt)
-		sum += x[cnt] * x[cnt];
-	
-	const double sdevX= sqrt(sum / (obs - 1));
-	
-	bool valid = (sdevX > 0.0);
-	
-	if (x) delete [] x; x=0;
-	
-	return valid;
-}
-
 /** The globally defined instance of GeoDaEventType, gEvent. */
-GeoDaEventType	gEvent = NO_EVENTS;
+extern GeoDaEventType gEvent;
 
 /** Update the bitmap boolean selection array according to the global
  selection-type enum  instance varaiable gEvent

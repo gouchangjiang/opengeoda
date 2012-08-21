@@ -633,11 +633,6 @@ extern Mat4 quat_to_matrix(const Quat& q);
 extern Mat4 unit_quat_to_matrix(const Quat& q);
 extern Quat slerp(const Quat& from, const Quat& to, double t);
 
-
-
-
-
-
 class Baseball
 {
 public:
@@ -710,6 +705,9 @@ public:
 
 	bool isPositive(Vec3f& v1, double* distance = NULL);
 };
+
+// Other utility methods
+int unproject_pixel(int *pixel, double *world, double z);
 
 #endif
 

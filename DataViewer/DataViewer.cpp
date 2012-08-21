@@ -17,19 +17,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <wx/wxprec.h>
-#include <wx/menu.h>
-#include <wx/filedlg.h>
 #include <wx/aboutdlg.h>
-#include <wx/msgdlg.h>
+#include <wx/choicdlg.h>
 #include <wx/colour.h>
+#include <wx/filedlg.h>
+#include <wx/menu.h>
+#include <wx/msgdlg.h>
 #include <wx/stattext.h>
+#include <wx/wxprec.h>
 #include <wx/xrc/xmlres.h>
 #include <time.h>
 #include <boost/math/special_functions/fpclassify.hpp>
+#include "../FramesManager.h"
 #include "../Generic/HighlightState.h"
 #include "../GeoDaConst.h"
 #include "../logger.h"
+#include "../DialogTools/TimeChooserDlg.h"
 #include "DbfGridTableBase.h"
 #include "DataViewerResizeColDlg.h"
 #include "DataViewerAddColDlg.h"
@@ -40,6 +43,8 @@
 
 int id_serial = wxID_HIGHEST+1;
 const int ID_PRINT_TABLE = id_serial++;
+const int ID_CHOOSE_TIME_STEP = id_serial++;
+const int ID_SHOW_TIME_CHOOSER = id_serial++;
 const int ID_MOVE_SELECTED_TO_TOP = id_serial++;
 const int ID_DELETE_COL = id_serial++;
 const int ID_ADD_COL = id_serial++;
@@ -60,7 +65,9 @@ BEGIN_EVENT_TABLE( DataViewerFrame, wxFrame )
 	//EVT_GRID_COL_SORT( DataViewerFrame::OnSortEvent )
 	EVT_GRID_COL_SIZE( DataViewerFrame::OnColSizeEvent )
 	EVT_GRID_COL_MOVE( DataViewerFrame::OnColMoveEvent )
-	EVT_GRID_CELL_CHANGED(DataViewerFrame::OnCellChanged) 
+	EVT_GRID_CELL_CHANGED(DataViewerFrame::OnCellChanged)
+	EVT_MENU( ID_CHOOSE_TIME_STEP, DataViewerFrame::OnChooseTimeStep )
+	EVT_MENU( ID_SHOW_TIME_CHOOSER, DataViewerFrame::OnShowTimeChooser )
 	EVT_MENU( ID_MOVE_COL, DataViewerFrame::OnMoveCol )
 	EVT_MENU( ID_COL_RESIZE, DataViewerFrame::OnColResize )
 	EVT_MENU( wxID_ABOUT, DataViewerFrame::About )
@@ -80,10 +87,13 @@ BEGIN_EVENT_TABLE( DataViewerFrame, wxFrame )
 END_EVENT_TABLE()
 
 
-DataViewerFrame::DataViewerFrame(wxFrame *parent, const wxString& dbf_fname)
+DataViewerFrame::DataViewerFrame(wxFrame *parent,
+								 FramesManager* frames_manager_s,
+								 const wxString& dbf_fname)
 : wxFrame(parent, wxID_ANY,
 		  "DBF Viewer - " +wxFileName::FileName(dbf_fname).GetFullName(),
-		  wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE)
+		  wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE),
+frames_manager(frames_manager_s)
 {
 	
 	DbfFileReader dbf(dbf_fname);
@@ -109,7 +119,7 @@ DataViewerFrame::DataViewerFrame(wxFrame *parent, const wxString& dbf_fname)
 			if (col_data[i]->type == GeoDaConst::long64_type) {
 				grid->SetColFormatNumber(i);
 			} else if (col_data[i]->type == GeoDaConst::double_type) {
-				grid->SetColFormatFloat(i, -1, col_data[i]->decimals);
+				grid->SetColFormatFloat(i, -1, col_data[i]->displayed_decimals);
 			} else if (col_data[i]->type == GeoDaConst::date_type) {
 				// leave as a string
 			}
@@ -121,10 +131,66 @@ DataViewerFrame::DataViewerFrame(wxFrame *parent, const wxString& dbf_fname)
 		dlg.ShowModal();
 		Close(true);
 	}
+	frames_manager->registerObserver(this);
+}
+
+DataViewerFrame::DataViewerFrame(wxFrame *parent,
+								 FramesManager* frames_manager_s,
+								 const wxString& dbf_sp_fname,
+								 const wxString& dbf_tm_fname,
+								 int sp_tbl_sp_col,
+								 int tm_tbl_sp_col,
+								 int tm_tbl_tm_col)
+: wxFrame(parent, wxID_ANY,
+		  "DBF Viewer - " +wxFileName::FileName(dbf_sp_fname).GetFullName(),
+		  wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE),
+frames_manager(frames_manager_s)
+{
+	DbfFileReader dbf_sp(dbf_sp_fname);
+	DbfFileReader dbf_tm(dbf_tm_fname);
+	if (dbf_sp.isDbfReadSuccess() && dbf_tm.isDbfReadSuccess()) {
+		cur_dbf_fname = dbf_sp_fname;
+		cur_dbf_tm_fname = dbf_tm_fname;
+		HighlightState* highlight_state = new HighlightState();
+		highlight_state->SetSize(dbf_sp.getNumRecords());
+		grid_base = new DbfGridTableBase(dbf_sp, dbf_tm, sp_tbl_sp_col,
+										 tm_tbl_sp_col, tm_tbl_tm_col,
+										 highlight_state);
+		grid = new wxGrid( this, wxID_ANY, wxPoint(0,0), wxDefaultSize);
+		grid->SetDefaultColSize((grid->GetDefaultColSize() * 4)/3);
+		grid->SetTable(grid_base, true); // false to not take ownership
+		grid->EnableDragColMove(true);
+		grid->EnableDragCell(false);
+		// The following line caused the row to dissapear when clicked on Windows
+		// and Linux, but not Mac.
+		//grid->SetSelectionBackground(*wxWHITE);
+		for (int i=0, iend=grid_base->GetNumberRows(); i<iend; i++) {
+			grid->DisableRowResize(i);
+		}
+		grid->SetSelectionMode(wxGrid::wxGridSelectRows);
+		std::vector<DbfColContainer*>& col_data = grid_base->col_data;
+		for (int i=0, iend=col_data.size(); i<iend; i++) {
+			if (col_data[i]->type == GeoDaConst::long64_type) {
+				grid->SetColFormatNumber(i);
+			} else if (col_data[i]->type == GeoDaConst::double_type) {
+				grid->SetColFormatFloat(i, -1, col_data[i]->displayed_decimals);
+			} else if (col_data[i]->type == GeoDaConst::date_type) {
+				// leave as a string
+			}
+		}
+	} else {
+		wxString msg("There was a problem reading in the DBF file. "
+					 "The program will now exit.");
+		wxMessageDialog dlg(this, msg, "Error", wxOK | wxICON_ERROR);
+		dlg.ShowModal();
+		Close(true);
+	}
+	frames_manager->registerObserver(this);
 }
 
 DataViewerFrame::~DataViewerFrame()
 {
+	frames_manager->removeObserver(this);
 }
 
 void DataViewerFrame::LoadDefaultMenus()
@@ -132,10 +198,14 @@ void DataViewerFrame::LoadDefaultMenus()
 	wxMenu *fileMenu = new wxMenu;
 	//fileMenu->Append( ID_PRINT_TABLE, "&Print Table\tCtrl-P" );
 	fileMenu->Append( wxID_OPEN, "&Open\tCtrl-O" );
+	if (grid_base->IsTimeVariant()) {
+		fileMenu->Append( ID_CHOOSE_TIME_STEP, "Choose time step" );
+		fileMenu->Append( ID_SHOW_TIME_CHOOSER, "Show Time Control" );
+	}
 	fileMenu->Append( ID_MOVE_SELECTED_TO_TOP, "&Move selected to top" );
-	fileMenu->Append( ID_ADD_COL, "Add Field" );
-	fileMenu->Append( ID_DELETE_COL, "Delete Field" );
-	fileMenu->Append( ID_EDIT_FIELD_PROPERTIES, "Edit Field Properties" );
+	fileMenu->Append( ID_ADD_COL, "Add Variable" );
+	fileMenu->Append( ID_DELETE_COL, "Delete Variable" );
+	fileMenu->Append( ID_EDIT_FIELD_PROPERTIES, "Edit Variable Properties" );
 	fileMenu->Append( ID_MERGE_TABLE, "Merge Table" );
 	//fileMenu->Append( ID_MOVE_COL, "Move Column" );
 	//fileMenu->Append( ID_COL_RESIZE, "Manually Resize Column" );
@@ -176,7 +246,8 @@ void DataViewerFrame::OnOpenFile( wxCommandEvent& WXUNUSED(ev) )
 	wxFileDialog dlg(this, "Choose a DBF file", "", "",
 					 "DBF files (*.dbf)|*.dbf");	
 	if (dlg.ShowModal() == wxID_OK) {
-		DataViewerFrame *frame = new DataViewerFrame(0, dlg.GetPath());
+		DataViewerFrame *frame = new DataViewerFrame(0, frames_manager,
+													 dlg.GetPath());
 		frame->LoadDefaultMenus();
 		frame->Show(true);
 	}
@@ -563,4 +634,46 @@ void DataViewerFrame::OnMergeTable( wxCommandEvent& WXUNUSED(ev) )
 	dlg.ShowModal();
 	
 	LOG_MSG("Exiting DataViewerFrame::OnMergeTable");
+}
+
+void DataViewerFrame::OnChooseTimeStep( wxCommandEvent& WXUNUSED(ev) )
+{
+	LOG_MSG("Entering DataViewerFrame::OnChooseTimeStep");
+	int cur_ts = grid_base->curr_time_step;
+	
+	wxString* choices = new wxString[grid_base->time_steps];
+	for (int i=0; i<grid_base->time_steps; i++) {
+		choices[i] << grid_base->time_ids[i];
+	}
+	
+	wxSingleChoiceDialog dlg(this, "Choose Time Step", "Time Step",
+							 grid_base->time_steps, choices, (char**) 0,
+							 wxOK | wxCANCEL, wxDefaultPosition );
+	
+	if (dlg.ShowModal() == wxID_OK) {
+		if (dlg.GetSelection() != cur_ts) {
+			grid_base->curr_time_step = dlg.GetSelection();
+			grid->Refresh();
+		}
+	}
+	if (choices) delete [] choices;
+	
+	LOG_MSG("Exiting DataViewerFrame::OnChooseTimeStep");
+}
+
+void DataViewerFrame::OnShowTimeChooser( wxCommandEvent& WXUNUSED(ev) )
+{
+	LOG_MSG("Entering DataViewerFrame::OnShowTimeChooser");
+
+	TimeChooserDlg* dlg = new TimeChooserDlg(0, frames_manager, grid_base);
+	dlg->Show(true);
+	
+	LOG_MSG("Exiting DataViewerFrame::OnShowTimeChooser");
+}
+
+
+void DataViewerFrame::update(FramesManager* o)
+{
+	// A possible title change or time step change.
+	Refresh();
 }

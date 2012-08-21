@@ -40,55 +40,55 @@
 ////@end XPM images
 
 /*!
- * CCreateGridDlg type definition
+ * CreateGridDlg type definition
  */
 
-IMPLEMENT_CLASS( CCreateGridDlg, wxDialog )
+IMPLEMENT_CLASS( CreateGridDlg, wxDialog )
 
 /*!
- * CCreateGridDlg event table definition
+ * CreateGridDlg event table definition
  */
 
-BEGIN_EVENT_TABLE( CCreateGridDlg, wxDialog )
+BEGIN_EVENT_TABLE( CreateGridDlg, wxDialog )
 
-////@begin CCreateGridDlg event table entries
-    EVT_BUTTON( XRCID("IDCANCEL"), CCreateGridDlg::OnCancelClick )
+////@begin CreateGridDlg event table entries
+    EVT_BUTTON( XRCID("IDCANCEL"), CreateGridDlg::OnCancelClick )
 
-    EVT_BUTTON( XRCID("IDC_REFERENCEFILE"), CCreateGridDlg::OnCReferencefileClick )
+    EVT_BUTTON( XRCID("IDC_REFERENCEFILE"), CreateGridDlg::OnCReferencefileClick )
 
-    EVT_BUTTON( XRCID("IDC_BROWSE_OFILE"), CCreateGridDlg::OnCBrowseOfileClick )
+    EVT_BUTTON( XRCID("IDC_BROWSE_OFILE"), CreateGridDlg::OnCBrowseOfileClick )
 
-    EVT_BUTTON( XRCID("IDC_REFERENCEFILE2"), CCreateGridDlg::OnCReferencefile2Click )
+    EVT_BUTTON( XRCID("IDC_REFERENCEFILE2"), CreateGridDlg::OnCReferencefile2Click )
 
-    EVT_TEXT( XRCID("IDC_EDIT1"), CCreateGridDlg::OnCEdit1Updated )
+    EVT_TEXT( XRCID("IDC_EDIT1"), CreateGridDlg::OnCEdit1Updated )
 
-    EVT_TEXT( XRCID("IDC_EDIT3"), CCreateGridDlg::OnCEdit3Updated )
+    EVT_TEXT( XRCID("IDC_EDIT3"), CreateGridDlg::OnCEdit3Updated )
 
-    EVT_TEXT( XRCID("IDC_EDIT2"), CCreateGridDlg::OnCEdit2Updated )
+    EVT_TEXT( XRCID("IDC_EDIT2"), CreateGridDlg::OnCEdit2Updated )
 
-    EVT_TEXT( XRCID("IDC_EDIT4"), CCreateGridDlg::OnCEdit4Updated )
+    EVT_TEXT( XRCID("IDC_EDIT4"), CreateGridDlg::OnCEdit4Updated )
 
-    EVT_BUTTON( XRCID("ID_CREATE"), CCreateGridDlg::OnCreateClick )
+    EVT_BUTTON( XRCID("ID_CREATE"), CreateGridDlg::OnCreateClick )
 
-    EVT_RADIOBUTTON( XRCID("IDC_RADIO1"), CCreateGridDlg::OnCRadio1Selected )
+    EVT_RADIOBUTTON( XRCID("IDC_RADIO1"), CreateGridDlg::OnCRadio1Selected )
 
-    EVT_RADIOBUTTON( XRCID("IDC_RADIO2"), CCreateGridDlg::OnCRadio2Selected )
+    EVT_RADIOBUTTON( XRCID("IDC_RADIO2"), CreateGridDlg::OnCRadio2Selected )
 
-    EVT_RADIOBUTTON( XRCID("IDC_RADIO3"), CCreateGridDlg::OnCRadio3Selected )
+    EVT_RADIOBUTTON( XRCID("IDC_RADIO3"), CreateGridDlg::OnCRadio3Selected )
 
-////@end CCreateGridDlg event table entries
+////@end CreateGridDlg event table entries
 
 END_EVENT_TABLE()
 
 /*!
- * CCreateGridDlg constructors
+ * CreateGridDlg constructors
  */
 
-CCreateGridDlg::CCreateGridDlg( )
+CreateGridDlg::CreateGridDlg( )
 {
 }
 
-CCreateGridDlg::CCreateGridDlg( wxWindow* parent, wxWindowID id,
+CreateGridDlg::CreateGridDlg( wxWindow* parent, wxWindowID id,
 							   const wxString& caption, const wxPoint& pos,
 							   const wxSize& size, long style )
 {
@@ -117,31 +117,31 @@ CCreateGridDlg::CCreateGridDlg( wxWindow* parent, wxWindowID id,
 
 
 /*!
- * CCreateGridDlg creator
+ * CreateGridDlg creator
  */
 
-bool CCreateGridDlg::Create( wxWindow* parent, wxWindowID id,
+bool CreateGridDlg::Create( wxWindow* parent, wxWindowID id,
 							const wxString& caption, const wxPoint& pos,
 							const wxSize& size, long style )
 {
-////@begin CCreateGridDlg member initialisation
-////@end CCreateGridDlg member initialisation
+////@begin CreateGridDlg member initialisation
+////@end CreateGridDlg member initialisation
 
-////@begin CCreateGridDlg creation
+////@begin CreateGridDlg creation
     SetParent(parent);
     CreateControls();
     Centre();
-////@end CCreateGridDlg creation
+////@end CreateGridDlg creation
     return true;
 }
   
 /*!
- * Control creation for CCreateGridDlg
+ * Control creation for CreateGridDlg
  */
 
-void CCreateGridDlg::CreateControls()
+void CreateGridDlg::CreateControls()
 {    
-////@begin CCreateGridDlg content construction
+////@begin CreateGridDlg content construction
 
     wxXmlResource::Get()->LoadDialog(this, GetParent(), "IDD_CREATE_GRID");
     m_outputfile = XRCCTRL(*this, "IDC_EDIT9", wxTextCtrl);
@@ -170,13 +170,13 @@ void CCreateGridDlg::CreateControls()
         FindWindow(XRCID("IDC_EDIT7"))->SetValidator( wxTextValidator(wxFILTER_NUMERIC, & s_row) );
     if (FindWindow(XRCID("IDC_EDIT8")))
         FindWindow(XRCID("IDC_EDIT8"))->SetValidator( wxTextValidator(wxFILTER_NUMERIC, & s_col) );
-////@end CCreateGridDlg content construction
+////@end CreateGridDlg content construction
 
     // Create custom windows not generated automatically here.
 
-////@begin CCreateGridDlg content initialisation
+////@begin CreateGridDlg content initialisation
 
-////@end CCreateGridDlg content initialisation
+////@end CreateGridDlg content initialisation
 }
 
 
@@ -184,7 +184,7 @@ void CCreateGridDlg::CreateControls()
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDCANCEL
  */
 
-void CCreateGridDlg::OnCancelClick( wxCommandEvent& event )
+void CreateGridDlg::OnCancelClick( wxCommandEvent& event )
 {
     // Insert custom code here
 	event.Skip(); // wxDialog::OnCancel(event);
@@ -195,7 +195,7 @@ void CCreateGridDlg::OnCancelClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDC_REFERENCEFILE
  */
 
-void CCreateGridDlg::OnCReferencefileClick( wxCommandEvent& event )
+void CreateGridDlg::OnCReferencefileClick( wxCommandEvent& event )
 {
     // Insert custom code here
 
@@ -221,7 +221,7 @@ void CCreateGridDlg::OnCReferencefileClick( wxCommandEvent& event )
                 int pos = fn.Find('.', true);
                 if (pos >= 0) fn = fn.Left(pos);
 
-		ifstream    ifl(m_path.wx_str(), ios::in);
+		ifstream    ifl(m_path.mb_str(), ios::in);
 		if (ifl.fail()) 
 		{
 			wxMessageBox("File doesn't exist!");
@@ -274,7 +274,7 @@ void CCreateGridDlg::OnCReferencefileClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDC_BROWSE_OFILE
  */
 
-void CCreateGridDlg::OnCBrowseOfileClick( wxCommandEvent& event )
+void CreateGridDlg::OnCBrowseOfileClick( wxCommandEvent& event )
 {
     // Insert custom code here
     wxFileDialog dlg
@@ -305,7 +305,7 @@ void CCreateGridDlg::OnCBrowseOfileClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDC_REFERENCEFILE2
  */
 
-void CCreateGridDlg::OnCReferencefile2Click( wxCommandEvent& event )
+void CreateGridDlg::OnCReferencefile2Click( wxCommandEvent& event )
 {
     // Insert custom code here
 
@@ -352,7 +352,7 @@ void CCreateGridDlg::OnCReferencefile2Click( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_CREATE
  */
 
-void CCreateGridDlg::OnCreateClick( wxCommandEvent& event )
+void CreateGridDlg::OnCreateClick( wxCommandEvent& event )
 {
     // Insert custom code here
 	if (CheckBBox())
@@ -373,7 +373,7 @@ void CCreateGridDlg::OnCreateClick( wxCommandEvent& event )
  * wxEVT_COMMAND_RADIOBUTTON_SELECTED event handler for IDC_RADIO1
  */
 
-void CCreateGridDlg::OnCRadio1Selected( wxCommandEvent& event )
+void CreateGridDlg::OnCRadio1Selected( wxCommandEvent& event )
 {
     // Insert custom code here
     m_check = 1;
@@ -384,7 +384,7 @@ void CCreateGridDlg::OnCRadio1Selected( wxCommandEvent& event )
  * wxEVT_COMMAND_RADIOBUTTON_SELECTED event handler for IDC_RADIO2
  */
 
-void CCreateGridDlg::OnCRadio2Selected( wxCommandEvent& event )
+void CreateGridDlg::OnCRadio2Selected( wxCommandEvent& event )
 {
     // Insert custom code here
     m_check = 2;
@@ -395,7 +395,7 @@ void CCreateGridDlg::OnCRadio2Selected( wxCommandEvent& event )
  * wxEVT_COMMAND_RADIOBUTTON_SELECTED event handler for IDC_RADIO3
  */
 
-void CCreateGridDlg::OnCRadio3Selected( wxCommandEvent& event )
+void CreateGridDlg::OnCRadio3Selected( wxCommandEvent& event )
 {
     // Insert custom code here
     m_check = 3;
@@ -406,13 +406,13 @@ void CCreateGridDlg::OnCRadio3Selected( wxCommandEvent& event )
  * Should we show tooltips?
  */
 
-bool CCreateGridDlg::ShowToolTips()
+bool CreateGridDlg::ShowToolTips()
 {
     return true;
 }
 
 
-void CCreateGridDlg::EnableItems()
+void CreateGridDlg::EnableItems()
 {
 	FindWindow(XRCID("IDC_EDIT1"))->Enable((m_check == 1));
 	FindWindow(XRCID("IDC_EDIT2"))->Enable((m_check == 1));
@@ -431,7 +431,7 @@ void CCreateGridDlg::EnableItems()
 }
 
 
-bool CCreateGridDlg::CheckBBox()
+bool CreateGridDlg::CheckBBox()
 {
 	if (m_xBot >= m_xTop || m_yBot >= m_yTop )
 	{
@@ -442,7 +442,7 @@ bool CCreateGridDlg::CheckBBox()
 	}
 	return true;
 }
-void CCreateGridDlg::CreateGrid()
+void CreateGridDlg::CreateGrid()
 {
 	FindWindow(XRCID("ID_CREATE"))->Enable(false);
 	FindWindow(XRCID("IDCANCEL"))->Enable(false);
@@ -502,7 +502,7 @@ void CCreateGridDlg::CreateGrid()
  * wxEVT_COMMAND_TEXT_UPDATED event handler for IDC_EDIT1
  */
 
-void CCreateGridDlg::OnCEdit1Updated( wxCommandEvent& event )
+void CreateGridDlg::OnCEdit1Updated( wxCommandEvent& event )
 {
     // Insert custom code here
 	if(!isCreated) return;
@@ -516,7 +516,7 @@ void CCreateGridDlg::OnCEdit1Updated( wxCommandEvent& event )
  * wxEVT_COMMAND_TEXT_UPDATED event handler for IDC_EDIT2
  */
 
-void CCreateGridDlg::OnCEdit2Updated( wxCommandEvent& event )
+void CreateGridDlg::OnCEdit2Updated( wxCommandEvent& event )
 {
     // Insert custom code here
 	if(!isCreated) return;
@@ -529,7 +529,7 @@ void CCreateGridDlg::OnCEdit2Updated( wxCommandEvent& event )
  * wxEVT_COMMAND_TEXT_UPDATED event handler for IDC_EDIT3
  */
 
-void CCreateGridDlg::OnCEdit3Updated( wxCommandEvent& event )
+void CreateGridDlg::OnCEdit3Updated( wxCommandEvent& event )
 {
     // Insert custom code here
 	if(!isCreated) return;
@@ -542,7 +542,7 @@ void CCreateGridDlg::OnCEdit3Updated( wxCommandEvent& event )
  * wxEVT_COMMAND_TEXT_UPDATED event handler for IDC_EDIT4
  */
 
-void CCreateGridDlg::OnCEdit4Updated( wxCommandEvent& event )
+void CreateGridDlg::OnCEdit4Updated( wxCommandEvent& event )
 {
     // Insert custom code here
 	if(!isCreated) return;

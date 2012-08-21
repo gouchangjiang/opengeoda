@@ -19,7 +19,8 @@
 
 #include <wx/filename.h>
 #include <wx/stopwatch.h>
-#include "../GenUtils.h"
+#include "../DataViewer/DbfGridTableBase.h"
+#include "../ShapeOperations/RateSmoothing.h"
 #include "../ShapeOperations/Randik.h"
 #include "../logger.h"
 #include "LisaCoordinatorObserver.h"
@@ -66,88 +67,289 @@ wxThread::ExitCode LisaWorkerThread::Entry()
 	return NULL;
 }
 
+/** 
+ Since the user has the ability to synchronise either variable over time,
+ we must be able to reapply weights and recalculate lisa values as needed.
+ 
+ 1. We will have original data as complete space-time data for both variables
+ 
+ 2. From there we will work from info in var_info for both variables.  Must
+    determine number of time_steps for canvas.
+ 
+ 3. Adjust data1(2)_vecs sizes and initialize from data.
+ 
+ 3.5. Resize localMoran, sigLocalMoran, sigCat, and cluster arrays
+ 
+ 4. If rates, then calculate rates for working_data1
+ 
+ 5. Standardize working_data1 (and 2 if bivariate)
+ 
+ 6. Compute LISA for all time-stesp and save in localMoran sp/time array
+ 
+ 7. Calc Pseudo P for all time periods.  Results saved in sigLocalMoran,
+    sigCat and cluster arrays
+ 
+ 8. Notify clients that values have been updated.
+   
+ */
 
 LisaCoordinator::LisaCoordinator(const GalWeight* gal_weights_s,
-								 double* data1_s, double* data2_s,
-								 const wxString& field1_name_s,
-								 const wxString& field2_name_s,
-								 bool isBivariate_s)
-: gal_weights(gal_weights_s),
-W(gal_weights_s->gal),
-weight_name(wxFileName(gal_weights_s->wflnm).GetFullName()),
-field1_name(field1_name_s), field2_name(field2_name_s),
-tot_obs(gal_weights_s->num_obs),
+								 DbfGridTableBase* grid_base,
+								 const std::vector<GeoDaVarInfo>& var_info_s,
+								 const std::vector<int>& col_ids,
+								 LisaType lisa_type_s,
+								 bool calc_significances_s)
+: W(gal_weights_s->gal),
+weight_name(wxFileName(gal_weights_s->wflnm).GetName()),
+num_obs(grid_base->GetNumberRows()),
 permutations(499),
-isBivariate(isBivariate_s)
-{	
-	data1 = new double[tot_obs];
-	data2 = new double[tot_obs];
-	localMoran = new double[tot_obs];
-	sigLocalMoran = new double[tot_obs];
-	sigCat = new int[tot_obs];
-	cluster = new int[tot_obs];
-	for (int i=0; i<tot_obs; i++) data1[i] = data1_s[i];
-	if (isBivariate) {
-		for (int i=0; i<tot_obs; i++) data2[i] = data2_s[i];
-	} else {
-		data2 = 0;
-	}
-	for (int i=0; i<tot_obs; i++) {
-		localMoran[i] = 0;
-		sigLocalMoran[i] = 0;
-		sigCat[i] = 0;
-		cluster[i] = 0;
-	}
-
+lisa_type(lisa_type_s),
+calc_significances(calc_significances_s),
+isBivariate(lisa_type_s == bivariate),
+var_info(var_info_s),
+data(var_info_s.size())
+{
 	SetSignificanceFilter(1);
-	StandardizeData();
-	CalcLisa();
-	CalcPseudoP();
+	for (int i=0; i<var_info.size(); i++) {
+		grid_base->GetColData(col_ids[i], data[i]);
+	}
+	InitFromVarInfo();
 }
 
 
 LisaCoordinator::~LisaCoordinator()
 {
 	LOG_MSG("In LisaCoordinator::~LisaCoordinator");
-	if (data1) delete [] data1;
-	if (data2) delete [] data2;
-	if (localMoran) delete [] localMoran;
-	if (sigLocalMoran) delete [] sigLocalMoran;
-	if (sigCat) delete [] sigCat;
-	if (cluster) delete [] cluster;
+	DeallocateVectors();
+}
+
+void LisaCoordinator::DeallocateVectors()
+{
+	for (int i=0; i<lags_vecs.size(); i++) {
+		if (lags_vecs[i]) delete [] lags_vecs[i];
+	}
+	lags_vecs.clear();
+	for (int i=0; i<local_moran_vecs.size(); i++) {
+		if (local_moran_vecs[i]) delete [] local_moran_vecs[i];
+	}
+	local_moran_vecs.clear();
+	for (int i=0; i<sig_local_moran_vecs.size(); i++) {
+		if (sig_local_moran_vecs[i]) delete [] sig_local_moran_vecs[i];
+	}
+	sig_local_moran_vecs.clear();
+	for (int i=0; i<sig_cat_vecs.size(); i++) {
+		if (sig_cat_vecs[i]) delete [] sig_cat_vecs[i];
+	}
+	sig_cat_vecs.clear();
+	for (int i=0; i<cluster_vecs.size(); i++) {
+		if (cluster_vecs[i]) delete [] cluster_vecs[i];
+	}
+	cluster_vecs.clear();
+	for (int i=0; i<data1_vecs.size(); i++) {
+		if (data1_vecs[i]) delete [] data1_vecs[i];
+	}
+	data1_vecs.clear();
+	for (int i=0; i<data2_vecs.size(); i++) {
+		if (data2_vecs[i]) delete [] data2_vecs[i];
+	}
+	data2_vecs.clear();
+}
+
+/** allocate based on var_info and num_time_vals **/
+void LisaCoordinator::AllocateVectors()
+{
+	int tms = num_time_vals;
+	lags_vecs.resize(tms);
+	local_moran_vecs.resize(tms);
+	sig_local_moran_vecs.resize(tms);
+	sig_cat_vecs.resize(tms);
+	cluster_vecs.resize(tms);
+	data1_vecs.resize(tms);
+	map_valid.resize(tms);
+	map_error_message.resize(tms);
+	has_isolates.resize(tms);
+	has_undefined.resize(tms);
+	for (int i=0; i<tms; i++) {
+		lags_vecs[i] = new double[num_obs];
+		local_moran_vecs[i] = new double[num_obs];
+		if (calc_significances) {
+			sig_local_moran_vecs[i] = new double[num_obs];
+			sig_cat_vecs[i] = new int[num_obs];
+		}
+		cluster_vecs[i] = new int[num_obs];
+		data1_vecs[i] = new double[num_obs];
+		map_valid[i] = true;
+		map_error_message[i] = wxEmptyString;
+	}
+	
+	if (lisa_type == bivariate) {
+		data2_vecs.resize((var_info[1].time_max - var_info[1].time_min) + 1);
+		for (int i=0; i<data2_vecs.size(); i++) {
+			data2_vecs[i] = new double[num_obs];
+		}
+	}
+}
+
+/** We assume only that var_info is initialized correctly.
+ ref_var_index, is_any_time_variant, is_any_sync_with_global_time and
+ num_time_vals are first updated based on var_info */ 
+void LisaCoordinator::InitFromVarInfo()
+{
+	DeallocateVectors();
+	
+	num_time_vals = 1;
+	is_any_time_variant = false;
+	is_any_sync_with_global_time = false;
+	ref_var_index = -1;
+	for (int i=0; i<var_info.size(); i++) {
+		if (var_info[i].is_time_variant &&
+			var_info[i].sync_with_global_time) {
+			num_time_vals = (var_info[i].time_max - var_info[i].time_min) + 1;
+			is_any_sync_with_global_time = true;
+			ref_var_index = i;
+			break;
+		}
+	}
+	for (int i=0; i<var_info.size(); i++) {
+		if (var_info[i].is_time_variant) {
+			is_any_time_variant = true;
+			break;
+		}
+	}
+	
+	AllocateVectors();
+	
+	if (lisa_type == univariate || lisa_type == bivariate) {
+		for (int t=var_info[0].time_min; t<=var_info[0].time_max; t++) {
+			int d1_t = t - var_info[0].time_min;
+			for (int i=0; i<num_obs; i++) data1_vecs[d1_t][i] = data[0][t][i];
+		}
+		if (lisa_type == bivariate) {
+			for (int t=var_info[1].time_min; t<=var_info[1].time_max; t++) {
+				int d2_t = t - var_info[1].time_min;
+				for (int i=0; i<num_obs; i++) {
+					data2_vecs[d2_t][i] = data[1][t][i];
+				}
+			}
+		}
+	} else { // lisa_type == eb_rate_standardized
+		std::vector<bool> undef_res(num_obs, false);
+		double* smoothed_results = new double[num_obs];
+		double* E = new double[num_obs]; // E corresponds to var_info[0]
+		double* P = new double[num_obs]; // P corresponds to var_info[1]
+		// we will only fill data1 for eb_rate_standardized and
+		// further lisa calcs will treat as univariate
+		for (int t=0; t<num_time_vals; t++) {
+			int v0_t = var_info[0].time_min;
+			if (var_info[0].is_time_variant &&
+				var_info[0].sync_with_global_time) {
+				v0_t += t;
+			}
+			for (int i=0; i<num_obs; i++) E[i] = data[0][v0_t][i];
+			int v1_t = var_info[1].time_min;
+			if (var_info[1].is_time_variant &&
+				var_info[1].sync_with_global_time) {
+				v1_t += t;
+			}
+			for (int i=0; i<num_obs; i++) P[i] = data[1][v1_t][i];
+			bool success = GeoDaAlgs::RateStandardizeEB(num_obs, P, E,
+														smoothed_results,
+														undef_res);
+			if (!success) {
+				map_valid[t] = false;
+				map_error_message[t] << "Emprical Bayes Rate ";
+				map_error_message[t] << "Standardization failed.";
+			} else {
+				for (int i=0; i<num_obs; i++) {
+					data1_vecs[t][i] = smoothed_results[i];
+				}
+			}
+		}
+		if (smoothed_results) delete [] smoothed_results;
+		if (E) delete [] E;
+		if (P) delete [] P;
+	}
+	
+	StandardizeData();
+	CalcLisa();
+	if (calc_significances) CalcPseudoP();
+}
+
+/** Update Secondary Attributes based on Primary Attributes.
+ Update num_time_vals and ref_var_index based on Secondary Attributes. */
+void LisaCoordinator::VarInfoAttributeChange()
+{
+	GeoDa::UpdateVarInfoSecondaryAttribs(var_info);
+	
+	is_any_time_variant = false;
+	is_any_sync_with_global_time = false;
+	for (int i=0; i<var_info.size(); i++) {
+		if (var_info[i].is_time_variant) is_any_time_variant = true;
+		if (var_info[i].sync_with_global_time) {
+			is_any_sync_with_global_time = true;
+		}
+	}
+	ref_var_index = -1;
+	num_time_vals = 1;
+	for (int i=0; i<var_info.size() && ref_var_index == -1; i++) {
+		if (var_info[i].is_ref_variable) ref_var_index = i;
+	}
+	if (ref_var_index != -1) {
+		num_time_vals = (var_info[ref_var_index].time_max -
+						 var_info[ref_var_index].time_min) + 1;
+	}
+	//GeoDa::PrintVarInfoVector(var_info);
 }
 
 void LisaCoordinator::StandardizeData()
 {
-	GenUtils::StandardizeData(tot_obs, data1);
-	if (isBivariate) GenUtils::StandardizeData(tot_obs, data2);
+	for (int t=0; t<data1_vecs.size(); t++) {
+		GenUtils::StandardizeData(num_obs, data1_vecs[t]);
+	}
+	if (isBivariate) {
+		for (int t=0; t<data2_vecs.size(); t++) {
+			GenUtils::StandardizeData(num_obs, data2_vecs[t]);
+		}
+	}
 }
 
+/** assumes StandardizeData already called on data1 and data2 */
 void LisaCoordinator::CalcLisa()
 {
-	// assumes StandardizeData already called on data1 and data2
-	has_undefined = false;
-	has_isolates = false;
-	
-	GalElement* W = gal_weights->gal;
-	for (int i=0; i<tot_obs; i++) {
-		double Wdata = 0;
+	for (int t=0; t<num_time_vals; t++) {
+		data1 = data1_vecs[t];
 		if (isBivariate) {
-			Wdata = W[i].SpatialLag(data2, true);
-		} else {
-			Wdata = W[i].SpatialLag(data1, true);
+			data2 = data2_vecs[0];
+			if (var_info[1].is_time_variant &&
+				var_info[1].sync_with_global_time) data2 = data2_vecs[t];
 		}
-		localMoran[i] = data1[i] * Wdata;
+		lags = lags_vecs[t];
+		localMoran = local_moran_vecs[t];
+		cluster = cluster_vecs[t];
+	
+		has_undefined[t] = false;
+		has_isolates[t] = false;
+	
+		for (int i=0; i<num_obs; i++) {
+			double Wdata = 0;
+			if (isBivariate) {
+				Wdata = W[i].SpatialLag(data2, true);
+			} else {
+				Wdata = W[i].SpatialLag(data1, true);
+			}
+			lags[i] = Wdata;
+			localMoran[i] = data1[i] * Wdata;
 					
-		// assign the cluster
-		if (W[i].Size() > 0) {
-			if (data1[i] > 0 && Wdata > 0) cluster[i] = 1;
-			else if (data1[i] < 0 && Wdata < 0) cluster[i] = 2;
-			else if (data1[i] > 0 && Wdata < 0) cluster[i] = 4;
-			else cluster[i] = 3;
-		} else {
-			has_isolates = true;
-			cluster[i] = 5; // neighborless
+			// assign the cluster
+			if (W[i].Size() > 0) {
+				if (data1[i] > 0 && Wdata < 0) cluster[i] = 4;
+				else if (data1[i] < 0 && Wdata > 0) cluster[i] = 3;
+				else if (data1[i] < 0 && Wdata < 0) cluster[i] = 2;
+				else cluster[i] = 1; //data1[i] > 0 && Wdata > 0
+			} else {
+				has_isolates[t] = true;
+				cluster[i] = 5; // neighborless
+			}
 		}
 	}
 }
@@ -155,19 +357,49 @@ void LisaCoordinator::CalcLisa()
 void LisaCoordinator::CalcPseudoP()
 {
 	LOG_MSG("Entering LisaCoordinator::CalcPseudoP");
+	if (!calc_significances) return;
 	wxStopWatch sw;
 	int nCPUs = wxThread::GetCPUCount();
+	
+	// To ensure thread safety, only work on one time slice of data
+	// at a time.  For each time period t:
+	// 1. copy data for time period t into data1 and data2 arrays
+	// 2. Perform multi-threaded computation
+	// 3. copy results into results array
+	
 	if (nCPUs <= 1) {
 		LOG_MSG(wxString::Format("%d threading cores detected "
 								 "so running single threaded", nCPUs));
-		CalcPseudoP_range(0, tot_obs-1);
 	} else {
 		LOG_MSG(wxString::Format("%d threading cores detected, "
 								 "running multi-threaded.", nCPUs));
-		CalcPseudoP_threaded();
 	}
-	LOG_MSG(wxString::Format("Lisa on %d obs with %d perms took %ld ms",
-							 tot_obs, permutations, sw.Time()));
+	
+	for (int t=0; t<num_time_vals; t++) {
+		LOG_MSG(wxString::Format("Calculating LISA significances for time "
+								 "period %d", t));
+		
+		data1 = data1_vecs[t];
+		if (isBivariate) {
+			data2 = data2_vecs[0];
+			if (var_info[1].is_time_variant &&
+				var_info[1].sync_with_global_time) data2 = data2_vecs[t];
+		}
+		lags = lags_vecs[t];
+		localMoran = local_moran_vecs[t];
+		sigLocalMoran = sig_local_moran_vecs[t];
+		sigCat = sig_cat_vecs[t];
+		cluster = cluster_vecs[t];
+		
+		if (nCPUs <= 1) {
+			CalcPseudoP_range(0, num_obs-1);
+		} else {
+			CalcPseudoP_threaded();
+		}
+	}
+	LOG_MSG(wxString::Format("LISA on %d obs with %d perms over %d "
+							 "time periods took %ld ms",
+							 num_obs, permutations, num_time_vals, sw.Time()));
 	LOG_MSG("Exiting LisaCoordinator::CalcPseudoP");
 }
 
@@ -188,13 +420,13 @@ void LisaCoordinator::CalcPseudoP_threaded()
 	
 	// divide up work according to number of observations
 	// and number of CPUs
-	int work_chunk = tot_obs / nCPUs;
+	int work_chunk = num_obs / nCPUs;
 	int obs_start = 0;
 	int obs_end = obs_start + work_chunk;
 	
 	bool is_thread_error = false;
-	int quotient = tot_obs / nCPUs;
-	int remainder = tot_obs % nCPUs;
+	int quotient = num_obs / nCPUs;
+	int remainder = num_obs % nCPUs;
 	int tot_threads = (quotient > 0) ? nCPUs : remainder;
 	
 	for (int i=0; i<tot_threads && !is_thread_error; i++) {
@@ -227,7 +459,7 @@ void LisaCoordinator::CalcPseudoP_threaded()
 		LOG_MSG("Error: Could not spawn a worker thread, falling back "
 				"to single-threaded pseudo-p calculation.");
 		// fall back to single thread calculation mode
-		CalcPseudoP_range(0, tot_obs-1);
+		CalcPseudoP_range(0, num_obs-1);
 	} else {
 		LOG_MSG("Starting all worker threads");
 		std::list<wxThread*>::iterator it;
@@ -250,16 +482,16 @@ void LisaCoordinator::CalcPseudoP_threaded()
 
 void LisaCoordinator::CalcPseudoP_range(int obs_start, int obs_end)
 {
-	OgSet workPermutation(tot_obs);
+	OgSet workPermutation(num_obs);
 	Randik rng;
-	int max_rand = tot_obs-1;
+	int max_rand = num_obs-1;
 	for (int cnt=obs_start; cnt<=obs_end; cnt++) {
 		const int numNeighbors = W[cnt].Size();
 		
 		int countLarger = 0;
 		for (int perm=0; perm<permutations; perm++) {
 			int rand=0;
-			while (rand < numNeighbors) {      
+			while (rand < numNeighbors) {
 				// computing 'perfect' permutation of given size
 				int newRandom = (int) (rng.fValue() * max_rand);
 				//int newRandom = X(rng);
@@ -289,7 +521,7 @@ void LisaCoordinator::CalcPseudoP_range(int obs_start, int obs_end)
 			if (localMoranPermuted >= localMoran[cnt]) countLarger++;
 		}
 		// pick the smallest
-		if (permutations-countLarger < countLarger) { 
+		if (permutations-countLarger <= countLarger) { 
 			countLarger = permutations-countLarger;
 		}
 		

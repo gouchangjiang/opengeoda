@@ -29,36 +29,36 @@
 
 extern bool CreateSHPfromBoundary(wxString ifl, wxString otfl);
 
-IMPLEMENT_CLASS( CBnd2ShpDlg, wxDialog )
+IMPLEMENT_CLASS( Bnd2ShpDlg, wxDialog )
 
 /*!
- * CBnd2ShpDlg event table definition
+ * Bnd2ShpDlg event table definition
  */
 
-BEGIN_EVENT_TABLE( CBnd2ShpDlg, wxDialog )
+BEGIN_EVENT_TABLE( Bnd2ShpDlg, wxDialog )
 
-////@begin CBnd2ShpDlg event table entries
-    EVT_BUTTON( XRCID("ID_CREATE"), CBnd2ShpDlg::OnCreateClick )
+////@begin Bnd2ShpDlg event table entries
+    EVT_BUTTON( XRCID("ID_CREATE"), Bnd2ShpDlg::OnCreateClick )
 
-    EVT_BUTTON( XRCID("IDC_OPEN_IASC"), CBnd2ShpDlg::OnCOpenIascClick )
+    EVT_BUTTON( XRCID("IDC_OPEN_IASC"), Bnd2ShpDlg::OnCOpenIascClick )
 
-    EVT_BUTTON( XRCID("IDC_OPEN_OSHP"), CBnd2ShpDlg::OnCOpenOshpClick )
+    EVT_BUTTON( XRCID("IDC_OPEN_OSHP"), Bnd2ShpDlg::OnCOpenOshpClick )
 
-    EVT_BUTTON( XRCID("IDCANCEL"), CBnd2ShpDlg::OnCancelClick )
+    EVT_BUTTON( XRCID("IDCANCEL"), Bnd2ShpDlg::OnCancelClick )
 
-////@end CBnd2ShpDlg event table entries
+////@end Bnd2ShpDlg event table entries
 
 END_EVENT_TABLE()
 
 /*!
- * CBnd2ShpDlg constructors
+ * Bnd2ShpDlg constructors
  */
 
-CBnd2ShpDlg::CBnd2ShpDlg( )
+Bnd2ShpDlg::Bnd2ShpDlg( )
 {
 }
 
-CBnd2ShpDlg::CBnd2ShpDlg( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+Bnd2ShpDlg::Bnd2ShpDlg( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
     Create(parent, id, caption, pos, size, style);
 
@@ -68,49 +68,49 @@ CBnd2ShpDlg::CBnd2ShpDlg( wxWindow* parent, wxWindowID id, const wxString& capti
 }
 
 /*!
- * CBnd2ShpDlg creator
+ * Bnd2ShpDlg creator
  */
 
-bool CBnd2ShpDlg::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool Bnd2ShpDlg::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
-////@begin CBnd2ShpDlg member initialisation
-////@end CBnd2ShpDlg member initialisation
+////@begin Bnd2ShpDlg member initialisation
+////@end Bnd2ShpDlg member initialisation
 
-////@begin CBnd2ShpDlg creation
+////@begin Bnd2ShpDlg creation
     SetParent(parent);
     CreateControls();
     Centre();
-////@end CBnd2ShpDlg creation
+////@end Bnd2ShpDlg creation
     return true;
 }
 
 /*!
- * Control creation for CBnd2ShpDlg
+ * Control creation for Bnd2ShpDlg
  */
 
-void CBnd2ShpDlg::CreateControls()
+void Bnd2ShpDlg::CreateControls()
 {    
-////@begin CBnd2ShpDlg content construction
+////@begin Bnd2ShpDlg content construction
 
     wxXmlResource::Get()->LoadDialog(this, GetParent(), "IDD_CONVERT_BOUNDARY_TO_SHP");
     m_inputfile = XRCCTRL(*this, "IDC_FIELD_ASC", wxTextCtrl);
 	m_inputfile->SetMaxLength(0);
     m_outputfile = XRCCTRL(*this, "IDC_FIELD_SHP", wxTextCtrl);
 	m_outputfile->SetMaxLength(0);
-////@end CBnd2ShpDlg content construction
+////@end Bnd2ShpDlg content construction
 
     // Create custom windows not generated automatically here.
 
-////@begin CBnd2ShpDlg content initialisation
+////@begin Bnd2ShpDlg content initialisation
 
-////@end CBnd2ShpDlg content initialisation
+////@end Bnd2ShpDlg content initialisation
 }
 
 /*!
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_CREATE
  */
 
-void CBnd2ShpDlg::OnCreateClick( wxCommandEvent& event )
+void Bnd2ShpDlg::OnCreateClick( wxCommandEvent& event )
 {
 	wxString m_iASC = m_inputfile->GetValue();
 	wxString m_oSHP = m_outputfile->GetValue();
@@ -130,7 +130,7 @@ void CBnd2ShpDlg::OnCreateClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDC_OPEN_IASC
  */
 
-void CBnd2ShpDlg::OnCOpenIascClick( wxCommandEvent& event )
+void Bnd2ShpDlg::OnCOpenIascClick( wxCommandEvent& event )
 {
 
 
@@ -162,7 +162,7 @@ void CBnd2ShpDlg::OnCOpenIascClick( wxCommandEvent& event )
         
 
 		std::ifstream ias;
-		ias.open(m_iASC.wx_str());
+		ias.open(m_iASC.mb_str());
 		char name[1000];
 
 		ias.getline(name,100);
@@ -211,7 +211,7 @@ void CBnd2ShpDlg::OnCOpenIascClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDC_OPEN_OSHP
  */
 
-void CBnd2ShpDlg::OnCOpenOshpClick( wxCommandEvent& event )
+void Bnd2ShpDlg::OnCOpenOshpClick( wxCommandEvent& event )
 {
     // Insert custom code here   
 	wxFileDialog dlg
@@ -242,7 +242,7 @@ void CBnd2ShpDlg::OnCOpenOshpClick( wxCommandEvent& event )
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for IDCANCEL
  */
 
-void CBnd2ShpDlg::OnCancelClick( wxCommandEvent& event )
+void Bnd2ShpDlg::OnCancelClick( wxCommandEvent& event )
 {
     // Insert custom code here
 	event.Skip(); // wxDialog::OnCancel(event);
@@ -253,7 +253,7 @@ void CBnd2ShpDlg::OnCancelClick( wxCommandEvent& event )
  * Should we show tooltips?
  */
 
-bool CBnd2ShpDlg::ShowToolTips()
+bool Bnd2ShpDlg::ShowToolTips()
 {
     return true;
 }

@@ -20,17 +20,21 @@
 #ifndef __GEODA_CENTER_TEMPLATE_CANVAS_H__
 #define __GEODA_CENTER_TEMPLATE_CANVAS_H__
 
-#include <wx/scrolwin.h>
-#include <wx/event.h>
-#include <wx/string.h>
+#include <boost/multi_array.hpp>
 #include <wx/dc.h>
+#include <wx/event.h>
 #include <wx/overlay.h>
-#include <vector>
+#include <wx/scrolwin.h>
+#include <wx/string.h>
 #include <list>
 #include <set> // for std::multiset template
+#include <vector>
 #include "Generic/HighlightStateObserver.h"
 #include "Generic/MyShape.h"
 #include "Project.h"
+
+typedef boost::multi_array<MyShape*, 2> shp_array_type;
+typedef boost::multi_array<int, 2> i_array_type;
 
 enum SelectType {         
 	// enumeration for the type of selection
@@ -46,6 +50,17 @@ class TemplateFrame;
  functionality associated with selecting polygons.  It is the base
  class of all "views" in GeoDa such as Scatter Plots, Box Plots, etc.
  */
+
+struct Category {
+	wxBrush brush;
+	wxString label;
+	std::vector<int> ids;
+};
+
+struct CategoryVec {
+	std::vector<Category> cat_vec;
+	std::vector<int> id_to_cat;
+};
 
 class TemplateCanvas : public wxScrolledWindow, public HighlightStateObserver
 {
@@ -209,6 +224,12 @@ protected:
 	double shps_orig_ymin;
 	double shps_orig_xmax;
 	double shps_orig_ymax;
+	// the following four parameters correspond to the scale for the original
+	// data.
+	double data_scale_xmin;
+	double data_scale_xmax;
+	double data_scale_ymin;
+	double data_scale_ymax;
 
 public:
 	/** This is the implementation of the Observer interface update function. 
@@ -223,6 +244,8 @@ public:
 	 is for debugging purposes. */
 	virtual wxString GetCanvasStateString();
 
+	void OnKeyEvent(wxKeyEvent& event);
+	
 	void OnSize(wxSizeEvent& event);
 	
 	/** Where all the drawing action happens.  Should do something similar
@@ -258,15 +281,38 @@ public:
 	virtual void DisplayRightClickMenu(const wxPoint& pos);
 	
 	virtual void DrawMySelShape(int i, wxDC& dc);
-	
+		
 	virtual void UpdateSelection(bool shiftdown = false,
 								 bool pointsel = false);
+	virtual void UpdateSelectionPoints(bool shiftdown = false,
+									   bool pointsel = false);
+	virtual void UpdateSelectionCircles(bool shiftdown = false,
+										bool pointsel = false);
+	virtual void UpdateSelectionPolylines(bool shiftdown = false,
+										  bool pointsel = false);
 	
 	virtual void UpdateSelectRegion(bool translate = false,
 									wxPoint diff = wxPoint(0,0) );
 	
+	/** Select all observations in a given category for current
+	 canvas time step. */
+	void SelectAllInCategory(int category, bool add_to_selection);
+	
 	virtual void NotifyObservables();
 	
+	virtual void DetermineMouseHoverObjects();
+	
+	virtual void UpdateStatusBar();	
+	
+	virtual wxString GetCanvasTitle();
+	
+	virtual void TitleOrTimeChange();
+	
+	virtual void TimeSyncVariableToggle(int var_index) {}
+	virtual void FixedScaleVariableToggle(int var_index) {}
+	virtual void PlotsPerView(int plots_per_view) {}
+	virtual void PlotsPerViewOther() {}
+	virtual void PlotsPerViewAll() {}
 	/** Resize the selectable_shps MyShape objects based on the
 	 current screen size, the virtual screen size, fixed_aspect_ratio_mode,
 	 fit_to_window_mode and virtual_screen_marg_left,
@@ -307,6 +353,41 @@ public:
 	static void CreateSelShpsFromProj(std::vector<MyShape*>& selectable_shps,
 									  Project* project);
 	
+	/** convert mouse coordiante point to original observation-coordinate
+	 points.  This is an inverse of the affine transformation that converts
+	 data points to screen points. */
+	virtual wxRealPoint MousePntToObsPnt(const wxPoint &pt);
+	
+	// Note: Canvas Time Steps might not correspond to global time steps.
+	// For views that display data from two or more variables such as
+	// Scatter Plot, there may be fewer canvas time steps than global time
+	// steps.
+	
+	void CreateZValArrays(int num_canvas_tms, int num_obs);
+	void CreateEmptyCategories(int num_canvas_tms);
+	void CreateCategoriesAllCanvasTms(int num_cats, int num_canvas_tms);
+	void CreateCategoriesAtCanvasTm(int num_cats, int canvas_tm);
+	void SetCategoryBrushesAllCanvasTms(short coltype, short ncolor,
+										bool reversed);
+	void SetCategoryBrushesAtCanvasTm(short coltype, short ncolor,
+									  bool reversed, int canvas_tm);
+	int GetNumCategories(int canvas_tm);
+	int GetNumObsInCategory(int canvas_tm, int cat);
+	std::vector<int>& GetIdsRef(int canvas_tm, int cat);
+	void SetCategoryColor(int canvas_tm, int cat, wxColour color);
+	wxColour GetCategoryColor(int canvas_tm, int cat);
+	wxBrush GetCategoryBrush(int canvas_tm, int cat);
+	void AppendIdToCategory(int canvas_tm, int cat, int id);
+	void ClearAllCategoryIds();	
+	wxString GetCategoryLabel(int canvas_tm, int cat);
+	void SetCategoryLabel(int canvas_tm, int cat, const wxString& label);
+	int GetCurrentCanvasTmStep();
+	void SetCurrentCanvasTmStep(int canvas_tm);
+	int GetCanvasTmSteps();
+	virtual wxString GetCategoriesTitle();
+	virtual void SaveCategories(const wxString& title, const wxString& label,
+								const wxString& field_default);
+	
 protected:
 	/** highlight_state is a pointer to the Observable HighlightState instance.
 	 A HightlightState instance is a vector of booleans that keep track
@@ -323,11 +404,25 @@ protected:
 	std::vector<MyShape*> selectable_shps;
 	SelectableShpType selectable_shps_type;
 	std::list<MyShape*> foreground_shps;
+	// corresponds to the selectable color categories: generally between
+	// 1 and 10 permitted.  Selectable shape drawing routines use brushes
+	// from this list.
+	bool use_category_brushes;
+	// when true, draw all selectable shapes in order, with highlights,
+	// and using category colors.  This is only used in Bubble Chart currently
+	bool draw_sel_shps_by_z_val;
+	// for each time period, the shape id is listed with its category
+	// only used when draw_sel_shps_by_z_val is selected
+	std::vector<i_array_type> z_val_order;
+	std::vector<CategoryVec> categories;
+	int curr_canvas_tm_step;
+	int canvas_tm_steps; // total # canvas time steps
 	
 	wxPoint GetActualPos(const wxMouseEvent& event);
 	wxPoint sel_poly_pts[100];  // for UpdateSelectRegion and UpdateSelection
 	int n_sel_poly_pts;         // for UpdateSelectRegion and UpdateSelection
-	wxRegion sel_region;	    // for UpdateSelectRegion and UpdateSelection
+	//wxRegion sel_region;	    // for UpdateSelectRegion and UpdateSelection
+	MySelRegion sel_region;		// for UpdateSelectRegion and UpdateSelection
 	bool remember_shiftdown;    // used by OnMouseEvent
 	wxPoint diff;               // used by OnMouseEvent
 	wxPoint prev;	            // used by OnMouseEvent
@@ -335,29 +430,46 @@ protected:
 	wxPoint sel2;
 	wxPoint scroll_diff;
 	MyScaleTrans last_scale_trans;
+	std::vector<int> hover_obs; // list of obs mouse is hovering over
+	int total_hover_obs; // total obs in list
+	int max_hover_obs;
 	
-	void deleteLayerBms();
-	void resizeLayerBms(int width, int height);
+protected:
 	wxBitmap* layer0_bm; // background items + unhighlighted obs
 	wxBitmap* layer1_bm; // layer0_bm + highlighted obs
 	wxBitmap* layer2_bm; // layer1_bm + foreground obs
 	bool layer0_valid; // if false, then needs to be redrawn
 	bool layer1_valid; // if false, then needs to be redrawn
 	bool layer2_valid; // if flase, then needs to be redrawn
+	
+public:
+	void RenderToDC(wxDC &dc, bool disable_crosshatch_brush = true);
+	const wxBitmap* GetLayer1() { return layer1_bm; }
+	void deleteLayerBms();
+	void resizeLayerBms(int width, int height);
+	void invalidateBms();
 	void DrawLayer0();
 	void DrawLayer1();
 	void DrawLayer2();
 	void DrawLayers();
-	void DrawSelectableShapes(wxMemoryDC &dc); // draw unhighlighted sel shapes
+	// draw everything
+	void DrawSelectableShapesByZVal(wxDC &dc,
+									bool disable_crosshatch_brush = false);
+	// draw unhighlighted sel shapes
+	virtual void DrawSelectableShapes(wxMemoryDC &dc);
 	void DrawSelectableShapes_gc(wxMemoryDC &dc);
 	void DrawSelectableShapes_dc(wxMemoryDC &dc);
-	void DrawHighlightedShapes(wxMemoryDC &dc); // draw highlighted sel shapes
+	void DrawSelectableShapes_gen_dc(wxDC &dc);
+	// draw highlighted sel shapes
+	virtual void DrawHighlightedShapes(wxMemoryDC &dc);
 	void DrawHighlightedShapes_gc(wxMemoryDC &dc);
 	void DrawHighlightedShapes_dc(wxMemoryDC &dc);
-	void DrawNewSelShapes(wxMemoryDC &dc);
+	void DrawHighlightedShapes_gen_dc(wxDC &dc,
+									  bool disable_crosshatch_brush = false);
+	virtual void DrawNewSelShapes(wxMemoryDC &dc);
 	void DrawNewSelShapes_gc(wxMemoryDC &dc);
 	void DrawNewSelShapes_dc(wxMemoryDC &dc);
-	void EraseNewUnSelShapes(wxMemoryDC &dc);
+	virtual void EraseNewUnSelShapes(wxMemoryDC &dc);
 	void EraseNewUnSelShapes_gc(wxMemoryDC &dc);
 	void EraseNewUnSelShapes_dc(wxMemoryDC &dc);
 public:
@@ -372,6 +484,3 @@ private:
 
 #endif
 
-// BEGIN SHAPEMANAGER CODE
-
-// END SHAPEMANAGER CODE

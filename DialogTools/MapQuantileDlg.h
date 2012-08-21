@@ -20,28 +20,30 @@
 #ifndef __GEODA_CENTER_MAP_QUANTILE_DLG_H__
 #define __GEODA_CENTER_MAP_QUANTILE_DLG_H__
 
+#include <wx/dialog.h>
 #include <wx/spinctrl.h>
+#include <wx/stattext.h>
 
-class CMapQuantileDlg: public wxDialog
+class MapQuantileDlg: public wxDialog
 {    
     DECLARE_EVENT_TABLE()
 
 public:
-    CMapQuantileDlg( int max_classes, bool dup_val_warning = true,
-					wxWindow* parent = NULL, wxWindowID id = -1,
-					const wxString& caption = "Quantile Map",
-					const wxPoint& pos = wxDefaultPosition,
-					const wxSize& size = wxDefaultSize,
-					long style = wxCAPTION|wxSYSTEM_MENU );
-    void CreateControls();
-
+    MapQuantileDlg( wxWindow* parent,
+				   int min_classes_s,
+				   int max_classes_s,
+				   int default_classes_s,
+				   const wxString& title,
+				   const wxString& text = "Number of Classes");
+	
     void OnOkClick( wxCommandEvent& event );
 	void OnCancelClick( wxCommandEvent& event );
 
-    static bool ShowToolTips();
-
-	bool dup_val_warning;
+	int classes;
+	int min_classes;
 	int max_classes;
+	int default_classes;
+	wxStaticText* stat_text;
     wxSpinCtrl* m_classes;
 };
 

@@ -21,12 +21,16 @@
 #define __GEODA_CENTER_LISA_COORDINATOR_H__
 
 #include <list>
+#include <vector>
+#include <boost/multi_array.hpp>
 #include <wx/string.h>
 #include <wx/thread.h>
+#include "../GenUtils.h"
 #include "../ShapeOperations/GalWeight.h"
 
 class LisaCoordinatorObserver;
 class LisaCoordinator;
+typedef boost::multi_array<double, 2> d_array_type;
 
 class LisaWorkerThread : public wxThread
 {
@@ -53,39 +57,74 @@ public:
 class LisaCoordinator
 {
 public:
+	enum LisaType { univariate, bivariate, eb_rate_standardized }; // #9
+	
 	LisaCoordinator(const GalWeight* gal_weights,
-					double* data1, double* data2,
-					const wxString& field1_name,
-					const wxString& field2_name,
-					bool isBivariate);
+					DbfGridTableBase* grid_base,
+					const std::vector<GeoDaVarInfo>& var_info,
+					const std::vector<int>& col_ids,
+					LisaType lisa_type, bool calc_significances = true);
 	virtual ~LisaCoordinator();
-
+	
 	bool IsOk() { return true; }
 	wxString GetErrorMessage() { return "Error Message"; }
 
 	int significance_filter; // 0: >0.05 1: 0.05, 2: 0.01, 3: 0.001, 4: 0.0001
 	double significance_cutoff; // either 0.05, 0.01, 0.001 or 0.0001
 	void SetSignificanceFilter(int filter_id);
-	int permutations; // any number from 10 to 10000, 500 will be default
+	int GetSignificanceFilter() { return significance_filter; }
+	int permutations; // any number from 9 to 99999, 499 will be default
 
-	int tot_obs; // total # obs including neighborless obs
-
+protected:
+	// The following seven are just temporary pointers into the corresponding
+	// space-time data arrays below
+	double* lags;
 	double*	localMoran;		// The LISA
 	double* sigLocalMoran;	// The significances / pseudo p-vals
-	int* sigCat; // The significance category, according to cut-off
-	int* cluster; // not-sig=0 HH=1, LL=2, HL=3, LH=4, isolate=5, undef=6
-
-	wxString weight_name;
-	const GalWeight* gal_weights;
-	const GalElement* W;
+	// The significance category, generated from sigLocalMoran and
+	// significance cuttoff values below.  When saving results to Table,
+	// only results below significance_cuttoff are non-zero, but sigCat
+	// results themeslves never change.
+	//0: >0.05 1: 0.05, 2: 0.01, 3: 0.001, 4: 0.0001
+	int* sigCat;
+	// not-sig=0 HH=1, LL=2, HL=3, LH=4, isolate=5, undef=6.  Note: value of
+	// 0 never appears in cluster itself, it only appears when
+	// saving results to the Table and indirectly in the map legend
+	int* cluster;
 	double* data1;
 	double* data2;
-	wxString field1_name;
-	wxString field2_name;
-	bool isBivariate;
 	
-	bool GetHasIsolates() { return has_isolates; }
-	bool GetHasUndefined() { return has_undefined; }
+public:
+	std::vector<double*> lags_vecs;
+	std::vector<double*> local_moran_vecs;
+	std::vector<double*> sig_local_moran_vecs;
+	std::vector<int*> sig_cat_vecs;
+	std::vector<int*> cluster_vecs;
+	std::vector<double*> data1_vecs;
+	std::vector<double*> data2_vecs;
+	
+	const GalElement* W;
+	wxString weight_name;
+	bool isBivariate;
+	LisaType lisa_type;
+	
+	int num_obs; // total # obs including neighborless obs
+	int num_time_vals; // number of valid time periods based on var_info
+	
+	// These two variables should be empty for LisaMapNewCanvas
+	std::vector<d_array_type> data; // data[variable][time][obs]
+	
+	// All LisaMapNewCanvas objects synchronize themselves
+	// from the following 6 variables.
+	int ref_var_index;
+	std::vector<GeoDaVarInfo> var_info;
+	bool is_any_time_variant;
+	bool is_any_sync_with_global_time;
+	std::vector<bool> map_valid;
+	std::vector<wxString> map_error_message;
+	
+	bool GetHasIsolates(int time) { return has_isolates[time]; }
+	bool GetHasUndefined(int time) { return has_undefined[time]; }
 	
 	void registerObserver(LisaCoordinatorObserver* o);
 	void removeObserver(LisaCoordinatorObserver* o);
@@ -95,13 +134,21 @@ public:
 	
 	void CalcPseudoP();
 	void CalcPseudoP_range(int obs_start, int obs_end);
-private:
+
+	void InitFromVarInfo();
+	void VarInfoAttributeChange();
+
+protected:
+	void DeallocateVectors();
+	void AllocateVectors();
+	
 	void CalcPseudoP_threaded();
 	void CalcLisa();
 	void StandardizeData();
-	bool has_undefined;
-	bool has_isolates;
+	std::vector<bool> has_undefined;
+	std::vector<bool> has_isolates;
 	bool row_standardize;
+	bool calc_significances; // if false, then p-vals will never be needed
 };
 
 #endif

@@ -31,7 +31,7 @@
 struct DbfFieldDesc
 {
   wxString name; // 10 ASCII character string (with 11th char as 0x00).
-  char type; // either N, C, or F
+  char type; // either C, D, F or N
   int length; // unsigned 8-bit <= 255
   int decimals; // unsigned 8-bit <= 15
 };
@@ -61,6 +61,7 @@ class DbfFileReader
   bool getFieldValsLong(int field, std::vector<wxInt64>& vals);
   bool getFieldValsLong(const wxString& f_name, std::vector<wxInt64>& vals);
   bool getFieldValsDouble(int field, std::vector<double>& vals);
+  bool getFieldValsDouble(const wxString& f_name, std::vector<double>& vals);
   bool getFieldValsString(int field, std::vector<wxString>& vals);
   int getNumFields() const { return header.num_fields; }
   int getNumRecords() const { return header.num_records; }
@@ -111,6 +112,7 @@ namespace DbfFileUtils
   double GetMinDouble(int length, int decimals,
 					  int* suggest_len=0, int* suggest_dec=0);
   wxString GetMinDoubleString(int length, int decimals);
+  void strToInt64(const char *str, wxInt64 *val);
 }
 
 #endif

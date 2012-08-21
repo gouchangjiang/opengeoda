@@ -43,8 +43,6 @@
       <logicalFolder name="DialogTools" displayName="DialogTools" projectFiles="true">
         <itemPath>DialogTools/3DControlPan.cpp</itemPath>
         <itemPath>DialogTools/3DControlPan.h</itemPath>
-        <itemPath>DialogTools/3DDlg.cpp</itemPath>
-        <itemPath>DialogTools/3DDlg.h</itemPath>
         <itemPath>DialogTools/ASC2SHPDlg.cpp</itemPath>
         <itemPath>DialogTools/ASC2SHPDlg.h</itemPath>
         <itemPath>DialogTools/AddCentroidsDlg.cpp</itemPath>
@@ -53,18 +51,20 @@
         <itemPath>DialogTools/AddIdVariable.h</itemPath>
         <itemPath>DialogTools/Bnd2ShpDlg.cpp</itemPath>
         <itemPath>DialogTools/Bnd2ShpDlg.h</itemPath>
-        <itemPath>DialogTools/CCVariableDlg.cpp</itemPath>
-        <itemPath>DialogTools/CCVariableDlg.h</itemPath>
         <itemPath>DialogTools/ConditionViewDlg.cpp</itemPath>
         <itemPath>DialogTools/ConditionViewDlg.h</itemPath>
         <itemPath>DialogTools/CreateGridDlg.cpp</itemPath>
         <itemPath>DialogTools/CreateGridDlg.h</itemPath>
+        <itemPath>DialogTools/CreateSpTmProjectDlg.cpp</itemPath>
+        <itemPath>DialogTools/CreateSpTmProjectDlg.h</itemPath>
         <itemPath>DialogTools/CreatingWeightDlg.cpp</itemPath>
         <itemPath>DialogTools/CreatingWeightDlg.h</itemPath>
         <itemPath>DialogTools/DBF2SHPDlg.cpp</itemPath>
         <itemPath>DialogTools/DBF2SHPDlg.h</itemPath>
         <itemPath>DialogTools/Dbf2GaussDlg.cpp</itemPath>
         <itemPath>DialogTools/Dbf2GaussDlg.h</itemPath>
+        <itemPath>DialogTools/ExportCsvDlg.cpp</itemPath>
+        <itemPath>DialogTools/ExportCsvDlg.h</itemPath>
         <itemPath>DialogTools/FieldNewCalcBinDlg.cpp</itemPath>
         <itemPath>DialogTools/FieldNewCalcBinDlg.h</itemPath>
         <itemPath>DialogTools/FieldNewCalcLagDlg.cpp</itemPath>
@@ -81,12 +81,16 @@
         <itemPath>DialogTools/GetisOrdChoiceDlg.h</itemPath>
         <itemPath>DialogTools/HistIntervalDlg.cpp</itemPath>
         <itemPath>DialogTools/HistIntervalDlg.h</itemPath>
+        <itemPath>DialogTools/ImportCsvDlg.cpp</itemPath>
+        <itemPath>DialogTools/ImportCsvDlg.h</itemPath>
         <itemPath>DialogTools/LisaWhat2OpenDlg.cpp</itemPath>
         <itemPath>DialogTools/LisaWhat2OpenDlg.h</itemPath>
         <itemPath>DialogTools/MapQuantileDlg.cpp</itemPath>
         <itemPath>DialogTools/MapQuantileDlg.h</itemPath>
         <itemPath>DialogTools/MovieControlPan.cpp</itemPath>
         <itemPath>DialogTools/MovieControlPan.h</itemPath>
+        <itemPath>DialogTools/OpenSpaceTimeDlg.cpp</itemPath>
+        <itemPath>DialogTools/OpenSpaceTimeDlg.h</itemPath>
         <itemPath>DialogTools/PCPDlg.cpp</itemPath>
         <itemPath>DialogTools/PCPDlg.h</itemPath>
         <itemPath>DialogTools/PermutationCounterDlg.cpp</itemPath>
@@ -97,8 +101,6 @@
         <itemPath>DialogTools/RandomizationDlg.h</itemPath>
         <itemPath>DialogTools/RangeSelectionDlg.cpp</itemPath>
         <itemPath>DialogTools/RangeSelectionDlg.h</itemPath>
-        <itemPath>DialogTools/RateSmootherDlg.cpp</itemPath>
-        <itemPath>DialogTools/RateSmootherDlg.h</itemPath>
         <itemPath>DialogTools/RegressionDlg.cpp</itemPath>
         <itemPath>DialogTools/RegressionDlg.h</itemPath>
         <itemPath>DialogTools/RegressionReportDlg.cpp</itemPath>
@@ -111,14 +113,16 @@
         <itemPath>DialogTools/SaveSelectionDlg.h</itemPath>
         <itemPath>DialogTools/SaveToTableDlg.cpp</itemPath>
         <itemPath>DialogTools/SaveToTableDlg.h</itemPath>
-        <itemPath>DialogTools/ScatterPlotVarsDlg.cpp</itemPath>
-        <itemPath>DialogTools/ScatterPlotVarsDlg.h</itemPath>
         <itemPath>DialogTools/SelectWeightDlg.cpp</itemPath>
         <itemPath>DialogTools/SelectWeightDlg.h</itemPath>
         <itemPath>DialogTools/Statistics.cpp</itemPath>
         <itemPath>DialogTools/Statistics.h</itemPath>
         <itemPath>DialogTools/ThiessenPolygonDlg.cpp</itemPath>
         <itemPath>DialogTools/ThiessenPolygonDlg.h</itemPath>
+        <itemPath>DialogTools/TimeChooserDlg.cpp</itemPath>
+        <itemPath>DialogTools/TimeChooserDlg.h</itemPath>
+        <itemPath>DialogTools/TimeVariantImportDlg.cpp</itemPath>
+        <itemPath>DialogTools/TimeVariantImportDlg.h</itemPath>
         <itemPath>DialogTools/UserConfigDlg.cpp</itemPath>
         <itemPath>DialogTools/UserConfigDlg.h</itemPath>
         <itemPath>DialogTools/VariableSettingsDlg.cpp</itemPath>
@@ -129,6 +133,8 @@
       <logicalFolder name="Explore" displayName="Explore" projectFiles="true">
         <itemPath>Explore/3DPlotView.cpp</itemPath>
         <itemPath>Explore/3DPlotView.h</itemPath>
+        <itemPath>Explore/BoxNewPlotView.cpp</itemPath>
+        <itemPath>Explore/BoxNewPlotView.h</itemPath>
         <itemPath>Explore/BoxPlotView.cpp</itemPath>
         <itemPath>Explore/BoxPlotView.h</itemPath>
         <itemPath>Explore/CartogramView.cpp</itemPath>
@@ -139,27 +145,29 @@
         <itemPath>Explore/GStatCoordinator.h</itemPath>
         <itemPath>Explore/Geom3D.cpp</itemPath>
         <itemPath>Explore/Geom3D.h</itemPath>
-        <itemPath>Explore/GetisOrdMapView.cpp</itemPath>
-        <itemPath>Explore/GetisOrdMapView.h</itemPath>
+        <itemPath>Explore/GetisOrdMapNewView.cpp</itemPath>
+        <itemPath>Explore/GetisOrdMapNewView.h</itemPath>
         <itemPath>Explore/HistView.cpp</itemPath>
         <itemPath>Explore/HistView.h</itemPath>
-        <itemPath>Explore/LisaBoxView.cpp</itemPath>
-        <itemPath>Explore/LisaBoxView.h</itemPath>
+        <itemPath>Explore/HistogramView.cpp</itemPath>
+        <itemPath>Explore/HistogramView.h</itemPath>
         <itemPath>Explore/LisaCoordinator.cpp</itemPath>
         <itemPath>Explore/LisaCoordinator.h</itemPath>
         <itemPath>Explore/LisaCoordinatorObserver.h</itemPath>
-        <itemPath>Explore/LisaMapView.cpp</itemPath>
-        <itemPath>Explore/LisaMapView.h</itemPath>
-        <itemPath>Explore/MoranGView.cpp</itemPath>
-        <itemPath>Explore/MoranGView.h</itemPath>
-        <itemPath>Explore/MoranScatterPlotView.cpp</itemPath>
-        <itemPath>Explore/MoranScatterPlotView.h</itemPath>
-        <itemPath>Explore/PCPView.cpp</itemPath>
-        <itemPath>Explore/PCPView.h</itemPath>
+        <itemPath>Explore/LisaMapNewView.cpp</itemPath>
+        <itemPath>Explore/LisaMapNewView.h</itemPath>
+        <itemPath>Explore/LisaScatterPlotView.cpp</itemPath>
+        <itemPath>Explore/LisaScatterPlotView.h</itemPath>
+        <itemPath>Explore/MapNewView.cpp</itemPath>
+        <itemPath>Explore/MapNewView.h</itemPath>
+        <itemPath>Explore/PCPNewView.cpp</itemPath>
+        <itemPath>Explore/PCPNewView.h</itemPath>
         <itemPath>Explore/ScatterNewPlotView.cpp</itemPath>
         <itemPath>Explore/ScatterNewPlotView.h</itemPath>
         <itemPath>Explore/ScatterPlotView.cpp</itemPath>
         <itemPath>Explore/ScatterPlotView.h</itemPath>
+        <itemPath>Explore/ThemeUtilities.cpp</itemPath>
+        <itemPath>Explore/ThemeUtilities.h</itemPath>
       </logicalFolder>
       <logicalFolder name="Generic" displayName="Generic" projectFiles="true">
         <itemPath>Generic/HighlightState.cpp</itemPath>
@@ -240,6 +248,8 @@
         <itemPath>ShapeOperations/BasePoint.h</itemPath>
         <itemPath>ShapeOperations/Box.cpp</itemPath>
         <itemPath>ShapeOperations/Box.h</itemPath>
+        <itemPath>ShapeOperations/CsvFileUtils.cpp</itemPath>
+        <itemPath>ShapeOperations/CsvFileUtils.h</itemPath>
         <itemPath>ShapeOperations/DBF.cpp</itemPath>
         <itemPath>ShapeOperations/DBF.h</itemPath>
         <itemPath>ShapeOperations/DbfFile.cpp</itemPath>
@@ -393,8 +403,6 @@
       </item>
       <item path="Generic/TestTableView.cpp" ex="true" tool="1">
       </item>
-      <item path="ShapeOperations/ShapeUtils.cpp" ex="true" tool="1">
-      </item>
     </conf>
     <conf name="Release" type="1">
       <toolsSet>
@@ -472,8 +480,6 @@
       <item path="Generic/TestMapView.cpp" ex="true" tool="1">
       </item>
       <item path="Generic/TestTableView.cpp" ex="true" tool="1">
-      </item>
-      <item path="ShapeOperations/ShapeUtils.cpp" ex="true" tool="1">
       </item>
     </conf>
   </confs>

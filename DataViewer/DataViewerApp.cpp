@@ -20,7 +20,10 @@
 #include <wx/xrc/xmlres.h>
 #include <wx/image.h>
 #include <wx/filedlg.h>
+#include "../FramesManager.h"
 #include "../GeoDaConst.h"
+#include "../DialogTools/OpenSpaceTimeDlg.h"
+#include "../DialogTools/TimeChooserDlg.h"
 #include "DataViewerApp.h"
 
 extern void DataViewerInitXmlResource();
@@ -34,15 +37,34 @@ bool DataViewerApp::OnInit()
 	wxImage::AddHandler(new wxXPMHandler);
 	wxXmlResource::Get()->InitAllHandlers();
 	DataViewerInitXmlResource();
-	wxFileDialog dlg(0, "Choose DBF file", "", "",
-					 "DBF files (*.dbf)|*.dbf");
-	if (dlg.ShowModal() == wxID_OK) {
-		DataViewerFrame *frame = new DataViewerFrame(0, dlg.GetPath());
-		frame->LoadDefaultMenus();
-		frame->Show(true);
-		return true;
-	} else {
-		return false;
-	}
+	
+	frames_manager = new FramesManager;
+	
+	OpenSpaceTimeDlg dlg(true);
+	if (dlg.ShowModal() != wxID_OK) return false;
+	DataViewerFrame* frame =
+		new DataViewerFrame(0, frames_manager,
+							dlg.time_invariant_dbf_name.GetFullPath(),
+							dlg.time_variant_dbf_name.GetFullPath(),
+							dlg.sp_table_space_col,
+							dlg.tm_table_space_col,
+							dlg.tm_table_time_col);
+	frame->LoadDefaultMenus();
+	frame->Show(true);
+	
+	frames_manager->closeAndDeleteWhenEmpty();
+	
+	//TimeChooserDlg* time_chooser = new TimeChooserDlg(0, frames_manager);
+	//time_chooser->Show(true);
+	
+	
+	//wxFileDialog dlg(0, "Choose DBF file", "", "",
+	//				 "DBF files (*.dbf)|*.dbf");
+	//if (dlg.ShowModal() != wxID_OK) return false;
+	//DataViewerFrame* frame = new DataViewerFrame(0, frames_manager,
+	//  dlg.GetPath());
+	//frame->LoadDefaultMenus();
+	//frame->Show(true);
+	return true;
 }
 

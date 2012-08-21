@@ -17,100 +17,69 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// For compilers that support precompilation, includes <wx/wx.h>.
 #include <wx/wxprec.h>
-
-////@begin includes
 #include <wx/wx.h>
 #include <wx/xrc/xmlres.h>
 #include <wx/valtext.h>
-////@end includes
-
 #include "HistIntervalDlg.h"
 
-/*!
- * CHistIntervalDlg type definition
- */
+IMPLEMENT_CLASS( HistIntervalDlg, wxDialog )
 
-IMPLEMENT_CLASS( CHistIntervalDlg, wxDialog )
-
-/*!
- * CHistIntervalDlg event table definition
- */
-
-BEGIN_EVENT_TABLE( CHistIntervalDlg, wxDialog )
-    EVT_BUTTON( wxID_OK, CHistIntervalDlg::OnOkClick )
-    EVT_BUTTON( wxID_CANCEL, CHistIntervalDlg::OnCancelClick )
+BEGIN_EVENT_TABLE( HistIntervalDlg, wxDialog )
+    EVT_BUTTON( wxID_OK, HistIntervalDlg::OnOkClick )
+    EVT_BUTTON( wxID_CANCEL, HistIntervalDlg::OnCancelClick )
 END_EVENT_TABLE()
 
-/*!
- * CHistIntervalDlg constructors
- */
-
-CHistIntervalDlg::CHistIntervalDlg( )
+HistIntervalDlg::HistIntervalDlg( int min_intervals_s,
+								 int default_num_intervals_s,
+								 int max_intervals_s,
+								 wxWindow* parent,
+								 wxWindowID id,
+								 const wxString& caption,
+								 const wxPoint& pos, const wxSize& size,
+								 long style )
+: min_intervals(min_intervals_s),
+default_num_intervals(default_num_intervals_s),
+max_intervals(max_intervals_s),
+num_intervals(default_num_intervals_s)
 {
+	wxString t;
+	t << default_num_intervals;
+	s_int = t;
 
-}
-
-CHistIntervalDlg::CHistIntervalDlg( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
-{
-    Create(parent, id, caption, pos, size, style);
-	s_int = "7";
-}
-
-/*!
- * CHistIntervalDlg creator
- */
-
-bool CHistIntervalDlg::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
-{
     SetParent(parent);
     CreateControls();
     Centre();
-    return true;
 }
 
-/*!
- * Control creation for CHistIntervalDlg
- */
-
-void CHistIntervalDlg::CreateControls()
+void HistIntervalDlg::CreateControls()
 {    
     wxXmlResource::Get()->LoadDialog(this, GetParent(), "IDD_INTERVALS");
-    if (FindWindow(wxXmlResource::GetXRCID("IDC_EDIT_INTERVAL")))
-        m_intervals = wxDynamicCast(FindWindow(XRCID("IDC_EDIT_INTERVAL")), wxTextCtrl);
-
-    // Set validators
-    if (FindWindow(XRCID("IDC_EDIT_INTERVAL")))
-        FindWindow(XRCID("IDC_EDIT_INTERVAL"))->SetValidator( wxTextValidator(wxFILTER_NUMERIC, & s_int) );
+	m_intervals = wxDynamicCast(FindWindow(XRCID("IDC_EDIT_INTERVAL")),
+								wxTextCtrl);
+	
+    m_intervals->SetValidator( wxTextValidator(wxFILTER_NUMERIC, &s_int) );
 }
 
-/*!
- * wxEVT_COMMAND_BUTTON_CLICKED event handler for wxID_OK
- */
-
-void CHistIntervalDlg::OnOkClick( wxCommandEvent& event )
+void HistIntervalDlg::OnOkClick( wxCommandEvent& event )
 {
+	if (!m_intervals->GetValue().IsNumber()) {
+		wxMessageBox("Please enter a valid positive integer");
+		return;
+	}
+	long val;
+	m_intervals->GetValue().ToLong(&val);
+	if (val < min_intervals) val = min_intervals;
+	if (val > max_intervals) val = max_intervals;
+	num_intervals = val;
+	
     event.Skip();
 	EndDialog(wxID_OK);
 }
 
-/*!
- * wxEVT_COMMAND_BUTTON_CLICKED event handler for wxID_CANCEL
- */
-
-void CHistIntervalDlg::OnCancelClick( wxCommandEvent& event )
+void HistIntervalDlg::OnCancelClick( wxCommandEvent& event )
 {
     event.Skip();
 	EndDialog(wxID_CANCEL);
 
-}
-
-/*!
- * Should we show tooltips?
- */
-
-bool CHistIntervalDlg::ShowToolTips()
-{
-    return true;
 }

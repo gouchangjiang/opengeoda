@@ -33,19 +33,18 @@
 #include "PermutationCounterDlg.h"
 
 
-IMPLEMENT_CLASS( CPermutationCounterDlg, wxDialog )
+IMPLEMENT_CLASS( PermutationCounterDlg, wxDialog )
 
-
-BEGIN_EVENT_TABLE( CPermutationCounterDlg, wxDialog )
-    EVT_BUTTON( wxID_OK, CPermutationCounterDlg::OnOkClick )
+BEGIN_EVENT_TABLE( PermutationCounterDlg, wxDialog )
+    EVT_BUTTON( wxID_OK, PermutationCounterDlg::OnOkClick )
 END_EVENT_TABLE()
 
 
-CPermutationCounterDlg::CPermutationCounterDlg( )
+PermutationCounterDlg::PermutationCounterDlg( )
 {
 }
 
-CPermutationCounterDlg::CPermutationCounterDlg( wxWindow* parent,
+PermutationCounterDlg::PermutationCounterDlg( wxWindow* parent,
 											   wxWindowID id,
 											   const wxString& caption,
 											   const wxPoint& pos,
@@ -56,7 +55,7 @@ CPermutationCounterDlg::CPermutationCounterDlg( wxWindow* parent,
 	s_int = "999";
 }
 
-bool CPermutationCounterDlg::Create( wxWindow* parent,
+bool PermutationCounterDlg::Create( wxWindow* parent,
 									wxWindowID id,
 									const wxString& caption,
 									const wxPoint& pos,
@@ -73,7 +72,7 @@ bool CPermutationCounterDlg::Create( wxWindow* parent,
 }
 
 
-void CPermutationCounterDlg::CreateControls()
+void PermutationCounterDlg::CreateControls()
 {    
     wxXmlResource::Get()->
 		LoadDialog(this, GetParent(), "IDD_PERMUTATION_COUNT");
@@ -84,18 +83,7 @@ void CPermutationCounterDlg::CreateControls()
 			SetValidator(wxTextValidator(wxFILTER_NUMERIC, & s_int) );
 }
 
-wxBitmap CPermutationCounterDlg::GetBitmapResource( const wxString& name )
-{
-    return wxNullBitmap;
-}
-
-
-wxIcon CPermutationCounterDlg::GetIconResource( const wxString& name )
-{
-    return wxNullIcon;
-}
-
-void CPermutationCounterDlg::OnOkClick( wxCommandEvent& event )
+void PermutationCounterDlg::OnOkClick( wxCommandEvent& event )
 {
     event.Skip();
 	EndDialog(wxID_OK);

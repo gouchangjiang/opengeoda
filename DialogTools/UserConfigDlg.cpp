@@ -41,66 +41,66 @@
 ////@end XPM images
 
 /*!
- * CUserConfigDlg type definition
+ * UserConfigDlg type definition
  */
 
-IMPLEMENT_DYNAMIC_CLASS( CUserConfigDlg, wxDialog )
+IMPLEMENT_DYNAMIC_CLASS( UserConfigDlg, wxDialog )
 
 /*!
- * CUserConfigDlg event table definition
+ * UserConfigDlg event table definition
  */
 
-BEGIN_EVENT_TABLE( CUserConfigDlg, wxDialog )
+BEGIN_EVENT_TABLE( UserConfigDlg, wxDialog )
 
-////@begin CUserConfigDlg event table entries
-    EVT_BUTTON( wxID_OK, CUserConfigDlg::OnOkClick )
+////@begin UserConfigDlg event table entries
+    EVT_BUTTON( wxID_OK, UserConfigDlg::OnOkClick )
 
-////@end CUserConfigDlg event table entries
+////@end UserConfigDlg event table entries
 
 END_EVENT_TABLE()
 
 /*!
- * CUserConfigDlg constructors
+ * UserConfigDlg constructors
  */
 
-CUserConfigDlg::CUserConfigDlg( )
+UserConfigDlg::UserConfigDlg( )
 {
 }
 
-CUserConfigDlg::CUserConfigDlg( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+UserConfigDlg::UserConfigDlg( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
     Create(parent, id, caption, pos, size, style);
 }
 
 /*!
- * CUserConfigDlg creator
+ * UserConfigDlg creator
  */
 
-bool CUserConfigDlg::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool UserConfigDlg::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
-////@begin CUserConfigDlg member initialisation
+////@begin UserConfigDlg member initialisation
     m_label = NULL;
     m_min = NULL;
     m_max = NULL;
-////@end CUserConfigDlg member initialisation
+////@end UserConfigDlg member initialisation
 
-////@begin CUserConfigDlg creation
+////@begin UserConfigDlg creation
     SetParent(parent);
     CreateControls();
     GetSizer()->Fit(this);
     GetSizer()->SetSizeHints(this);
     Centre();
-////@end CUserConfigDlg creation
+////@end UserConfigDlg creation
     return TRUE;
 }
 
 /*!
- * Control creation for CUserConfigDlg
+ * Control creation for UserConfigDlg
  */
 
-void CUserConfigDlg::CreateControls()
+void UserConfigDlg::CreateControls()
 {    
-////@begin CUserConfigDlg content construction
+////@begin UserConfigDlg content construction
     wxXmlResource::Get()->LoadDialog(this, GetParent(), "IDD_USERCONFIG_DIALOG");
     m_label = XRCCTRL(*this, wxString("wxID_STATIC"), wxStaticText);
     m_min = XRCCTRL(*this, wxString("ID_TEXTCTRL2"), wxTextCtrl);
@@ -110,20 +110,20 @@ void CUserConfigDlg::CreateControls()
         FindWindow(XRCID("ID_TEXTCTRL2"))->SetValidator( wxTextValidator(wxFILTER_NUMERIC, & s_int) );
     if (FindWindow(XRCID("ID_TEXTCTRL3")))
         FindWindow(XRCID("ID_TEXTCTRL3"))->SetValidator( wxTextValidator(wxFILTER_NUMERIC, & s_int2) );
-////@end CUserConfigDlg content construction
+////@end UserConfigDlg content construction
 
     // Create custom windows not generated automatically here.
 
-////@begin CUserConfigDlg content initialisation
+////@begin UserConfigDlg content initialisation
 
-////@end CUserConfigDlg content initialisation
+////@end UserConfigDlg content initialisation
 }
 
 /*!
  * Should we show tooltips?
  */
 
-bool CUserConfigDlg::ShowToolTips()
+bool UserConfigDlg::ShowToolTips()
 {
     return TRUE;
 }
@@ -132,36 +132,36 @@ bool CUserConfigDlg::ShowToolTips()
  * Get bitmap resources
  */
 
-wxBitmap CUserConfigDlg::GetBitmapResource( const wxString& name )
+wxBitmap UserConfigDlg::GetBitmapResource( const wxString& name )
 {
     // Bitmap retrieval
-////@begin CUserConfigDlg bitmap retrieval
+////@begin UserConfigDlg bitmap retrieval
     return wxNullBitmap;
-////@end CUserConfigDlg bitmap retrieval
+////@end UserConfigDlg bitmap retrieval
 }
 
 /*!
  * Get icon resources
  */
 
-wxIcon CUserConfigDlg::GetIconResource( const wxString& name )
+wxIcon UserConfigDlg::GetIconResource( const wxString& name )
 {
     // Icon retrieval
-////@begin CUserConfigDlg icon retrieval
+////@begin UserConfigDlg icon retrieval
     return wxNullIcon;
-////@end CUserConfigDlg icon retrieval
+////@end UserConfigDlg icon retrieval
 }
 /*!
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for wxID_OK
  */
 
-void CUserConfigDlg::OnOkClick( wxCommandEvent& event )
+void UserConfigDlg::OnOkClick( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for wxID_OK in CUserConfigDlg.
+////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for wxID_OK in UserConfigDlg.
     // Before editing this code, remove the block markers.
     event.Skip();
 	EndDialog(wxID_OK);
-////@end wxEVT_COMMAND_BUTTON_CLICKED event handler for wxID_OK in CUserConfigDlg. 
+////@end wxEVT_COMMAND_BUTTON_CLICKED event handler for wxID_OK in UserConfigDlg. 
 }
 
 

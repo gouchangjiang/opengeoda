@@ -41,10 +41,7 @@
 
 extern Selection gSelection;
 extern GeoDaEventType gEvent;
-extern int gObservation;
 extern MyFrame *frame;
-extern double *m_gX, *m_gY;
-extern wxString m_gVar1, m_gVar2;
 
 BEGIN_EVENT_TABLE(ScatterPlotFrame, wxFrame)
 	EVT_ACTIVATE(ScatterPlotFrame::OnActivate)
@@ -62,17 +59,22 @@ END_EVENT_TABLE()
 // ScatterPlot Frame
 // ---------------------------------------------------------------------------
 
-ScatterPlotFrame::ScatterPlotFrame(wxFrame *parent, Project* project,
+ScatterPlotFrame::ScatterPlotFrame(wxFrame *parent,
+								   double* v1, double* v2, int num_obs,
+								   const wxString& v1_name,
+								   const wxString& v2_name,
+								   Project* project,
 								   const wxString& title,
 								   const wxPoint& pos, const wxSize& size,
 								   const long style)
-	: TemplateFrame(parent, project, title, pos, size, style)
+: TemplateFrame(parent, project, title, pos, size, style)
 {
 	old_style = true;
 	my_children.Append(this);
 	int width, height;
 	GetClientSize(&width, &height);
-	template_canvas = new ScatterPlotCanvas(this, wxPoint(0, 0),
+	template_canvas = new ScatterPlotCanvas(this, v1, v2, num_obs,
+											v1_name, v2_name, wxPoint(0, 0),
 											wxSize(width, height));
 	template_canvas->template_frame = this;
 	
@@ -140,25 +142,29 @@ void ScatterPlotFrame::OnViewRegressionSelectedExcluded(wxCommandEvent& event)
 // ---------------------------------------------------------------------------
 
 // Define a constructor for my canvas
-ScatterPlotCanvas::ScatterPlotCanvas(wxWindow *parent, const wxPoint& pos,
-									 const wxSize& size,
-									 bool conditional_view)
-: TemplateCanvas(parent, pos, size), Conditionable(conditional_view)
+ScatterPlotCanvas::ScatterPlotCanvas(wxWindow *parent,
+									 double* v1, double* v2, int num_obs_s,
+									 const wxString& v1_name,
+									 const wxString& v2_name,
+									 const wxPoint& pos,
+									 const wxSize& size, bool conditional_view)
+: TemplateCanvas(parent, pos, size), Conditionable(conditional_view, num_obs_s),
+num_obs(num_obs_s)
 {
 	flick = true;
 	oldSlope = 0.0;
 	oldIntercept = 0.0;
 
-	location.resize(gObservation);
+	location.resize(num_obs);
 	
-	RawData = new DataPoint [ gObservation];
-	Horizontal = m_gVar1;
-	Vertical = m_gVar2;
+	RawData = new DataPoint[num_obs];
+	Horizontal = v1_name;
+	Vertical = v2_name;
 
 	SpbackColor = wxColour(255,255,255);
 
-	for (int i=0; i < gObservation; i++) {
-		RawData[i] = DataPoint(m_gX[i], m_gY[i]);
+	for (int i=0; i < num_obs; i++) {
+		RawData[i] = DataPoint(v1[i], v2[i]);
 	}
 	
 	regressionUnselected = false;
@@ -250,14 +256,14 @@ void ScatterPlotCanvas::CheckSize()
 	
     xDensity= Width/(xMax-xMin);
     yDensity= Height/(yMax-yMin);
-    for (int cnt= 0; cnt < gObservation; ++cnt) {
+    for (int cnt= 0; cnt < num_obs; ++cnt) {
 		location[cnt].x =
 			(long) ((RawData[cnt].horizontal - xMin) * xDensity + Left);
 		location[cnt].y =
 			(long) (Top+Height- (RawData[cnt].vertical - yMin) * yDensity);
 	}
     starSize = (int) (log10((double)Width+(double)Height)
-					  - log10((double)gObservation)
+					  - log10((double)num_obs)
 					  + ((double)Width+(double)Height)/256);
 	if (starSize < 0) 
 		starSize = 0;
@@ -315,7 +321,7 @@ void ScatterPlotCanvas::BuildMesh(const bool asymmetric)
     if (asymmetric) {
 		xMin= xMax= RawData[0].horizontal;
 		yMin= yMax= RawData[0].vertical;
-		for (cnt= 0; cnt < gObservation; ++cnt)  {
+		for (cnt= 0; cnt < num_obs; ++cnt)  {
 			if (xMin > RawData[cnt].horizontal) xMin= RawData[cnt].horizontal;
 			else if (xMax <RawData[cnt].horizontal) xMax=RawData[cnt].horizontal;
 			if (yMin > RawData[cnt].vertical) yMin= RawData[cnt].vertical;
@@ -333,14 +339,14 @@ void ScatterPlotCanvas::BuildMesh(const bool asymmetric)
     } else {
 		double   min, max;
 		min= max= RawData[0].horizontal;
-		for (cnt= 0; cnt < gObservation; ++cnt)  
+		for (cnt= 0; cnt < num_obs; ++cnt)  
 		{
 			if (min > RawData[cnt].horizontal) min= RawData[cnt].horizontal;
 			else if (max < RawData[cnt].horizontal) max= RawData[cnt].horizontal;
 			if (min > RawData[cnt].vertical) min= RawData[cnt].vertical;
 			else if (max < RawData[cnt].vertical) max= RawData[cnt].vertical;
 		}
-		for (cnt= 0; cnt < gObservation; ++cnt) {
+		for (cnt= 0; cnt < num_obs; ++cnt) {
 			if (min > -RawData[cnt].horizontal) min= -RawData[cnt].horizontal;
 			else if (max < -RawData[cnt].horizontal) max=-RawData[cnt].horizontal;
 			if (min > RawData[cnt].vertical) min= RawData[cnt].vertical;
@@ -375,38 +381,38 @@ void ScatterPlotCanvas::Standardized() {
 	double sum = 0;
 
 	// Standardized X
-	for (cnt = 0; cnt < gObservation; ++cnt) {
+	for (cnt = 0; cnt < num_obs; ++cnt) {
 		sum += RawData[cnt].horizontal;
 	}
-	meanX = sum / gObservation;
+	meanX = sum / num_obs;
 	if (meanX != 0) { // remove the mean
-		for (cnt = 0; cnt < gObservation; ++cnt)
+		for (cnt = 0; cnt < num_obs; ++cnt)
 			RawData[cnt].horizontal -= meanX;
 	}
 	sum = 0; // accumulate the sum of squares
-	for (cnt = 0; cnt < gObservation; ++cnt)
+	for (cnt = 0; cnt < num_obs; ++cnt)
 		sum += geoda_sqr(RawData[cnt].horizontal);
-	sdevX = sqrt(sum / (gObservation - 1)); // std. deviation
+	sdevX = sqrt(sum / (num_obs - 1)); // std. deviation
 	if (sdevX != 0)
-		for (cnt = 0; cnt < gObservation; ++cnt)
+		for (cnt = 0; cnt < num_obs; ++cnt)
 			RawData[cnt].horizontal /= sdevX;
 
 	// Standardized Y
 	sum = 0;
-	for (cnt = 0; cnt < gObservation; ++cnt) {
+	for (cnt = 0; cnt < num_obs; ++cnt) {
 		sum += RawData[cnt].vertical;
 	}
-	meanY = sum / gObservation;
+	meanY = sum / num_obs;
 	if (meanY != 0) { // remove the mean
-		for (cnt = 0; cnt < gObservation; ++cnt)
+		for (cnt = 0; cnt < num_obs; ++cnt)
 			RawData[cnt].vertical -= meanY;
 	}
 	sum = 0; // accumulate the sum of squares
-	for (cnt = 0; cnt < gObservation; ++cnt)
+	for (cnt = 0; cnt < num_obs; ++cnt)
 		sum += geoda_sqr(RawData[cnt].vertical);
-	sdevY = sqrt(sum / (gObservation - 1)); // std. deviation
+	sdevY = sqrt(sum / (num_obs - 1)); // std. deviation
 	if (sdevY != 0)
-		for (cnt = 0; cnt < gObservation; ++cnt)
+		for (cnt = 0; cnt < num_obs; ++cnt)
 			RawData[cnt].vertical /= sdevY;
 
 	StandardizedFlag = true;
@@ -414,7 +420,7 @@ void ScatterPlotCanvas::Standardized() {
 
 void ScatterPlotCanvas::Destandardized()
 {
-	for (int cnt=0; cnt < gObservation; cnt++)
+	for (int cnt=0; cnt < num_obs; cnt++)
 	{
 		RawData[cnt].vertical = RawData[cnt].vertical * sdevY + meanY; 
 		RawData[cnt].horizontal = RawData[cnt].horizontal * sdevX + meanX;
@@ -469,7 +475,7 @@ void ScatterPlotCanvas::DrawLegend(wxDC* dc)
 		for (int cnt= 0; cnt <= xUnits; ++cnt)  {
 			if (fabs(val) < 1e-15) val = 0;
 			//_gcvt(val, 8, buf);
-			ggcvt(val, 8, buf);
+			GenUtils::ggcvt(val, 8, buf);
 
 			sprintf ( buf, "%.*f", 1, val );
 
@@ -512,7 +518,7 @@ void ScatterPlotCanvas::DrawLegend(wxDC* dc)
 		{
 			if (fabs(val) < 1e-15) val = 0;
 			//_gcvt(val, 8, buf);
-			ggcvt(val, 8, buf);
+			GenUtils::ggcvt(val, 8, buf);
 
 			sprintf ( buf, "%.*f", 1, val );
 
@@ -534,7 +540,7 @@ inline void ScatterPlotCanvas::DrawAllPoints(wxDC* pDC)
 	wxPen sel_pen;
 	sel_pen.SetColour(*wxRED);
 	
-	for (int cnt=0; cnt<gObservation; cnt++) {
+	for (int cnt=0; cnt<num_obs; cnt++) {
 		if (!conditionFlag[cnt]) continue;
 		
 		if (gSelection.selected(cnt)) {
@@ -678,7 +684,7 @@ void ScatterPlotCanvas::SlopeReport(wxDC* dc,const char * header)
 		dc->DrawText(buf, 10+Left+Width/2, Top/8-1);
 	}
 	
-	if (gcObs < gObservation) {
+	if (gcObs < num_obs) {
 		wxString text = wxString::Format("(%d)", (int) gcObs);
 		dc->SetFont(*GeoDaConst::small_font);
 		dc->SetTextForeground(*wxBLACK);
@@ -692,7 +698,7 @@ void ScatterPlotCanvas::SlopeReport(wxDC* dc,const char * header)
 void ScatterPlotCanvas::SelectByPoint(wxMouseEvent& event)  
 {
 	int  Id=GeoDaConst::EMPTY, distId= GeoDaConst::EMPTY, dist;
-	for (int cnt= 0; cnt < gObservation; ++cnt) {
+	for (int cnt= 0; cnt < num_obs; ++cnt) {
 		if (fabs(location[cnt].x - gSelect1.x) < 3 &&
 			fabs(location[cnt].y - gSelect2.y) < 3)
 		{
@@ -744,7 +750,7 @@ int ScatterPlotCanvas::SelectByRect(wxMouseEvent& event)
 	gEvent = (event.ShiftDown()) ? ADD_SELECTION : NEW_SELECTION;
 
 	int mCnt= 0;
-	for (int cnt= 0; cnt < gObservation; ++cnt) {
+	for (int cnt= 0; cnt < num_obs; ++cnt) {
 		if (location[cnt].x >= p1.x && location[cnt].x <= p2.x &&
 			location[cnt].y >= p1.y && location[cnt].y <= p2.y &&
 			(gEvent == NEW_SELECTION || !gSelection.selected(cnt)))  
@@ -859,8 +865,8 @@ void ScatterPlotCanvas::ComputeRegression( const bool all )
 
 	flick = true;
 	if (!isConditional) {
-		gcObs = gObservation;
-		for (int cnt=0; cnt < gObservation; ++cnt) {
+		gcObs = num_obs;
+		for (int cnt=0; cnt < num_obs; ++cnt) {
 			if (all || !gSelection.selected(cnt)) {
 				sumX += RawData[cnt].horizontal;
 				sumY += RawData[cnt].vertical;
@@ -902,7 +908,7 @@ void ScatterPlotCanvas::ComputeRegression( const bool all )
 		}
 	} else {
 		gcObs = 0;
-		for (int cnt=0; cnt < gObservation; ++cnt) {
+		for (int cnt=0; cnt < num_obs; ++cnt) {
 			if(!conditionFlag[cnt]) continue;
 			gcObs++;
 			if (all || !gSelection.selected(cnt)) {

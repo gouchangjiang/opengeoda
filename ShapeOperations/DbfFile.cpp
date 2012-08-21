@@ -25,12 +25,11 @@
 //#include <time.h> // for random number generator
 #include <stdlib.h> // for random number generator and atoi
 #include "../GeoDaConst.h"
-#include "../GenUtils.h"
 #include "../logger.h"
 #include "DbfFile.h"
 
 // dBaseIII+ is only 128, but many others are much higher.  Some people
-// have emperically discovered that 2046 is OK in practice for many
+// have imperically discovered that 2046 is OK in practice for many
 // implementations.
 const int DbfFileReader::MAX_NUMBER_FIELDS = 2046;
 
@@ -201,11 +200,43 @@ bool DbfFileReader::getFieldValsLong(int field, std::vector<wxInt64>& vals)
         file.read(char_buf, field_length);
         // seek to next record in file
         file.seekg(header.length_each_record-field_length, std::ios::cur);
-		GenUtils::strToInt64(char_buf, &vals[i]);
+		DbfFileUtils::strToInt64(char_buf, &vals[i]);
     }
     delete [] char_buf;
 
     return true;
+}
+
+// Convert an ASCII string into a wxInt64 (or long long)
+// Note this function is also in GenUtils, but we want DbfFile
+// to have minimal dependencies.
+void DbfFileUtils::strToInt64(const char *str, wxInt64 *val)
+{
+	wxInt64 total = 0;
+	bool minus = 0;
+	
+	while (isspace(*str)) str++;
+	if (*str == '+') {
+		str++;
+	} else if (*str == '-') {
+		minus = true;
+		str++;
+	}
+	while (isdigit(*str)) {
+		total *= 10;
+		total += (*str++ - '0');
+	}
+	*val = minus ? -total : total;
+}
+
+bool DbfFileReader::getFieldValsDouble(const wxString& f_name,
+									   std::vector<double>& vals)
+{
+    for (int i=0; i< (int) fields.size(); i++) {
+        if (f_name == fields[i].name)
+            return getFieldValsDouble(i, vals);
+    }
+    return false;
 }
 
 bool DbfFileReader::getFieldValsDouble(int field, std::vector<double>& vals)
@@ -766,7 +797,9 @@ void DbfFileUtils::SuggestDoubleParams(int length, int decimals,
 	// writing to disk, and when decimals = 15, require length >= 17 to
 	// allow for "0." prefex. If length-2 == decimals, then negative numbers
 	// are not allowed since there is not room for the "-0." prefix.
-	length = GenUtils::min<double>(GeoDaConst::max_dbf_double_len, length);
+	if (GeoDaConst::max_dbf_double_len < length) {
+		length = GeoDaConst::max_dbf_double_len;
+	}
 	if (length < 3) length = 3;
 	if (decimals < 1) decimals = 1;
 	if (decimals > 15) decimals = 15;
@@ -781,7 +814,7 @@ double DbfFileUtils::GetMaxDouble(int length, int decimals,
 {
 	// make sure that length and decimals have legal values
 	SuggestDoubleParams(length, decimals, &length, &decimals);
-		
+
 	int len_inter = length - (1+decimals);
 	if (len_inter + decimals > 15) len_inter = 15-decimals;
 	double r = 0;

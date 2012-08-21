@@ -26,7 +26,9 @@
 class BoxPlotCanvas : public TemplateCanvas, public Conditionable
 {
 public:
-    BoxPlotCanvas(wxWindow* parent, const wxPoint& pos, const wxSize& size,
+    BoxPlotCanvas(wxWindow* parent,
+				  double* v1, int num_obs, const wxString& v1_name,
+				  const wxPoint& pos, const wxSize& size,
 				  bool conditional_view = false);
 	virtual ~BoxPlotCanvas();
     virtual void OnDraw(wxDC& dc);
@@ -71,8 +73,9 @@ public:
     void DrawMedian(wxDC* pDC);
     bool Init();
 
+	int num_obs;
 	int gcObs;  // keeps track of the number of displayed observations.  This
-                // can be less than gObservation when in Conditional Plot.
+                // can be less than num_obs when in Conditional Plot.
 
 	bool hinge3; // default is false which indicates hinge is 1.5, not 3.0
 
@@ -88,7 +91,9 @@ class BoxPlotFrame: public TemplateFrame
 {
 public:
     BoxPlotCanvas *canvas;
-    BoxPlotFrame(wxFrame *parent, Project* project,
+    BoxPlotFrame(wxFrame *parent,
+				 double* v1, int num_obs, const wxString& v1_name,
+				 Project* project,
 				 const wxString& title, const wxPoint& pos,
 				 const wxSize& size, const long style);
     virtual ~BoxPlotFrame();

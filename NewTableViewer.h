@@ -43,7 +43,9 @@ public:
 	void OnLabelLeftClickEvent( wxGridEvent& ev );
 	void OnLabelLeftDClickEvent( wxGridEvent& ev );
 	void OnCellChanged( wxGridEvent& ev );	
-		
+	
+	/** Implementation of FramesManagerObserver interface */
+	virtual void update(FramesManager* o);
 private:
 	wxGrid* grid;
 	DbfGridTableBase* grid_base;

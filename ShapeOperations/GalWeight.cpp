@@ -86,103 +86,15 @@ double GalElement::SpatialLag(const double *x, const int * perm,
 	return lag;
 }
 
-void GalElement::Write(std::ofstream &out) const 
+double GalElement::SpatialLag(const std::vector<double>& x, const int * perm,
+							  const bool std) const  
 {
-	const long val = Size();
-	out.write((char *) &val, sizeof(long));
-	
-	if (Size())
-		out.write( (char *) data, sizeof(long) * Size() );
-	return;
-}
-
-
-int GalElement::ReadTxt(std::ifstream &in, long ob)  
-{
-	// Notes on return:
-	// -1 : wrong # of neighbors, too big or negative
-	//  0 : doesn't have neighbor
-	//  1 : good
-	
-	long id; int dim; long mydt;
-	in >> id >> dim;
-	//	wxString xx;xx.Format("709:id:%d, dim:%d",id, dim);wxMessageBox(xx);
-	
-	
-	size = dim;
-	int obs = ob;
-	
-	if (size == 0) return 0;
-	if (size > obs || size < 0) 
-	{
-		//		xx.Format("717:size:%d, obs:%d",size,obs);wxMessageBox(xx);
-		in.close();
-		return -1;
-	}
-	
-	data = new long [ size ];
-	if (data == NULL)  
-	{
-		size = 0;
-		return 0;
-	}
-	for (int i=0;i< size;i++) 
-	{
-		in >> mydt; 
-		data[i] = mydt-1;
-		
-		if (mydt > obs || mydt < 0) 
-		{
-			delete [] data;
-			size = 0;
-			data = NULL;
-			return -1;
-		}
-	}
-	return 1;
-}
-
-
-int GalElement::ReadTxt(int dim, long* dt, long ob)  
-{
-	size = dim;
-	int obs = ob;
-	if (size == 0) return 0;
-	if (size > obs-1) return -1;
-	data = new long [ size ];
-	if (data == NULL)  
-	{
-		size = 0;
-		return 0;
-	}
-	
-	for (int i=0;i< size;i++) 
-	{
-		data[i] = dt[i];
-		if (data[i] > obs || data[i] < 0) 
-		{
-			delete [] data;
-			size = 0;
-			data = NULL;
-			return -1;
-		}
-	}
-	
-	return 1;
-}
-
-void GalElement::Read(std::ifstream &in)  
-{
-	long   val;
-	in.read( (char *) &val, sizeof(long) );
-	size = val;
-	if (size == 0) return;
-	data = new long [ size ];
-	if (data == NULL)  {
-		size = 0;
-		return;
-	};
-	in.read( (char *) data, sizeof(long) * Size() );
+	double    lag = 0;
+	for (int cnt = Size(); cnt > 0; )
+		lag += x[ perm[ data[--cnt]]];
+	if (std && Size() > 1)
+		lag /= Size();
+	return lag;
 }
 
 GalElement* WeightUtils::ReadGal(const wxString& fname,
@@ -298,7 +210,7 @@ GalElement* WeightUtils::ReadGal(const wxString& fname,
 			dlg.ShowModal();
 			return 0;
 		}
-		if (grid_base->col_data[col]->type != GeoDaConst::long64_type) {
+		if (grid_base->GetColType(col) != GeoDaConst::long64_type) {
 			wxString msg = "Specified key value field \"";
 			msg << key_field << "\" on first line of weights file is";
 			msg << " not an integer type in the currently loaded DBF Table.";

@@ -367,6 +367,7 @@ void MergeTableDlg::OnMergeClick( wxCommandEvent& ev )
 	
 	wxGrid* grid = grid_base->GetView();
 	if (grid) grid->BeginBatch();
+	int time_steps = 1; // non space-time column
 	std::vector<DbfFieldDesc> fields = dbf_reader->getFieldDescs();
 	for (int i=0, iend=inc_order_to_fname.size(); i<iend; i++) {
 		wxString fname = inc_order_to_fname[i];
@@ -378,7 +379,7 @@ void MergeTableDlg::OnMergeClick( wxCommandEvent& ev )
 			GeoDaConst::long64_type : GeoDaConst::double_type;
 		}
 		dbf_col_to_table_col[id] = first_col+i;
-		grid_base->InsertCol(first_col+i, ftype,
+		grid_base->InsertCol(first_col+i, time_steps, ftype,
 							 fname, fields[id].length,
 							 fields[id].decimals, fields[id].decimals,
 							 true, false);
@@ -406,10 +407,10 @@ void MergeTableDlg::OnMergeClick( wxCommandEvent& ev )
 			int field_len = fields[col].length;
 			if (dbf_col_to_table_col[col] != -1) {
 				int t_col = dbf_col_to_table_col[col];
-				dbf.file.read((char*)(col_data[t_col]->raw_data +
+				dbf.file.read((char*)(col_data[t_col]->raw_data[0] +
 									  t_row*(field_len+1)),
 							  field_len);
-				col_data[t_col]->raw_data[t_row*(field_len+1)+field_len] = '\0';
+				col_data[t_col]->raw_data[0][t_row*(field_len+1)+field_len] = '\0';
 			} else { // skip over this field
 				// NOTE: successive read ops are much faster than
 				// successive read, seekg, read, seekg.  Amazingly faster!

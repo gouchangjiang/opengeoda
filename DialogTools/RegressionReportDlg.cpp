@@ -29,19 +29,19 @@
 #include "../GeneralWxUtils.h"
 #include "RegressionReportDlg.h"
 
-IMPLEMENT_DYNAMIC_CLASS( CRegressionReportDlg, wxDialog )
+IMPLEMENT_DYNAMIC_CLASS( RegressionReportDlg, wxDialog )
 
-BEGIN_EVENT_TABLE( CRegressionReportDlg, wxDialog )
-    EVT_CLOSE( CRegressionReportDlg::OnClose )
-	EVT_MOUSE_EVENTS(CRegressionReportDlg::OnMouseEvent)
-	EVT_MENU(XRCID("ID_FONT"), CRegressionReportDlg::OnFontChanged)
+BEGIN_EVENT_TABLE( RegressionReportDlg, wxDialog )
+    EVT_CLOSE( RegressionReportDlg::OnClose )
+	EVT_MOUSE_EVENTS(RegressionReportDlg::OnMouseEvent)
+	EVT_MENU(XRCID("ID_FONT"), RegressionReportDlg::OnFontChanged)
 END_EVENT_TABLE()
 
-CRegressionReportDlg::CRegressionReportDlg( )
+RegressionReportDlg::RegressionReportDlg( )
 {
 }
 
-CRegressionReportDlg::CRegressionReportDlg( wxWindow* parent,
+RegressionReportDlg::RegressionReportDlg( wxWindow* parent,
 										   wxString showText,
 										   wxWindowID id,
 										   const wxString& caption,
@@ -52,7 +52,7 @@ CRegressionReportDlg::CRegressionReportDlg( wxWindow* parent,
     Create(parent, id, caption, pos, size, style);
 }
 
-bool CRegressionReportDlg::Create( wxWindow* parent, wxWindowID id,
+bool RegressionReportDlg::Create( wxWindow* parent, wxWindowID id,
 								  const wxString& caption,
 								  const wxPoint& pos,
 								  const wxSize& size, long style )
@@ -65,7 +65,7 @@ bool CRegressionReportDlg::Create( wxWindow* parent, wxWindowID id,
     return true;
 }
 
-void CRegressionReportDlg::CreateControls()
+void RegressionReportDlg::CreateControls()
 {    
     wxXmlResource::Get()->LoadDialog(this, GetParent(),
 									 "IDD_REGRESSION_REPORT");
@@ -84,12 +84,12 @@ void CRegressionReportDlg::CreateControls()
 	m_textbox->SetDefaultStyle(style);
 }
 
-bool CRegressionReportDlg::ShowToolTips()
+bool RegressionReportDlg::ShowToolTips()
 {
     return true;
 }
 
-void CRegressionReportDlg::OnMouseEvent(wxMouseEvent& event)
+void RegressionReportDlg::OnMouseEvent(wxMouseEvent& event)
 {
 	if (event.RightUp())
 		PopupMenu(wxXmlResource::Get()->
@@ -97,7 +97,7 @@ void CRegressionReportDlg::OnMouseEvent(wxMouseEvent& event)
 			event.GetPosition().x, event.GetPosition().y);
 }
 
-void CRegressionReportDlg::OnFontChanged(wxCommandEvent& event)
+void RegressionReportDlg::OnFontChanged(wxCommandEvent& event)
 {
 	wxFontData data;
 	wxFontDialog dlg(this, data);
@@ -112,17 +112,17 @@ void CRegressionReportDlg::OnFontChanged(wxCommandEvent& event)
 	}
 }
 
-wxBitmap CRegressionReportDlg::GetBitmapResource( const wxString& name )
+wxBitmap RegressionReportDlg::GetBitmapResource( const wxString& name )
 {
     return wxNullBitmap;
 }
 
-wxIcon CRegressionReportDlg::GetIconResource( const wxString& name )
+wxIcon RegressionReportDlg::GetIconResource( const wxString& name )
 {
     return wxNullIcon;
 }
 
-void CRegressionReportDlg::OnClose( wxCloseEvent& event )
+void RegressionReportDlg::OnClose( wxCloseEvent& event )
 {
     Destroy();
 }
