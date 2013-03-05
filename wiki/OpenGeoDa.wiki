@@ -1,7 +1,7 @@
 #summary One-sentence summary of this page.
 
-= About !OpenGeoDa =
+= About !GeoDa (formerly !OpenGeoDa) =
 
-[http://geodacenter.asu.edu/ OpenGeoDa (TM)] is a free, open source software program that serves as an introduction to spatial data analysis and is used by over 62,000 people across the world (as of Sep. 2011).  It is the successor to Legacy [http://geodacenter.asu.edu/ GeoDa (TM)] and runs on Windows (XP ,Vista and 7), Mac OS, and Linux. It is written in C++, using [http://www.wxwidgets.org/ wxWidgets] for cross-platform GUI support.
+This project has been moved [http://code.google.com/p/opengeoda here].
 
-See the [http://geodacenter.asu.edu/software GeoDa Center software page] for more details and software downloads at this time.
+See the [http://geodacenter.asu.edu/software GeoDa Center software page] for more details on !GeoDa.
