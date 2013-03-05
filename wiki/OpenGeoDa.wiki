@@ -2,6 +2,6 @@
 
 = About !GeoDa (formerly !OpenGeoDa) =
 
-This project has been moved [http://code.google.com/p/opengeoda here].
+This project has been moved [http://code.google.com/p/geoda here].
 
 See the [http://geodacenter.asu.edu/software GeoDa Center software page] for more details on !GeoDa.
